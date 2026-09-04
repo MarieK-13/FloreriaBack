@@ -9,6 +9,7 @@ import com.sistema.FloreriaBack.model.Categoria;
 import com.sistema.FloreriaBack.repository.CategoriaRepository;
 import com.sistema.FloreriaBack.service.CategoriaService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +26,7 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
 
     @Override
+    @Transactional
     public CategoriaResponseDTO registrar(CategoriaRequestDTO dto) {
         if (repository.existsByNombre(dto.getNombre())) {
             throw new BusinessRuleException("Ya existe una categoría con ese nombre");
@@ -34,11 +36,13 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CategoriaResponseDTO> listar() {
         return repository.findAll().stream().map(mapper::toResponseDTO).collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CategoriaResponseDTO buscarPorId(UUID id) {
         Categoria categoria = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada: " + id));
@@ -46,6 +50,7 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
 
     @Override
+    @Transactional
     public void eliminar(UUID id) {
         buscarPorId(id);
         repository.deleteById(id);

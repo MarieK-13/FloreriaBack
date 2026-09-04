@@ -1,21 +1,24 @@
 package com.sistema.FloreriaBack.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.UUID;
 
-@Entity
-@Table(name = "categoria")
-@Data
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+
+@Builder
+@EqualsAndHashCode(of = "id")
+@ToString
+
+@Entity 
+@Table(name = "categoria")
 public class Categoria {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "uuid")
     private UUID id;
 
     @Column(nullable = false, unique = true, length = 50)

@@ -7,6 +7,9 @@ import com.sistema.FloreriaBack.mapper.ProductoMapper;
 import com.sistema.FloreriaBack.model.Producto;
 import com.sistema.FloreriaBack.repository.ProductoRepository;
 import com.sistema.FloreriaBack.service.ProductoService;
+
+import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,17 +27,22 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    @Transactional
     public ProductoResponseDTO registrar(ProductoRequestDTO dto) {
         Producto producto = mapper.toEntity(dto);
         return mapper.toResponseDTO(repository.save(producto));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductoResponseDTO> listar() {
-        return repository.findAll().stream().map(mapper::toResponseDTO).collect(Collectors.toList());
+        return repository.findAll().stream()
+                         .map(mapper::toResponseDTO)
+                         .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductoResponseDTO buscarPorId(UUID id) {
         Producto producto = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado: " + id));
@@ -42,8 +50,10 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductoResponseDTO> listarPorCategoria(UUID categoriaId) {
         return repository.findByCategoriaId(categoriaId).stream()
-                .map(mapper::toResponseDTO).collect(Collectors.toList());
+                .map(mapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 }

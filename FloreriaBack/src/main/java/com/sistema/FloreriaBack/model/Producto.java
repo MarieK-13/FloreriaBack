@@ -1,21 +1,22 @@
 package com.sistema.FloreriaBack.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.util.UUID;
 
-@Entity
-@Table(name = "producto")
-@Data
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = "categoria")
+
+@Entity
+@Builder 
+@Table(name = "producto")
 public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "uuid")
     private UUID id;
 
     @Column(nullable = false)
@@ -35,7 +36,7 @@ public class Producto {
 
     private String tamano;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 }

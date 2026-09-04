@@ -19,13 +19,30 @@ public class ProductoMapper {
     public Producto toEntity(ProductoRequestDTO dto) {
         Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada: " + dto.getCategoriaId()));
-
-        return new Producto(null, dto.getNombre(), dto.getDescripcion(), dto.getPrecio(),
-                dto.getStock(), dto.getStock() > 0, dto.getColor(), dto.getTamano(), categoria);
+       
+        return Producto.builder()
+                .nombre(dto.getNombre())
+                .descripcion(dto.getDescripcion())
+                .precio(dto.getPrecio())
+                .stock(dto.getStock())
+                .disponible(dto.getStock() != null && dto.getStock() > 0)
+                .color(dto.getColor())
+                .tamano(dto.getTamano())
+                .categoria(categoria)
+                .build();
     }
 
     public ProductoResponseDTO toResponseDTO(Producto p) {
-        return new ProductoResponseDTO(p.getId(), p.getNombre(), p.getDescripcion(), p.getPrecio(),
-                p.getStock(), p.getDisponible(), p.getColor(), p.getTamano(), p.getCategoria().getNombre());
+        return new ProductoResponseDTO(
+                p.getId(),
+                p.getNombre(),
+                p.getDescripcion(),
+                p.getPrecio(),
+                p.getStock(),
+                p.getDisponible(),
+                p.getColor(),
+                p.getTamano(),
+                p.getCategoria() != null ? p.getCategoria().getNombre() : null
+        );
     }
 }
