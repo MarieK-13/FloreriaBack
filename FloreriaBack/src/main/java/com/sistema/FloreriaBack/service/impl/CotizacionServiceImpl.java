@@ -13,16 +13,15 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class CotizacionServiceImpl implements CotizacionService {
 
-    // 1. Declaramos las dependencias
     private final CotizacionRepository cotizacionRepository;
     private final ProductoRepository productoRepository;
     private final CotizacionMapper mapper;
 
-    // 2. Inyectamos las dependencias en el constructor
     public CotizacionServiceImpl(CotizacionRepository cotizacionRepository, 
                                  ProductoRepository productoRepository, 
                                  CotizacionMapper mapper) {
@@ -33,14 +32,12 @@ public class CotizacionServiceImpl implements CotizacionService {
 
     @Override
     public CotizacionResponseDTO generarCotizacion(String mensajeUsuario) {
-        // Instanciamos el objeto principal
         Cotizacion cotizacion = new Cotizacion();
         cotizacion.setFechaCreacion(LocalDateTime.now());
 
         List<ItemCotizacion> items = new ArrayList<>();
         double totalGeneral = 0.0;
 
-        // Buscamos productos con la variable inyectada en minúscula
         List<Producto> productosDisponibles = productoRepository.findAll();
 
         for (Producto producto : productosDisponibles) {
@@ -48,7 +45,7 @@ public class CotizacionServiceImpl implements CotizacionService {
 
                 ItemCotizacion item = new ItemCotizacion();
                 item.setProductoNombre(producto.getNombre());
-                item.setCantidad(1); // Cantidad base
+                item.setCantidad(1); // Cantidad por defecto
                 item.setPrecioUnitario(producto.getPrecio());
                 item.setSubtotal(producto.getPrecio() * item.getCantidad());
                 item.setCotizacion(cotizacion);
@@ -61,9 +58,22 @@ public class CotizacionServiceImpl implements CotizacionService {
         cotizacion.setItems(items);
         cotizacion.setTotal(totalGeneral);
 
-        // Guardamos con la variable inyectada en minúscula (cotizacionRepository)
         Cotizacion guardada = cotizacionRepository.save(cotizacion);
-
         return mapper.toResponseDTO(guardada);
+    }
+
+    @Override
+    public CotizacionResponseDTO obtenerPorId(UUID id) {
+        Cotizacion cotizacion = cotizacionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cotización no encontrada con ID: " + id));
+        return mapper.toResponseDTO(cotizacion);
+    }
+
+    @Override
+    public List<CotizacionResponseDTO> listarTodas() {
+        List<Cotizacion> cotizaciones = cotizacionRepository.findAll();
+        return cotizaciones.stream()
+                .map(mapper::toResponseDTO)
+                .toList();
     }
 }
