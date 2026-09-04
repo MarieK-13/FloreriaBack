@@ -1,9 +1,12 @@
-// ChatbotRequestDTO.java (Ubicación: dto/request)
 package com.sistema.FloreriaBack.dto.request;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChatbotRequestDTO {
     private String mensajeUsuario;
-
-    public String getMensajeUsuario() { return mensajeUsuario; }
-    public void setMensajeUsuario(String mensajeUsuario) { this.mensajeUsuario = mensajeUsuario; }
 }
