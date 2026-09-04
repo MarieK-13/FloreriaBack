@@ -9,6 +9,7 @@ import com.sistema.FloreriaBack.model.Usuario;
 import com.sistema.FloreriaBack.repository.UsuarioRepository;
 import com.sistema.FloreriaBack.service.UsuarioService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +26,7 @@ public class UsuarioServiceImpl implements UsuarioService{
     }
 
     @Override
+    @Transactional
     public UsuarioResponseDTO registrar(UsuarioRequestDTO dto) {
         if (repository.existsByEmail(dto.getEmail())) {
             throw new BusinessRuleException("Ya existe un usuario con ese email");
@@ -34,11 +36,15 @@ public class UsuarioServiceImpl implements UsuarioService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UsuarioResponseDTO> listar() {
-        return repository.findAll().stream().map(mapper::toResponseDTO).collect(Collectors.toList());
+        return repository.findAll().stream()
+                         .map(mapper::toResponseDTO)
+                         .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UsuarioResponseDTO buscarPorId(UUID id) {
         Usuario usuario = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado: " + id));
