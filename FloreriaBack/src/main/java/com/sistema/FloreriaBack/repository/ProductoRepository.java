@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface ProductoRepository extends JpaRepository<Producto, UUID> {
     List<Producto> findByCategoriaId(UUID categoriaId);
+    boolean existsByCategoriaId(UUID categoriaId);
 }

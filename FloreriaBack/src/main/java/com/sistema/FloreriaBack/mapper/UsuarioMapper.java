@@ -14,7 +14,7 @@ public class UsuarioMapper {
                 .email(dto.getEmail())
                 .contrasena(dto.getContrasena())
                 .rol(dto.getRol())
-                .activo(true) // todo usuario nuevo empieza activo
+                .activo(true) 
                 .build();
     }
 

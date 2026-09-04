@@ -3,6 +3,7 @@ package com.sistema.FloreriaBack.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -11,7 +12,7 @@ public class ProductoResponseDTO {
     private UUID id;
     private String nombre;
     private String descripcion;
-    private Double precio;
+    private BigDecimal precio;
     private Integer stock;
     private Boolean disponible;
     private String color;

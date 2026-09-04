@@ -7,6 +7,7 @@ import com.sistema.FloreriaBack.exception.ResourceNotFoundException;
 import com.sistema.FloreriaBack.mapper.CategoriaMapper;
 import com.sistema.FloreriaBack.model.Categoria;
 import com.sistema.FloreriaBack.repository.CategoriaRepository;
+import com.sistema.FloreriaBack.repository.ProductoRepository;
 import com.sistema.FloreriaBack.service.CategoriaService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,10 +19,14 @@ import java.util.stream.Collectors;
 @Service
 public class CategoriaServiceImpl implements CategoriaService {
     private final CategoriaRepository repository;
+    private final ProductoRepository productoRepository;
     private final CategoriaMapper mapper;
 
-    public CategoriaServiceImpl(CategoriaRepository repository, CategoriaMapper mapper) {
+    public CategoriaServiceImpl(CategoriaRepository repository,
+                                 ProductoRepository productoRepository,
+                                 CategoriaMapper mapper) {
         this.repository = repository;
+        this.productoRepository = productoRepository;
         this.mapper = mapper;
     }
 
@@ -53,6 +58,9 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Transactional
     public void eliminar(UUID id) {
         buscarPorId(id);
+        if (productoRepository.existsByCategoriaId(id)) {
+            throw new BusinessRuleException("No se puede eliminar la categoría porque tiene productos asociados");
+        }
         repository.deleteById(id);
     }
 }

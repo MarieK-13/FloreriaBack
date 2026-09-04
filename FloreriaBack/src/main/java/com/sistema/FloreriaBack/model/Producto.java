@@ -2,6 +2,8 @@ package com.sistema.FloreriaBack.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter @Setter
@@ -12,7 +14,7 @@ import java.util.UUID;
 @ToString(exclude = "categoria")
 
 @Entity
-@Builder 
+@Builder
 @Table(name = "producto")
 public class Producto {
     @Id
@@ -24,8 +26,8 @@ public class Producto {
 
     private String descripcion;
 
-    @Column(nullable = false)
-    private Double precio;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal precio;
 
     @Column(nullable = false)
     private Integer stock;

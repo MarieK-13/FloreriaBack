@@ -1,8 +1,8 @@
 package com.sistema.FloreriaBack.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
+
+import lombok.*;
 
 @Data
 @NoArgsConstructor
@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class ItemCotizacionResponseDTO {
     private String productoNombre;
     private Integer cantidad;
-    private Double precioUnitario;
-    private Double subtotal;
+    private BigDecimal precioUnitario;
+    private BigDecimal subtotal;
 }

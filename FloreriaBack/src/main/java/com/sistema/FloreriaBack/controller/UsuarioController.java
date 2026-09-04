@@ -26,8 +26,12 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public List<UsuarioResponseDTO> listar() { return service.listar(); }
+    public List<UsuarioResponseDTO> listar() {
+        return service.listar();
+    }
 
     @GetMapping("/{id}")
-    public UsuarioResponseDTO buscarPorId(@PathVariable UUID id) { return service.buscarPorId(id); }
+    public UsuarioResponseDTO buscarPorId(@PathVariable UUID id) {
+        return service.buscarPorId(id);
+    }
 }
