@@ -2,7 +2,6 @@ package com.sistema.FloreriaBack.controller;
 
 import com.sistema.FloreriaBack.dto.response.CotizacionResponseDTO;
 import com.sistema.FloreriaBack.exception.BusinessRuleException;
-import com.sistema.FloreriaBack.exception.GlobalExceptionHandler;
 import com.sistema.FloreriaBack.exception.ResourceNotFoundException;
 import com.sistema.FloreriaBack.model.enums.EstadoCotizacion;
 import com.sistema.FloreriaBack.service.CotizacionService;
@@ -15,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -30,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
-class CotizacionControllerTest {
+class CotizacionControllerTest extends BaseControllerTest {
 
     private MockMvc mockMvc;
 
@@ -47,9 +45,7 @@ class CotizacionControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(cotizacionController)
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .build();
+        mockMvc = crearMockMvc(cotizacionController);
 
         cotizacionId = UUID.randomUUID();
         usuarioId = UUID.randomUUID();

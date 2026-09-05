@@ -2,7 +2,6 @@ package com.sistema.FloreriaBack.controller;
 
 import com.sistema.FloreriaBack.dto.response.UsuarioResponseDTO;
 import com.sistema.FloreriaBack.exception.BusinessRuleException;
-import com.sistema.FloreriaBack.exception.GlobalExceptionHandler;
 import com.sistema.FloreriaBack.exception.ResourceNotFoundException;
 import com.sistema.FloreriaBack.model.enums.RolUsuario;
 import com.sistema.FloreriaBack.service.UsuarioService;
@@ -15,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
-class UsuarioControllerTest {
+class UsuarioControllerTest extends BaseControllerTest{
 
     private MockMvc mockMvc;
 
@@ -43,9 +41,7 @@ class UsuarioControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(usuarioController)
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .build();
+        mockMvc = crearMockMvc(usuarioController);
 
         usuarioId = UUID.randomUUID();
 
@@ -153,5 +149,17 @@ class UsuarioControllerTest {
                 .andExpect(jsonPath("$.status").value(404));
 
         verify(usuarioService, times(1)).buscarPorId(usuarioId);
+    }
+
+    @Test
+    @DisplayName("POST /api/usuarios - La respuesta NUNCA debe exponer la contraseña")
+    void registrar_NuncaExponeContrasena() throws Exception {
+        when(usuarioService.registrar(any())).thenReturn(responseDTO);
+
+         mockMvc.perform(post("/api/usuarios")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(crearRequestJson()))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.contrasena").doesNotExist());
     }
 }

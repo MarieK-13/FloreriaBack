@@ -6,25 +6,18 @@ import com.sistema.FloreriaBack.dto.response.CotizacionResponseDTO;
 import com.sistema.FloreriaBack.exception.BusinessRuleException;
 import com.sistema.FloreriaBack.exception.ResourceNotFoundException;
 import com.sistema.FloreriaBack.mapper.CotizacionMapper;
-import com.sistema.FloreriaBack.model.Cotizacion;
-import com.sistema.FloreriaBack.model.Producto;
-import com.sistema.FloreriaBack.model.Usuario;
-import com.sistema.FloreriaBack.model.enums.EstadoCotizacion;
-import com.sistema.FloreriaBack.repository.CotizacionRepository;
-import com.sistema.FloreriaBack.repository.ProductoRepository;
-import com.sistema.FloreriaBack.repository.UsuarioRepository;
+import com.sistema.FloreriaBack.model.*;
+import com.sistema.FloreriaBack.repository.*;
 import com.sistema.FloreriaBack.service.impl.CotizacionServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,30 +38,28 @@ class CotizacionServiceTest {
     @Mock
     private ProductoRepository productoRepository;
 
-    @Mock
     private CotizacionMapper cotizacionMapper;
 
-    @InjectMocks
     private CotizacionServiceImpl cotizacionService;
 
     private Usuario usuario;
     private Producto producto;
-    private Cotizacion cotizacion;
     private CotizacionRequestDTO requestDTO;
-    private CotizacionResponseDTO responseDTO;
-    private UUID cotizacionId;
     private UUID usuarioId;
     private UUID productoId;
 
     @BeforeEach
     void setUp() {
-        cotizacionId = UUID.randomUUID();
+        cotizacionMapper = new CotizacionMapper();
+        cotizacionService = new CotizacionServiceImpl(
+                cotizacionRepository, usuarioRepository, productoRepository, cotizacionMapper);
+
         usuarioId = UUID.randomUUID();
         productoId = UUID.randomUUID();
 
         usuario = Usuario.builder()
                 .id(usuarioId)
-                .nombre("Maria López")
+                .nombre("Maria Lopez")
                 .email("maria@example.com")
                 .build();
 
@@ -84,30 +75,9 @@ class CotizacionServiceTest {
 
         requestDTO = new CotizacionRequestDTO();
         requestDTO.setUsuarioId(usuarioId);
-        requestDTO.setMensajeCliente("Cotización para evento");
+        requestDTO.setMensajeCliente("Cotizacion para evento");
         requestDTO.setPresupuesto(new BigDecimal("100.00"));
         requestDTO.setItems(List.of(itemDto));
-
-        cotizacion = Cotizacion.builder()
-                .id(cotizacionId)
-                .fechaCreacion(LocalDateTime.now())
-                .usuario(usuario)
-                .mensajeCliente("Cotización para evento")
-                .presupuesto(new BigDecimal("100.00"))
-                .estado(EstadoCotizacion.PENDIENTE)
-                .total(new BigDecimal("30.00"))
-                .items(new ArrayList<>())
-                .build();
-
-        responseDTO = new CotizacionResponseDTO(
-                cotizacionId,
-                LocalDateTime.now(),
-                new BigDecimal("30.00"),
-                "Cotización para evento",
-                new BigDecimal("100.00"),
-                EstadoCotizacion.PENDIENTE,
-                List.of()
-        );
     }
 
     @Test
@@ -115,18 +85,23 @@ class CotizacionServiceTest {
     void crearCotizacion_Exitoso() {
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
         when(productoRepository.findById(productoId)).thenReturn(Optional.of(producto));
-        when(cotizacionRepository.save(any(Cotizacion.class))).thenReturn(cotizacion);
-        when(cotizacionMapper.toResponseDTO(any(Cotizacion.class))).thenReturn(responseDTO);
+        when(cotizacionRepository.save(any(Cotizacion.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CotizacionResponseDTO resultado = cotizacionService.crearCotizacion(requestDTO);
 
-        assertNotNull(resultado);
-        assertEquals(cotizacionId, resultado.getId());
-        assertEquals(new BigDecimal("30.00"), resultado.getTotal());
+        ArgumentCaptor<Cotizacion> captor = ArgumentCaptor.forClass(Cotizacion.class);
+        verify(cotizacionRepository).save(captor.capture());
+        Cotizacion guardada = captor.getValue();
 
-        verify(usuarioRepository, times(1)).findById(usuarioId);
-        verify(productoRepository, times(1)).findById(productoId);
-        verify(cotizacionRepository, times(1)).save(any(Cotizacion.class));
+        assertEquals(0, new BigDecimal("30.00").compareTo(guardada.getTotal()));
+        assertEquals(1, guardada.getItems().size());
+
+        ItemCotizacion item = guardada.getItems().get(0);
+        assertEquals("Girasoles", item.getProductoNombre());
+        assertEquals(0, new BigDecimal("15.00").compareTo(item.getPrecioUnitario()));
+        assertEquals(0, new BigDecimal("30.00").compareTo(item.getSubtotal()));
+
+        assertEquals(0, new BigDecimal("30.00").compareTo(resultado.getTotal()));
     }
 
     @Test
@@ -143,9 +118,21 @@ class CotizacionServiceTest {
     }
 
     @Test
+    @DisplayName("Debe lanzar ResourceNotFoundException si algun producto del item no existe")
+    void crearCotizacion_ProductoNoEncontrado_LanzaExcepcion() {
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(productoRepository.findById(productoId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> cotizacionService.crearCotizacion(requestDTO));
+
+        verify(cotizacionRepository, never()).save(any());
+    }
+
+    @Test
     @DisplayName("Debe lanzar BusinessRuleException cuando el stock es insuficiente")
     void crearCotizacion_StockInsuficiente_LanzaExcepcion() {
-        producto.setStock(1); // Solicitó 2 en el requestDTO
+        producto.setStock(1); 
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
         when(productoRepository.findById(productoId)).thenReturn(Optional.of(producto));
 
@@ -161,7 +148,7 @@ class CotizacionServiceTest {
     @Test
     @DisplayName("Debe lanzar BusinessRuleException cuando el total supera el presupuesto del cliente")
     void crearCotizacion_SuperaPresupuesto_LanzaExcepcion() {
-        requestDTO.setPresupuesto(new BigDecimal("20.00")); // Total es 30.00 (15 * 2)
+        requestDTO.setPresupuesto(new BigDecimal("20.00")); 
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
         when(productoRepository.findById(productoId)).thenReturn(Optional.of(producto));
 
@@ -177,37 +164,41 @@ class CotizacionServiceTest {
     @Test
     @DisplayName("Debe buscar una cotización por ID exitosamente")
     void buscarPorId_Exitoso() {
-        when(cotizacionRepository.findById(cotizacionId)).thenReturn(Optional.of(cotizacion));
-        when(cotizacionMapper.toResponseDTO(cotizacion)).thenReturn(responseDTO);
+         Cotizacion cotizacion = Cotizacion.builder().id(UUID.randomUUID()).total(BigDecimal.ZERO).build();
+        when(cotizacionRepository.findById(cotizacion.getId())).thenReturn(Optional.of(cotizacion));
 
-        CotizacionResponseDTO resultado = cotizacionService.buscarPorId(cotizacionId);
+        CotizacionResponseDTO resultado = cotizacionService.buscarPorId(cotizacion.getId());
 
-        assertNotNull(resultado);
-        assertEquals(cotizacionId, resultado.getId());
+        assertEquals(cotizacion.getId(), resultado.getId());
+    }
 
-        verify(cotizacionRepository, times(1)).findById(cotizacionId);
+    @Test
+    @DisplayName("Debe lanzar ResourceNotFoundException al buscar una cotizacion inexistente")
+    void buscarPorId_NoEncontrado_LanzaExcepcion() {
+        UUID idInexistente = UUID.randomUUID();
+        when(cotizacionRepository.findById(idInexistente)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> cotizacionService.buscarPorId(idInexistente));
     }
 
     @Test
     @DisplayName("Debe listar todas las cotizaciones")
     void listarTodas_Exitoso() {
+        Cotizacion cotizacion = Cotizacion.builder().id(UUID.randomUUID()).total(BigDecimal.TEN).build();
         when(cotizacionRepository.findAll()).thenReturn(List.of(cotizacion));
-        when(cotizacionMapper.toResponseDTO(cotizacion)).thenReturn(responseDTO);
 
         List<CotizacionResponseDTO> resultado = cotizacionService.listarTodas();
 
-        assertNotNull(resultado);
         assertEquals(1, resultado.size());
-
-        verify(cotizacionRepository, times(1)).findAll();
     }
 
     @Test
     @DisplayName("Debe listar cotizaciones por usuario exitosamente")
     void listarPorUsuario_Exitoso() {
+        Cotizacion cotizacion = Cotizacion.builder().id(UUID.randomUUID()).total(BigDecimal.TEN).build();
         when(usuarioRepository.existsById(usuarioId)).thenReturn(true);
         when(cotizacionRepository.findByUsuarioId(usuarioId)).thenReturn(List.of(cotizacion));
-        when(cotizacionMapper.toResponseDTO(cotizacion)).thenReturn(responseDTO);
 
         List<CotizacionResponseDTO> resultado = cotizacionService.listarPorUsuario(usuarioId);
 
@@ -216,5 +207,17 @@ class CotizacionServiceTest {
 
         verify(usuarioRepository, times(1)).existsById(usuarioId);
         verify(cotizacionRepository, times(1)).findByUsuarioId(usuarioId);
+    }
+
+    @Test
+    @DisplayName("Debe lanzar ResourceNotFoundException al listar cotizaciones de un usuario inexistente")
+    void listarPorUsuario_UsuarioNoExiste_LanzaExcepcion() {
+        when(usuarioRepository.existsById(usuarioId)).thenReturn(false);
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> cotizacionService.listarPorUsuario(usuarioId));
+
+        verify(usuarioRepository, times(1)).existsById(usuarioId);
+        verify(cotizacionRepository, never()).findByUsuarioId(any());
     }
 }

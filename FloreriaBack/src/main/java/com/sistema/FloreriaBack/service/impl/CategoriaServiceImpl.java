@@ -23,8 +23,8 @@ public class CategoriaServiceImpl implements CategoriaService {
     private final CategoriaMapper mapper;
 
     public CategoriaServiceImpl(CategoriaRepository repository,
-                                 ProductoRepository productoRepository,
-                                 CategoriaMapper mapper) {
+            ProductoRepository productoRepository,
+            CategoriaMapper mapper) {
         this.repository = repository;
         this.productoRepository = productoRepository;
         this.mapper = mapper;
@@ -57,7 +57,9 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     @Transactional
     public void eliminar(UUID id) {
-        buscarPorId(id);
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Categoría no encontrada: " + id);
+        }
         if (productoRepository.existsByCategoriaId(id)) {
             throw new BusinessRuleException("No se puede eliminar la categoría porque tiene productos asociados");
         }

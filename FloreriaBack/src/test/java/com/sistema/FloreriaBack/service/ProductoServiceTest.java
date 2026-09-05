@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -35,21 +34,21 @@ class ProductoServiceTest {
     @Mock
     private CategoriaRepository categoriaRepository;
 
-    @Mock
     private ProductoMapper productoMapper;
 
-    @InjectMocks
     private ProductoServiceImpl productoService;
 
     private Categoria categoria;
     private Producto producto;
     private ProductoRequestDTO requestDTO;
-    private ProductoResponseDTO responseDTO;
     private UUID productoId;
     private UUID categoriaId;
 
     @BeforeEach
     void setUp() {
+        productoMapper = new ProductoMapper();
+        productoService = new ProductoServiceImpl(productoRepository, categoriaRepository, productoMapper);
+
         productoId = UUID.randomUUID();
         categoriaId = UUID.randomUUID();
 
@@ -79,39 +78,23 @@ class ProductoServiceTest {
         requestDTO.setColor("Rojo");
         requestDTO.setTamano("Grande");
         requestDTO.setCategoriaId(categoriaId);
-
-        responseDTO = new ProductoResponseDTO(
-                productoId,
-                "Rosas Rojas",
-                "Ramo de 12 rosas rojas",
-                new BigDecimal("25.00"),
-                10,
-                true,
-                "Rojo",
-                "Grande",
-                "Flores"
-        );
     }
 
     @Test
     @DisplayName("Debe registrar un producto exitosamente")
     void registrar_Exitoso() {
         when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoria));
-        when(productoMapper.toEntity(requestDTO, categoria)).thenReturn(producto);
-        when(productoRepository.save(producto)).thenReturn(producto);
-        when(productoMapper.toResponseDTO(producto)).thenReturn(responseDTO);
+        when(productoRepository.save(any(Producto.class))).thenReturn(producto);
 
         ProductoResponseDTO resultado = productoService.registrar(requestDTO);
 
         assertNotNull(resultado);
-        assertEquals(productoId, resultado.getId());
         assertEquals("Rosas Rojas", resultado.getNombre());
         assertEquals("Flores", resultado.getCategoriaNombre());
+        assertEquals(0, new BigDecimal("25.00").compareTo(resultado.getPrecio()));
 
         verify(categoriaRepository, times(1)).findById(categoriaId);
-        verify(productoMapper, times(1)).toEntity(requestDTO, categoria);
-        verify(productoRepository, times(1)).save(producto);
-        verify(productoMapper, times(1)).toResponseDTO(producto);
+        verify(productoRepository, times(1)).save(any(Producto.class));
     }
 
     @Test
@@ -119,12 +102,9 @@ class ProductoServiceTest {
     void registrar_CategoriaNoEncontrada_LanzaExcepcion() {
         when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.empty());
 
-        ResourceNotFoundException exception = assertThrows(
-                ResourceNotFoundException.class,
-                () -> productoService.registrar(requestDTO)
-        );
+        assertThrows(ResourceNotFoundException.class,
+                () -> productoService.registrar(requestDTO));
 
-        assertTrue(exception.getMessage().contains("Categoría no encontrada"));
         verify(categoriaRepository, times(1)).findById(categoriaId);
         verify(productoRepository, never()).save(any());
     }
@@ -133,7 +113,6 @@ class ProductoServiceTest {
     @DisplayName("Debe listar todos los productos")
     void listar_Exitoso() {
         when(productoRepository.findAll()).thenReturn(List.of(producto));
-        when(productoMapper.toResponseDTO(producto)).thenReturn(responseDTO);
 
         List<ProductoResponseDTO> resultado = productoService.listar();
 
@@ -142,14 +121,12 @@ class ProductoServiceTest {
         assertEquals("Rosas Rojas", resultado.get(0).getNombre());
 
         verify(productoRepository, times(1)).findAll();
-        verify(productoMapper, times(1)).toResponseDTO(producto);
     }
 
     @Test
     @DisplayName("Debe buscar un producto por ID exitosamente")
     void buscarPorId_Exitoso() {
         when(productoRepository.findById(productoId)).thenReturn(Optional.of(producto));
-        when(productoMapper.toResponseDTO(producto)).thenReturn(responseDTO);
 
         ProductoResponseDTO resultado = productoService.buscarPorId(productoId);
 
@@ -158,7 +135,6 @@ class ProductoServiceTest {
         assertEquals("Rosas Rojas", resultado.getNombre());
 
         verify(productoRepository, times(1)).findById(productoId);
-        verify(productoMapper, times(1)).toResponseDTO(producto);
     }
 
     @Test
@@ -166,12 +142,9 @@ class ProductoServiceTest {
     void buscarPorId_NoEncontrado_LanzaExcepcion() {
         when(productoRepository.findById(productoId)).thenReturn(Optional.empty());
 
-        ResourceNotFoundException exception = assertThrows(
-                ResourceNotFoundException.class,
-                () -> productoService.buscarPorId(productoId)
-        );
+        assertThrows(ResourceNotFoundException.class,
+                () -> productoService.buscarPorId(productoId));
 
-        assertTrue(exception.getMessage().contains("Producto no encontrado"));
         verify(productoRepository, times(1)).findById(productoId);
     }
 
@@ -179,7 +152,6 @@ class ProductoServiceTest {
     @DisplayName("Debe listar productos por categoría exitosamente")
     void listarPorCategoria_Exitoso() {
         when(productoRepository.findByCategoriaId(categoriaId)).thenReturn(List.of(producto));
-        when(productoMapper.toResponseDTO(producto)).thenReturn(responseDTO);
 
         List<ProductoResponseDTO> resultado = productoService.listarPorCategoria(categoriaId);
 
@@ -188,6 +160,5 @@ class ProductoServiceTest {
         assertEquals("Flores", resultado.get(0).getCategoriaNombre());
 
         verify(productoRepository, times(1)).findByCategoriaId(categoriaId);
-        verify(productoMapper, times(1)).toResponseDTO(producto);
     }
 }

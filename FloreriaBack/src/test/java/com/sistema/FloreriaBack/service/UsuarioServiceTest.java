@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,26 +33,26 @@ class UsuarioServiceTest {
     private UsuarioRepository usuarioRepository;
 
     @Mock
-    private UsuarioMapper usuarioMapper;
-
-    @Mock
     private PasswordEncoder passwordEncoder;
 
-    @InjectMocks
+    private UsuarioMapper usuarioMapper;
+
     private UsuarioServiceImpl usuarioService;
 
     private Usuario usuario;
     private UsuarioRequestDTO requestDTO;
-    private UsuarioResponseDTO responseDTO;
     private UUID usuarioId;
 
     @BeforeEach
     void setUp() {
+        usuarioMapper = new UsuarioMapper();
+        usuarioService = new UsuarioServiceImpl(usuarioRepository, usuarioMapper, passwordEncoder);
+
         usuarioId = UUID.randomUUID();
 
         usuario = Usuario.builder()
                 .id(usuarioId)
-                .nombre("Juan Pérez")
+                .nombre("Juan Perez")
                 .email("juan@example.com")
                 .contrasena("password123")
                 .rol(RolUsuario.CLIENTE)
@@ -60,91 +60,75 @@ class UsuarioServiceTest {
                 .build();
 
         requestDTO = new UsuarioRequestDTO();
-        requestDTO.setNombre("Juan Pérez");
+        requestDTO.setNombre("Juan Perez");
         requestDTO.setEmail("juan@example.com");
         requestDTO.setContrasena("password123");
-
-        responseDTO = new UsuarioResponseDTO(
-                usuarioId,
-                "Juan Pérez",
-                "juan@example.com",
-                RolUsuario.CLIENTE,
-                true
-        );
+        requestDTO.setRol(RolUsuario.CLIENTE);
     }
 
     @Test
-    @DisplayName("Debe registrar un usuario exitosamente encriptando su contraseña")
+    @DisplayName("Debe registrar un usuario y guardar la contraseña ya hasheada, no en texto plano")
     void registrar_Exitoso() {
         when(usuarioRepository.existsByEmail("juan@example.com")).thenReturn(false);
-        when(usuarioMapper.toEntity(requestDTO)).thenReturn(usuario);
-        when(passwordEncoder.encode("password123")).thenReturn("encoded_password");
-        when(usuarioRepository.save(usuario)).thenReturn(usuario);
-        when(usuarioMapper.toResponseDTO(usuario)).thenReturn(responseDTO);
+        when(passwordEncoder.encode("password123")).thenReturn("hash_encriptado");
+        when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
 
         UsuarioResponseDTO resultado = usuarioService.registrar(requestDTO);
 
         assertNotNull(resultado);
-        assertEquals(usuarioId, resultado.getId());
-        assertEquals("juan@example.com", resultado.getEmail());
+        ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
+        verify(usuarioRepository).save(captor.capture());
 
-        verify(usuarioRepository, times(1)).existsByEmail("juan@example.com");
+        assertEquals("hash_encriptado", captor.getValue().getContrasena());
+        assertNotEquals("password123", captor.getValue().getContrasena());
         verify(passwordEncoder, times(1)).encode("password123");
-        verify(usuarioRepository, times(1)).save(usuario);
     }
 
     @Test
-    @DisplayName("Debe lanzar BusinessRuleException al registrar usuario con email existente")
+    @DisplayName("Debe lanzar BusinessRuleException al registrar con un email ya existente")
     void registrar_EmailExistente_LanzaExcepcion() {
         when(usuarioRepository.existsByEmail("juan@example.com")).thenReturn(true);
 
-        BusinessRuleException exception = assertThrows(
-                BusinessRuleException.class,
-                () -> usuarioService.registrar(requestDTO)
-        );
+        BusinessRuleException ex = assertThrows(BusinessRuleException.class,
+                () -> usuarioService.registrar(requestDTO));
 
-        assertTrue(exception.getMessage().contains("Ya existe un usuario con ese email"));
+        assertTrue(ex.getMessage().contains("Ya existe un usuario con ese email"));
         verify(usuarioRepository, never()).save(any());
+        verify(passwordEncoder, never()).encode(any());
     }
 
     @Test
     @DisplayName("Debe listar todos los usuarios")
     void listar_Exitoso() {
         when(usuarioRepository.findAll()).thenReturn(List.of(usuario));
-        when(usuarioMapper.toResponseDTO(usuario)).thenReturn(responseDTO);
 
         List<UsuarioResponseDTO> resultado = usuarioService.listar();
 
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
-        assertEquals("Juan Pérez", resultado.get(0).getNombre());
-
+        assertEquals("Juan Perez", resultado.get(0).getNombre());
         verify(usuarioRepository, times(1)).findAll();
     }
 
     @Test
-    @DisplayName("Debe buscar un usuario por ID exitosamente")
+    @DisplayName("Debe buscar un usuario por id exitosamente")
     void buscarPorId_Exitoso() {
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
-        when(usuarioMapper.toResponseDTO(usuario)).thenReturn(responseDTO);
 
         UsuarioResponseDTO resultado = usuarioService.buscarPorId(usuarioId);
 
         assertNotNull(resultado);
         assertEquals(usuarioId, resultado.getId());
-
         verify(usuarioRepository, times(1)).findById(usuarioId);
     }
 
     @Test
-    @DisplayName("Debe lanzar ResourceNotFoundException al buscar por ID inexistente")
+    @DisplayName("Debe lanzar ResourceNotFoundException al buscar un id inexistente")
     void buscarPorId_NoEncontrado_LanzaExcepcion() {
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.empty());
 
-        assertThrows(
-                ResourceNotFoundException.class,
-                () -> usuarioService.buscarPorId(usuarioId)
-        );
+        assertThrows(ResourceNotFoundException.class,
+                () -> usuarioService.buscarPorId(usuarioId));
 
         verify(usuarioRepository, times(1)).findById(usuarioId);
     }

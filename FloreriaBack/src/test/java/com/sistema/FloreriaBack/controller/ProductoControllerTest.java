@@ -2,7 +2,6 @@ package com.sistema.FloreriaBack.controller;
 
 import com.sistema.FloreriaBack.dto.request.ProductoRequestDTO;
 import com.sistema.FloreriaBack.dto.response.ProductoResponseDTO;
-import com.sistema.FloreriaBack.exception.GlobalExceptionHandler;
 import com.sistema.FloreriaBack.exception.ResourceNotFoundException;
 import com.sistema.FloreriaBack.service.ProductoService;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -28,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
-class ProductoControllerTest {
+class ProductoControllerTest extends BaseControllerTest{
 
     private MockMvc mockMvc;
 
@@ -44,9 +42,7 @@ class ProductoControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(productoController)
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .build();
+        mockMvc = crearMockMvc(productoController);
 
         productoId = UUID.randomUUID();
         categoriaId = UUID.randomUUID();

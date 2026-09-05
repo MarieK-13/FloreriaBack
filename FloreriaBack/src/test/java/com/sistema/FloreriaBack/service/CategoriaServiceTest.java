@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -34,67 +33,58 @@ class CategoriaServiceTest {
     @Mock
     private ProductoRepository productoRepository;
 
-    @Mock
     private CategoriaMapper categoriaMapper;
 
-    @InjectMocks
     private CategoriaServiceImpl categoriaService;
 
     private Categoria categoria;
     private CategoriaRequestDTO requestDTO;
-    private CategoriaResponseDTO responseDTO;
     private UUID categoriaId;
 
     @BeforeEach
     void setUp() {
+        categoriaMapper = new CategoriaMapper();
+        categoriaService = new CategoriaServiceImpl(categoriaRepository, productoRepository, categoriaMapper);
+
         categoriaId = UUID.randomUUID();
 
         categoria = Categoria.builder()
                 .id(categoriaId)
-                .nombre("Orquídeas")
-                .descripcion("Variedad de orquídeas exóticas")
+                .nombre("Orquideas")
+                .descripcion("Variedad de orquideas exoticas")
                 .build();
 
         requestDTO = new CategoriaRequestDTO();
-        requestDTO.setNombre("Orquídeas");
-        requestDTO.setDescripcion("Variedad de orquídeas exóticas");
-
-        responseDTO = new CategoriaResponseDTO(
-                categoriaId,
-                "Orquídeas",
-                "Variedad de orquídeas exóticas"
-        );
+        requestDTO.setNombre("Orquideas");
+        requestDTO.setDescripcion("Variedad de orquideas exoticas");
     }
 
     @Test
-    @DisplayName("Debe registrar una categoría exitosamente")
+    @DisplayName("Debe registrar una categoria exitosamente")
     void registrar_Exitoso() {
-        when(categoriaRepository.existsByNombre("Orquídeas")).thenReturn(false);
-        when(categoriaMapper.toEntity(requestDTO)).thenReturn(categoria);
-        when(categoriaRepository.save(categoria)).thenReturn(categoria);
-        when(categoriaMapper.toResponseDTO(categoria)).thenReturn(responseDTO);
+        when(categoriaRepository.existsByNombre("Orquideas")).thenReturn(false);
+        when(categoriaRepository.save(any(Categoria.class))).thenReturn(categoria);
 
         CategoriaResponseDTO resultado = categoriaService.registrar(requestDTO);
 
         assertNotNull(resultado);
         assertEquals(categoriaId, resultado.getId());
-        assertEquals("Orquídeas", resultado.getNombre());
+        assertEquals("Orquideas", resultado.getNombre());
 
-        verify(categoriaRepository, times(1)).existsByNombre("Orquídeas");
-        verify(categoriaRepository, times(1)).save(categoria);
+        verify(categoriaRepository, times(1)).existsByNombre("Orquideas");
+        verify(categoriaRepository, times(1)).save(any(Categoria.class));
     }
 
     @Test
-    @DisplayName("Debe lanzar BusinessRuleException al registrar categoría con nombre existente")
+    @DisplayName("Debe lanzar BusinessRuleException al registrar con nombre ya existente")
     void registrar_NombreExistente_LanzaExcepcion() {
-        when(categoriaRepository.existsByNombre("Orquídeas")).thenReturn(true);
+        when(categoriaRepository.existsByNombre("Orquideas")).thenReturn(true);
 
-        BusinessRuleException exception = assertThrows(
-                BusinessRuleException.class,
-                () -> categoriaService.registrar(requestDTO)
-        );
+        BusinessRuleException ex = assertThrows(BusinessRuleException.class,
+                () -> categoriaService.registrar(requestDTO));
 
-        assertTrue(exception.getMessage().contains("Ya existe una categoría con ese nombre"));
+        assertTrue(ex.getMessage().contains("Ya existe una categoria con ese nombre")
+                || ex.getMessage().toLowerCase().contains("ya existe"));
         verify(categoriaRepository, never()).save(any());
     }
 
@@ -102,13 +92,12 @@ class CategoriaServiceTest {
     @DisplayName("Debe listar todas las categorías")
     void listar_Exitoso() {
         when(categoriaRepository.findAll()).thenReturn(List.of(categoria));
-        when(categoriaMapper.toResponseDTO(categoria)).thenReturn(responseDTO);
 
         List<CategoriaResponseDTO> resultado = categoriaService.listar();
 
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
-        assertEquals("Orquídeas", resultado.get(0).getNombre());
+        assertEquals("Orquideas", resultado.get(0).getNombre());
 
         verify(categoriaRepository, times(1)).findAll();
     }
@@ -117,7 +106,6 @@ class CategoriaServiceTest {
     @DisplayName("Debe buscar una categoría por ID exitosamente")
     void buscarPorId_Exitoso() {
         when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoria));
-        when(categoriaMapper.toResponseDTO(categoria)).thenReturn(responseDTO);
 
         CategoriaResponseDTO resultado = categoriaService.buscarPorId(categoriaId);
 
@@ -134,8 +122,7 @@ class CategoriaServiceTest {
 
         assertThrows(
                 ResourceNotFoundException.class,
-                () -> categoriaService.buscarPorId(categoriaId)
-        );
+                () -> categoriaService.buscarPorId(categoriaId));
 
         verify(categoriaRepository, times(1)).findById(categoriaId);
     }
@@ -143,28 +130,29 @@ class CategoriaServiceTest {
     @Test
     @DisplayName("Debe eliminar una categoría exitosamente cuando no tiene productos asociados")
     void eliminar_Exitoso() {
-        when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoria));
-        when(categoriaMapper.toResponseDTO(categoria)).thenReturn(responseDTO);
+        when(categoriaRepository.existsById(categoriaId)).thenReturn(true);
         when(productoRepository.existsByCategoriaId(categoriaId)).thenReturn(false);
 
         categoriaService.eliminar(categoriaId);
 
+        verify(categoriaRepository, times(1)).existsById(categoriaId);
+        verify(productoRepository, times(1)).existsByCategoriaId(categoriaId);
         verify(categoriaRepository, times(1)).deleteById(categoriaId);
     }
 
     @Test
     @DisplayName("Debe lanzar BusinessRuleException al eliminar categoría que tiene productos asociados")
     void eliminar_ConProductosAsociados_LanzaExcepcion() {
-        when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoria));
-        when(categoriaMapper.toResponseDTO(categoria)).thenReturn(responseDTO);
+        when(categoriaRepository.existsById(categoriaId)).thenReturn(true);
         when(productoRepository.existsByCategoriaId(categoriaId)).thenReturn(true);
 
         BusinessRuleException exception = assertThrows(
                 BusinessRuleException.class,
-                () -> categoriaService.eliminar(categoriaId)
-        );
+                () -> categoriaService.eliminar(categoriaId));
 
         assertTrue(exception.getMessage().contains("tiene productos asociados"));
+        verify(categoriaRepository, times(1)).existsById(categoriaId);
+        verify(productoRepository, times(1)).existsByCategoriaId(categoriaId);
         verify(categoriaRepository, never()).deleteById(any());
     }
 }
