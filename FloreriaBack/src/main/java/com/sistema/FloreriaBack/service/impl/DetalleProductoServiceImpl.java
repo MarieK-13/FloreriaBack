@@ -2,6 +2,7 @@ package com.sistema.FloreriaBack.service.impl;
 
 import com.sistema.FloreriaBack.dto.request.DetalleProductoRequestDTO;
 import com.sistema.FloreriaBack.dto.response.DetalleProductoResponseDTO;
+import com.sistema.FloreriaBack.exception.BusinessRuleException;
 import com.sistema.FloreriaBack.exception.ResourceNotFoundException;
 import com.sistema.FloreriaBack.mapper.DetalleProductoMapper;
 import com.sistema.FloreriaBack.model.DetalleProducto;
@@ -38,7 +39,7 @@ public class DetalleProductoServiceImpl implements DetalleProductoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado: " + dto.getProductoId()));
 
         if (repository.existsByProductoId(dto.getProductoId())) {
-            throw new IllegalArgumentException("El producto ya tiene un detalle registrado: " + dto.getProductoId());
+            throw new BusinessRuleException("El producto ya tiene un detalle registrado: " + dto.getProductoId());
         }
 
         DetalleProducto detalle = mapper.toEntity(dto, producto);
