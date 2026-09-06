@@ -148,6 +148,18 @@ class PedidoServiceTest {
     }
 
     @Test
+    @DisplayName("Debe lanzar ResourceNotFoundException si un producto del pedido no existe")
+    void crear_ProductoNoEncontrado_LanzaExcepcion() {
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(productoRepository.findById(productoId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> pedidoService.crear(requestDTO));
+
+        verify(pedidoRepository, never()).save(any());
+    }
+
+    @Test
     @DisplayName("Debe lanzar BusinessRuleException cuando el stock es insuficiente")
     void crear_StockInsuficiente_LanzaExcepcion() {
         producto.setStock(1); // Solicitó 2
@@ -211,6 +223,17 @@ class PedidoServiceTest {
 
         verify(usuarioRepository, times(1)).existsById(usuarioId);
         verify(pedidoRepository, times(1)).findByUsuarioId(usuarioId);
+    }
+
+    @Test
+    @DisplayName("Debe lanzar ResourceNotFoundException al listar pedidos de un usuario inexistente")
+    void listarPorUsuario_UsuarioNoEncontrado_LanzaExcepcion() {
+        when(usuarioRepository.existsById(usuarioId)).thenReturn(false);
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> pedidoService.listarPorUsuario(usuarioId));
+
+        verify(pedidoRepository, never()).findByUsuarioId(any());
     }
 
     @Test

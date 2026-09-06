@@ -212,6 +212,20 @@ class PedidoControllerTest {
     }
 
     @Test
+    @DisplayName("GET /api/pedidos/usuario/{usuarioId} - Debe retornar 404 Not Found cuando el usuario no existe")
+    void listarPorUsuario_UsuarioNoEncontrado_Retorna404() throws Exception {
+        when(pedidoService.listarPorUsuario(usuarioId))
+                .thenThrow(new ResourceNotFoundException("Usuario no encontrado con ID: " + usuarioId));
+
+        mockMvc.perform(get("/api/pedidos/usuario/{usuarioId}", usuarioId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.mensaje", containsString("Usuario no encontrado")));
+
+        verify(pedidoService, times(1)).listarPorUsuario(usuarioId);
+    }
+
+    @Test
     @DisplayName("PATCH /api/pedidos/{id}/estado - Debe cambiar el estado del pedido y retornar 200 OK")
     void cambiarEstado_Exitoso() throws Exception {
         responseDTO.setEstado(EstadoPedido.PAGADO);
