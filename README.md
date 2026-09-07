@@ -10,9 +10,6 @@ Sistema web para la **gestión y comercialización de productos de una florería
 
 - [Características](#-características)
 - [Tecnologías](#-tecnologías)
-- [Requisitos previos](#-requisitos-previos)
-- [Configuración de la base de datos](#-configuración-de-la-base-de-datos)
-- [Cómo ejecutar el proyecto](#-cómo-ejecutar-el-proyecto)
 - [Pruebas](#-pruebas)
 - [Estructura del proyecto](#-estructura-del-proyecto)
 - [Endpoints principales](#-endpoints-principales)
