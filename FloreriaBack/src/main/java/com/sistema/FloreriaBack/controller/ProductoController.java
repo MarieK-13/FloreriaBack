@@ -35,4 +35,15 @@ public class ProductoController {
     public List<ProductoResponseDTO> listarPorCategoria(@PathVariable UUID categoriaId) {
         return service.listarPorCategoria(categoriaId);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductoResponseDTO> actualizar(@PathVariable UUID id, @Valid @RequestBody ProductoRequestDTO dto) {
+        return ResponseEntity.ok(service.actualizar(id, dto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable UUID id) {
+        service.eliminar(id);
+        return ResponseEntity.noContent().build();
+    }
 }

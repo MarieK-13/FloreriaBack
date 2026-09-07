@@ -11,4 +11,6 @@ public interface ProductoService {
     List<ProductoResponseDTO> listar();
     ProductoResponseDTO buscarPorId(UUID id);
     List<ProductoResponseDTO> listarPorCategoria(UUID categoriaId);
+    ProductoResponseDTO actualizar(UUID id, ProductoRequestDTO dto);
+    void eliminar(UUID id);
 }

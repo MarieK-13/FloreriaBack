@@ -161,4 +161,53 @@ class ProductoServiceTest {
 
         verify(productoRepository, times(1)).findByCategoriaId(categoriaId);
     }
+
+    @Test
+    @DisplayName("Debe actualizar un producto exitosamente")
+    void actualizar_Exitoso() {
+        when(productoRepository.findById(productoId)).thenReturn(Optional.of(producto));
+        when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoria));
+        when(productoRepository.save(any(Producto.class))).thenReturn(producto);
+
+        requestDTO.setNombre("Rosas Blancas");
+        ProductoResponseDTO resultado = productoService.actualizar(productoId, requestDTO);
+
+        assertNotNull(resultado);
+        verify(productoRepository, times(1)).findById(productoId);
+        verify(categoriaRepository, times(1)).findById(categoriaId);
+        verify(productoRepository, times(1)).save(any(Producto.class));
+    }
+
+    @Test
+    @DisplayName("Debe lanzar ResourceNotFoundException al actualizar un producto inexistente")
+    void actualizar_ProductoNoEncontrado_LanzaExcepcion() {
+        when(productoRepository.findById(productoId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> productoService.actualizar(productoId, requestDTO));
+
+        verify(productoRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Debe eliminar un producto exitosamente")
+    void eliminar_Exitoso() {
+        when(productoRepository.existsById(productoId)).thenReturn(true);
+
+        productoService.eliminar(productoId);
+
+        verify(productoRepository, times(1)).existsById(productoId);
+        verify(productoRepository, times(1)).deleteById(productoId);
+    }
+
+    @Test
+    @DisplayName("Debe lanzar ResourceNotFoundException al eliminar un producto inexistente")
+    void eliminar_ProductoNoEncontrado_LanzaExcepcion() {
+        when(productoRepository.existsById(productoId)).thenReturn(false);
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> productoService.eliminar(productoId));
+
+        verify(productoRepository, never()).deleteById(any());
+    }
 }

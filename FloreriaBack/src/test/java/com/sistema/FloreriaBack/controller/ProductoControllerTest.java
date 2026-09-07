@@ -192,4 +192,58 @@ class ProductoControllerTest extends BaseControllerTest{
 
         verify(productoService, times(1)).listarPorCategoria(categoriaId);
     }
+
+    @Test
+    @DisplayName("PUT /api/productos/{id} - Debe actualizar un producto exitosamente y retornar 200 OK")
+    void actualizar_Exitoso() throws Exception {
+        when(productoService.actualizar(eq(productoId), any(ProductoRequestDTO.class))).thenReturn(responseDTO);
+
+        mockMvc.perform(put("/api/productos/{id}", productoId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(crearRequestJson(categoriaId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(productoId.toString()))
+                .andExpect(jsonPath("$.nombre").value("Rosas Rojas"));
+
+        verify(productoService, times(1)).actualizar(eq(productoId), any(ProductoRequestDTO.class));
+    }
+
+    @Test
+    @DisplayName("PUT /api/productos/{id} - Debe retornar 404 Not Found cuando el producto a actualizar no existe")
+    void actualizar_ProductoNoEncontrado_Retorna404() throws Exception {
+        when(productoService.actualizar(eq(productoId), any(ProductoRequestDTO.class)))
+                .thenThrow(new ResourceNotFoundException("Producto no encontrado: " + productoId));
+
+        mockMvc.perform(put("/api/productos/{id}", productoId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(crearRequestJson(categoriaId)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
+
+        verify(productoService, times(1)).actualizar(eq(productoId), any(ProductoRequestDTO.class));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/productos/{id} - Debe eliminar un producto y retornar 204 No Content")
+    void eliminar_Exitoso() throws Exception {
+        doNothing().when(productoService).eliminar(productoId);
+
+        mockMvc.perform(delete("/api/productos/{id}", productoId))
+                .andExpect(status().isNoContent());
+
+        verify(productoService, times(1)).eliminar(productoId);
+    }
+
+    @Test
+    @DisplayName("DELETE /api/productos/{id} - Debe retornar 404 Not Found cuando el producto a eliminar no existe")
+    void eliminar_ProductoNoEncontrado_Retorna404() throws Exception {
+        doThrow(new ResourceNotFoundException("Producto no encontrado: " + productoId))
+                .when(productoService).eliminar(productoId);
+
+        mockMvc.perform(delete("/api/productos/{id}", productoId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
+
+        verify(productoService, times(1)).eliminar(productoId);
+    }
 }

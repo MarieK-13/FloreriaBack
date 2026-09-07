@@ -63,4 +63,34 @@ public class ProductoServiceImpl implements ProductoService {
                 .map(mapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional
+    public ProductoResponseDTO actualizar(UUID id, ProductoRequestDTO dto) {
+        Producto producto = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado: " + id));
+
+        Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada: " + dto.getCategoriaId()));
+
+        producto.setNombre(dto.getNombre());
+        producto.setDescripcion(dto.getDescripcion());
+        producto.setPrecio(dto.getPrecio());
+        producto.setStock(dto.getStock());
+        producto.setDisponible(dto.getStock() != null && dto.getStock() > 0);
+        producto.setColor(dto.getColor());
+        producto.setTamano(dto.getTamano());
+        producto.setCategoria(categoria);
+
+        return mapper.toResponseDTO(repository.save(producto));
+    }
+
+    @Override
+    @Transactional
+    public void eliminar(UUID id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Producto no encontrado: " + id);
+        }
+        repository.deleteById(id);
+    }
 }
