@@ -6,28 +6,21 @@ import com.sistema.FloreriaBack.dto.response.PedidoResponseDTO;
 import com.sistema.FloreriaBack.exception.BusinessRuleException;
 import com.sistema.FloreriaBack.exception.ResourceNotFoundException;
 import com.sistema.FloreriaBack.mapper.PedidoMapper;
-import com.sistema.FloreriaBack.model.DetallePedido;
-import com.sistema.FloreriaBack.model.Pedido;
-import com.sistema.FloreriaBack.model.Producto;
-import com.sistema.FloreriaBack.model.Usuario;
+import com.sistema.FloreriaBack.model.*;
 import com.sistema.FloreriaBack.model.enums.EstadoPedido;
-import com.sistema.FloreriaBack.repository.PedidoRepository;
-import com.sistema.FloreriaBack.repository.ProductoRepository;
-import com.sistema.FloreriaBack.repository.UsuarioRepository;
+import com.sistema.FloreriaBack.repository.*;
 import com.sistema.FloreriaBack.service.impl.PedidoServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -116,24 +109,33 @@ class PedidoServiceTest {
     }
 
     @Test
-    @DisplayName("Debe crear un pedido exitosamente y descontar el stock del producto")
+    @DisplayName("Debe crear un pedido calculando el total con el precio real y descontando el stock")
     void crear_Exitoso() {
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
         when(productoRepository.findById(productoId)).thenReturn(Optional.of(producto));
-        when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedido);
+        when(pedidoRepository.save(any(Pedido.class))).thenAnswer(inv -> inv.getArgument(0));
 
         PedidoResponseDTO resultado = pedidoService.crear(requestDTO);
 
-        assertNotNull(resultado);
-        assertEquals(pedidoId, resultado.getId());
-        assertEquals(new BigDecimal("60.00"), resultado.getTotal());
-        assertEquals(EstadoPedido.PENDIENTE, resultado.getEstado());
+        ArgumentCaptor<Pedido> captor = ArgumentCaptor.forClass(Pedido.class);
+        verify(pedidoRepository).save(captor.capture());
+        Pedido guardado = captor.getValue();
 
-        verify(usuarioRepository, times(1)).findById(usuarioId);
-        verify(productoRepository, times(1)).findById(productoId);
-        verify(productoRepository, times(1)).save(producto);
-        verify(pedidoRepository, times(1)).save(any(Pedido.class));
+        assertEquals(0, new BigDecimal("60.00").compareTo(guardado.getTotal()));
+        assertEquals(EstadoPedido.PENDIENTE, guardado.getEstado());
+        assertEquals(usuario, guardado.getUsuario());
+        assertEquals(1, guardado.getDetalles().size());
+
+        DetallePedido detalleGuardado = guardado.getDetalles().get(0);
+        assertEquals("Tulipanes Amarillos", detalleGuardado.getProductoNombre());
+        assertEquals(2, detalleGuardado.getCantidad());
+        assertEquals(0, new BigDecimal("30.00").compareTo(detalleGuardado.getPrecioUnitario()));
+        assertEquals(0, new BigDecimal("60.00").compareTo(detalleGuardado.getSubtotal()));
+
         assertEquals(8, producto.getStock());
+        verify(productoRepository, times(1)).save(producto);
+
+        assertEquals(0, new BigDecimal("60.00").compareTo(resultado.getTotal()));
     }
 
     @Test

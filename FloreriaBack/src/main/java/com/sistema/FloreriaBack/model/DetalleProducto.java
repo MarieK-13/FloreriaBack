@@ -7,6 +7,7 @@ import java.util.UUID;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+
 @EqualsAndHashCode(of = "id")
 @ToString(exclude = "producto")
 @Entity
