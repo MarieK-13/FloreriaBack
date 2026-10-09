@@ -3,6 +3,7 @@ package com.sistema.FloreriaBack.service;
 import com.sistema.FloreriaBack.dto.request.ProductoRequestDTO;
 import com.sistema.FloreriaBack.dto.response.ProductoResponseDTO;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,4 +14,6 @@ public interface ProductoService {
     List<ProductoResponseDTO> listarPorCategoria(UUID categoriaId);
     ProductoResponseDTO actualizar(UUID id, ProductoRequestDTO dto);
     void eliminar(UUID id);
+    List<ProductoResponseDTO> buscarPorNombreYPrecioMaximo(String nombre, BigDecimal precioMax);
+    List<ProductoResponseDTO> listarConStockBajo(Integer limite);
 }

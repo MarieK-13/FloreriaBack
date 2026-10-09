@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,7 +24,9 @@ public class CotizacionController {
         this.cotizacionService = cotizacionService;
     }
 
+    /** Un CLIENTE solo puede crear cotizaciones a su nombre; ADMINISTRADOR/OPERARIO para cualquiera. */
     @PostMapping
+    @PreAuthorize("@seguridad.puedeActuarComo(#dto.usuarioId)")
     public ResponseEntity<CotizacionResponseDTO> crear(@Valid @RequestBody CotizacionRequestDTO dto) {
         CotizacionResponseDTO nuevaCotizacion = cotizacionService.crearCotizacion(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaCotizacion);
@@ -35,12 +38,14 @@ public class CotizacionController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("@seguridad.puedeVerCotizacion(#id)")
     public ResponseEntity<CotizacionResponseDTO> buscarPorId(@PathVariable UUID id) {
         return ResponseEntity.ok(cotizacionService.buscarPorId(id));
     }
 
     @GetMapping("/usuario/{usuarioId}")
+    @PreAuthorize("@seguridad.puedeActuarComo(#usuarioId)")
     public ResponseEntity<List<CotizacionResponseDTO>> listarPorUsuario(@PathVariable UUID usuarioId) {
         return ResponseEntity.ok(cotizacionService.listarPorUsuario(usuarioId));
     }
-}
+}

@@ -2,8 +2,10 @@ package com.sistema.FloreriaBack.service;
 
 import com.sistema.FloreriaBack.dto.request.PedidoRequestDTO;
 import com.sistema.FloreriaBack.dto.response.PedidoResponseDTO;
+import com.sistema.FloreriaBack.dto.response.ReporteVentasDTO;
 import com.sistema.FloreriaBack.model.enums.EstadoPedido;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,4 +15,6 @@ public interface PedidoService {
     List<PedidoResponseDTO> listar();
     List<PedidoResponseDTO> listarPorUsuario(UUID usuarioId);
     PedidoResponseDTO cambiarEstado(UUID id, EstadoPedido nuevoEstado);
+    List<PedidoResponseDTO> listarPorRangoDeFechas(LocalDate inicio, LocalDate fin);
+    ReporteVentasDTO reporteDeVentas(LocalDate inicio, LocalDate fin);
 }

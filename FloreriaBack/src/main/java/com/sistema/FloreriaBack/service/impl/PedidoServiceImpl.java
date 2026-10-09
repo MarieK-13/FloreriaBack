@@ -3,6 +3,7 @@ package com.sistema.FloreriaBack.service.impl;
 import com.sistema.FloreriaBack.dto.request.DetallePedidoRequestDTO;
 import com.sistema.FloreriaBack.dto.request.PedidoRequestDTO;
 import com.sistema.FloreriaBack.dto.response.PedidoResponseDTO;
+import com.sistema.FloreriaBack.dto.response.ReporteVentasDTO;
 import com.sistema.FloreriaBack.exception.BusinessRuleException;
 import com.sistema.FloreriaBack.exception.ResourceNotFoundException;
 import com.sistema.FloreriaBack.mapper.PedidoMapper;
@@ -19,7 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -140,5 +143,45 @@ public class PedidoServiceImpl implements PedidoService {
 
         pedido.setEstado(nuevoEstado);
         return mapper.toResponseDTO(pedidoRepository.save(pedido));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PedidoResponseDTO> listarPorRangoDeFechas(LocalDate inicio, LocalDate fin) {
+        validarRango(inicio, fin);
+        return pedidoRepository.buscarPorRangoDeFechas(inicioDelDia(inicio), finDelDia(fin)).stream()
+                .map(mapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ReporteVentasDTO reporteDeVentas(LocalDate inicio, LocalDate fin) {
+        validarRango(inicio, fin);
+        LocalDateTime desde = inicioDelDia(inicio);
+        LocalDateTime hasta = finDelDia(fin);
+
+        // Los pedidos cancelados no cuentan como venta
+        BigDecimal total = pedidoRepository.sumarVentasEnRango(desde, hasta, EstadoPedido.CANCELADO);
+        long cantidad = pedidoRepository.contarPedidosEnRango(desde, hasta, EstadoPedido.CANCELADO);
+
+        return new ReporteVentasDTO(inicio, fin, cantidad, total != null ? total : BigDecimal.ZERO);
+    }
+
+    private void validarRango(LocalDate inicio, LocalDate fin) {
+        if (inicio == null || fin == null) {
+            throw new BusinessRuleException("Debe indicar la fecha de inicio y la fecha de fin");
+        }
+        if (inicio.isAfter(fin)) {
+            throw new BusinessRuleException("La fecha de inicio no puede ser posterior a la fecha de fin");
+        }
+    }
+
+    private LocalDateTime inicioDelDia(LocalDate fecha) {
+        return fecha.atStartOfDay();
+    }
+
+    private LocalDateTime finDelDia(LocalDate fecha) {
+        return fecha.atTime(LocalTime.MAX);
     }
 }

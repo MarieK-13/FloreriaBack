@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,6 +28,19 @@ public class ProductoController {
 
     @GetMapping
     public List<ProductoResponseDTO> listar() { return service.listar(); }
+
+    /** Público. Ej: GET /api/productos/buscar?nombre=rosa&precioMax=80 (ambos parámetros opcionales) */
+    @GetMapping("/buscar")
+    public List<ProductoResponseDTO> buscar(@RequestParam(defaultValue = "") String nombre,
+                                            @RequestParam(required = false) BigDecimal precioMax) {
+        return service.buscarPorNombreYPrecioMaximo(nombre, precioMax);
+    }
+
+    /** ADMINISTRADOR u OPERARIO. Ej: GET /api/productos/stock-bajo?limite=5 */
+    @GetMapping("/stock-bajo")
+    public List<ProductoResponseDTO> stockBajo(@RequestParam(defaultValue = "5") Integer limite) {
+        return service.listarConStockBajo(limite);
+    }
 
     @GetMapping("/{id}")
     public ProductoResponseDTO buscarPorId(@PathVariable UUID id) { return service.buscarPorId(id); }
