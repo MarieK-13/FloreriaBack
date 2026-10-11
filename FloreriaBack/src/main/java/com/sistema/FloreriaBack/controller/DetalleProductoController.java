@@ -1,6 +1,7 @@
 package com.sistema.FloreriaBack.controller;
 
 import com.sistema.FloreriaBack.dto.request.DetalleProductoRequestDTO;
+import com.sistema.FloreriaBack.dto.request.DetalleProductoUpdateRequestDTO;
 import com.sistema.FloreriaBack.dto.response.DetalleProductoResponseDTO;
 import com.sistema.FloreriaBack.service.DetalleProductoService;
 import jakarta.validation.Valid;
@@ -35,5 +36,17 @@ public class DetalleProductoController {
     @GetMapping("/producto/{productoId}")
     public DetalleProductoResponseDTO buscarPorProducto(@PathVariable UUID productoId) {
         return service.buscarPorProducto(productoId);
+    }
+
+    @PutMapping("/{id}")
+    public DetalleProductoResponseDTO actualizar(@PathVariable UUID id,
+                                                 @Valid @RequestBody DetalleProductoUpdateRequestDTO dto) {
+        return service.actualizar(id, dto);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable UUID id) {
+        service.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 }

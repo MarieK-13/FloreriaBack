@@ -1,6 +1,7 @@
 package com.sistema.FloreriaBack.service.impl;
 
 import com.sistema.FloreriaBack.dto.request.DetalleProductoRequestDTO;
+import com.sistema.FloreriaBack.dto.request.DetalleProductoUpdateRequestDTO;
 import com.sistema.FloreriaBack.dto.response.DetalleProductoResponseDTO;
 import com.sistema.FloreriaBack.exception.BusinessRuleException;
 import com.sistema.FloreriaBack.exception.ResourceNotFoundException;
@@ -68,5 +69,24 @@ public class DetalleProductoServiceImpl implements DetalleProductoService {
         DetalleProducto detalle = repository.findByProductoId(productoId)
                 .orElseThrow(() -> new ResourceNotFoundException("El producto no tiene detalle registrado: " + productoId));
         return mapper.toResponseDTO(detalle);
+    }
+
+    /** Actualiza la ficha técnica. El producto al que pertenece no cambia (relación uno a uno). */
+    @Override
+    @Transactional
+    public DetalleProductoResponseDTO actualizar(UUID id, DetalleProductoUpdateRequestDTO dto) {
+        DetalleProducto detalle = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Detalle de producto no encontrado: " + id));
+        mapper.actualizarEntidad(detalle, dto);
+        return mapper.toResponseDTO(repository.save(detalle));
+    }
+
+    @Override
+    @Transactional
+    public void eliminar(UUID id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Detalle de producto no encontrado: " + id);
+        }
+        repository.deleteById(id);
     }
 }

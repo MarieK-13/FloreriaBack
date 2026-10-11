@@ -8,6 +8,9 @@ import com.sistema.FloreriaBack.mapper.ProductoMapper;
 import com.sistema.FloreriaBack.model.Categoria;
 import com.sistema.FloreriaBack.model.Producto;
 import com.sistema.FloreriaBack.repository.CategoriaRepository;
+import com.sistema.FloreriaBack.repository.DetallePedidoRepository;
+import com.sistema.FloreriaBack.repository.DetalleProductoRepository;
+import com.sistema.FloreriaBack.repository.ItemCotizacionRepository;
 import com.sistema.FloreriaBack.repository.ProductoRepository;
 import com.sistema.FloreriaBack.service.ProductoService;
 import org.springframework.stereotype.Service;
@@ -28,13 +31,22 @@ public class ProductoServiceImpl implements ProductoService {
     private final ProductoRepository repository;
     private final CategoriaRepository categoriaRepository;
     private final ProductoMapper mapper;
+    private final DetallePedidoRepository detallePedidoRepository;
+    private final ItemCotizacionRepository itemCotizacionRepository;
+    private final DetalleProductoRepository detalleProductoRepository;
 
     public ProductoServiceImpl(ProductoRepository repository,
                                 CategoriaRepository categoriaRepository,
-                                ProductoMapper mapper) {
+                                ProductoMapper mapper,
+                                DetallePedidoRepository detallePedidoRepository,
+                                ItemCotizacionRepository itemCotizacionRepository,
+                                DetalleProductoRepository detalleProductoRepository) {
         this.repository = repository;
         this.categoriaRepository = categoriaRepository;
         this.mapper = mapper;
+        this.detallePedidoRepository = detallePedidoRepository;
+        this.itemCotizacionRepository = itemCotizacionRepository;
+        this.detalleProductoRepository = detalleProductoRepository;
     }
 
     @Override
@@ -97,6 +109,20 @@ public class ProductoServiceImpl implements ProductoService {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Producto no encontrado: " + id);
         }
+
+        // Si el producto está en un pedido o cotización, la base rechazaría el borrado por la
+        // clave foránea (error 500). Se bloquea antes con un mensaje claro (400) y se conserva el historial.
+        if (detallePedidoRepository.existsByProductoId(id) || itemCotizacionRepository.existsByProductoId(id)) {
+            throw new BusinessRuleException(
+                    "No se puede eliminar el producto porque tiene pedidos o cotizaciones asociados");
+        }
+
+        // La ficha técnica apunta al producto (relación uno a uno): se borra primero
+        detalleProductoRepository.findByProductoId(id).ifPresent(ficha -> {
+            detalleProductoRepository.delete(ficha);
+            detalleProductoRepository.flush();
+        });
+
         repository.deleteById(id);
     }
 

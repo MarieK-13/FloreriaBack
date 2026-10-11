@@ -6,6 +6,9 @@ import com.sistema.FloreriaBack.mapper.PedidoMapper;
 import com.sistema.FloreriaBack.mapper.ProductoMapper;
 import com.sistema.FloreriaBack.model.enums.EstadoPedido;
 import com.sistema.FloreriaBack.repository.CategoriaRepository;
+import com.sistema.FloreriaBack.repository.DetallePedidoRepository;
+import com.sistema.FloreriaBack.repository.DetalleProductoRepository;
+import com.sistema.FloreriaBack.repository.ItemCotizacionRepository;
 import com.sistema.FloreriaBack.repository.PedidoRepository;
 import com.sistema.FloreriaBack.repository.ProductoRepository;
 import com.sistema.FloreriaBack.repository.UsuarioRepository;
@@ -38,6 +41,9 @@ class ConsultasJpqlServiceTest {
     @Mock private UsuarioRepository usuarioRepository;
     @Mock private ProductoRepository productoRepository;
     @Mock private CategoriaRepository categoriaRepository;
+    @Mock private DetallePedidoRepository detallePedidoRepository;
+    @Mock private ItemCotizacionRepository itemCotizacionRepository;
+    @Mock private DetalleProductoRepository detalleProductoRepository;
 
     private PedidoServiceImpl pedidoService;
     private ProductoServiceImpl productoService;
@@ -45,7 +51,8 @@ class ConsultasJpqlServiceTest {
     @BeforeEach
     void setUp() {
         pedidoService = new PedidoServiceImpl(pedidoRepository, usuarioRepository, productoRepository, new PedidoMapper());
-        productoService = new ProductoServiceImpl(productoRepository, categoriaRepository, new ProductoMapper());
+        productoService = new ProductoServiceImpl(productoRepository, categoriaRepository, new ProductoMapper(),
+                detallePedidoRepository, itemCotizacionRepository, detalleProductoRepository);
     }
 
     @Test

@@ -20,6 +20,7 @@ import java.util.UUID;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -151,5 +152,56 @@ class CategoriaControllerTest extends BaseControllerTest{
                 .andExpect(jsonPath("$.mensaje", containsString("tiene productos asociados")));
 
         verify(categoriaService, times(1)).eliminar(categoriaId);
+    }
+
+    @Test
+    @DisplayName("PUT /api/categorias/{id} - Debe actualizar la categoría y retornar 200 OK")
+    void actualizar_Exitoso() throws Exception {
+        when(categoriaService.actualizar(eq(categoriaId), any())).thenReturn(responseDTO);
+
+        mockMvc.perform(put("/api/categorias/{id}", categoriaId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(crearRequestJson()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nombre").value("Orquídeas"));
+
+        verify(categoriaService).actualizar(eq(categoriaId), any());
+    }
+
+    @Test
+    @DisplayName("PUT /api/categorias/{id} - Debe retornar 404 si la categoría no existe")
+    void actualizar_NoEncontrada_Retorna404() throws Exception {
+        when(categoriaService.actualizar(eq(categoriaId), any()))
+                .thenThrow(new ResourceNotFoundException("Categoría no encontrada: " + categoriaId));
+
+        mockMvc.perform(put("/api/categorias/{id}", categoriaId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(crearRequestJson()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("PUT /api/categorias/{id} - Debe retornar 400 si el nombre ya lo usa otra categoría")
+    void actualizar_NombreDuplicado_Retorna400() throws Exception {
+        when(categoriaService.actualizar(eq(categoriaId), any()))
+                .thenThrow(new BusinessRuleException("Ya existe una categoría con ese nombre"));
+
+        mockMvc.perform(put("/api/categorias/{id}", categoriaId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(crearRequestJson()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.mensaje", containsString("Ya existe una categoría")));
+    }
+
+    @Test
+    @DisplayName("PUT /api/categorias/{id} - Debe retornar 400 si falta el nombre")
+    void actualizar_ValidacionFallida_Retorna400() throws Exception {
+        mockMvc.perform(put("/api/categorias/{id}", categoriaId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errores.nombre").exists());
+
+        verify(categoriaService, never()).actualizar(any(), any());
     }
 }

@@ -1,6 +1,7 @@
 package com.sistema.FloreriaBack.service;
 
 import com.sistema.FloreriaBack.dto.request.DetalleProductoRequestDTO;
+import com.sistema.FloreriaBack.dto.request.DetalleProductoUpdateRequestDTO;
 import com.sistema.FloreriaBack.dto.response.DetalleProductoResponseDTO;
 import com.sistema.FloreriaBack.exception.BusinessRuleException;
 import com.sistema.FloreriaBack.exception.ResourceNotFoundException;
@@ -188,5 +189,51 @@ class DetalleProductoServiceTest {
                 () -> detalleProductoService.buscarPorProducto(productoId));
 
         verify(detalleProductoRepository, times(1)).findByProductoId(productoId);
+    }
+
+    @Test
+    @DisplayName("Actualizar: modifica la ficha técnica sin cambiar el producto al que pertenece")
+    void actualizar_Exitoso() {
+        DetalleProductoUpdateRequestDTO cambios = new DetalleProductoUpdateRequestDTO(
+                "Regar 3 veces por semana", 20, "Caja de madera", "Cumpleaños", "Dejar en recepción");
+        when(detalleProductoRepository.findById(detalleId)).thenReturn(Optional.of(detalleProducto));
+        when(detalleProductoRepository.save(any(DetalleProducto.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        DetalleProductoResponseDTO resultado = detalleProductoService.actualizar(detalleId, cambios);
+
+        assertEquals("Regar 3 veces por semana", resultado.getCuidados());
+        assertEquals(Integer.valueOf(20), resultado.getDuracionDias());
+        assertEquals(productoId, resultado.getProductoId());
+    }
+
+    @Test
+    @DisplayName("Actualizar: lanza ResourceNotFoundException (404) si la ficha no existe")
+    void actualizar_NoEncontrado_LanzaExcepcion() {
+        when(detalleProductoRepository.findById(detalleId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> detalleProductoService.actualizar(detalleId, new DetalleProductoUpdateRequestDTO()));
+
+        verify(detalleProductoRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Eliminar: borra la ficha técnica existente")
+    void eliminar_Exitoso() {
+        when(detalleProductoRepository.existsById(detalleId)).thenReturn(true);
+
+        detalleProductoService.eliminar(detalleId);
+
+        verify(detalleProductoRepository).deleteById(detalleId);
+    }
+
+    @Test
+    @DisplayName("Eliminar: lanza ResourceNotFoundException (404) si la ficha no existe")
+    void eliminar_NoEncontrado_LanzaExcepcion() {
+        when(detalleProductoRepository.existsById(detalleId)).thenReturn(false);
+
+        assertThrows(ResourceNotFoundException.class, () -> detalleProductoService.eliminar(detalleId));
+
+        verify(detalleProductoRepository, never()).deleteById(any());
     }
 }

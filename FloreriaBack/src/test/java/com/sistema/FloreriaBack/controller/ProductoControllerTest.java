@@ -2,6 +2,7 @@ package com.sistema.FloreriaBack.controller;
 
 import com.sistema.FloreriaBack.dto.request.ProductoRequestDTO;
 import com.sistema.FloreriaBack.dto.response.ProductoResponseDTO;
+import com.sistema.FloreriaBack.exception.BusinessRuleException;
 import com.sistema.FloreriaBack.exception.ResourceNotFoundException;
 import com.sistema.FloreriaBack.service.ProductoService;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -245,5 +247,29 @@ class ProductoControllerTest extends BaseControllerTest{
                 .andExpect(jsonPath("$.status").value(404));
 
         verify(productoService, times(1)).eliminar(productoId);
+    }
+
+    @Test
+    @DisplayName("DELETE /api/productos/{id} - Debe retornar 400 (no 500) si el producto está en pedidos o cotizaciones")
+    void eliminar_ProductoEnUso_Retorna400() throws Exception {
+        doThrow(new BusinessRuleException(
+                "No se puede eliminar el producto porque tiene pedidos o cotizaciones asociados"))
+                .when(productoService).eliminar(productoId);
+
+        mockMvc.perform(delete("/api/productos/{id}", productoId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.mensaje", containsString("pedidos o cotizaciones asociados")));
+    }
+
+    @Test
+    @DisplayName("Integridad de datos: una violación de clave en la base responde 409 Conflict, no 500")
+    void eliminar_ViolacionDeIntegridad_Retorna409() throws Exception {
+        doThrow(new DataIntegrityViolationException("violación de clave foránea"))
+                .when(productoService).eliminar(productoId);
+
+        mockMvc.perform(delete("/api/productos/{id}", productoId))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.mensaje", containsString("está en uso o ya existe")));
     }
 }

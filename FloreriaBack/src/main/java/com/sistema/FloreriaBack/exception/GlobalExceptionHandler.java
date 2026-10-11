@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -25,6 +26,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<Map<String, Object>> manejarReglaDeNegocio(BusinessRuleException ex) {
         return construirRespuesta(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    /**
+     * Red de seguridad: si se escapa una violación de clave única o foránea
+     * (por ejemplo, dos registros simultáneos con el mismo email), se responde 409 en vez de 500.
+     * No se agrega un handler genérico de Exception a propósito: convertiría en 500
+     * errores que Spring ya resuelve bien (404 de rutas, 405 de métodos).
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> manejarIntegridad(DataIntegrityViolationException ex) {
+        return construirRespuesta(HttpStatus.CONFLICT,
+                "La operación no se puede completar porque el registro está en uso o ya existe");
     }
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -62,4 +75,4 @@ public class GlobalExceptionHandler {
         body.put("mensaje", mensaje);
         return ResponseEntity.status(status).body(body);
     }
-}
+}

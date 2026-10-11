@@ -1,11 +1,13 @@
 package com.sistema.FloreriaBack.service.impl;
 
 import com.sistema.FloreriaBack.dto.request.UsuarioRequestDTO;
+import com.sistema.FloreriaBack.dto.request.UsuarioUpdateRequestDTO;
 import com.sistema.FloreriaBack.dto.response.UsuarioResponseDTO;
 import com.sistema.FloreriaBack.exception.BusinessRuleException;
 import com.sistema.FloreriaBack.exception.ResourceNotFoundException;
 import com.sistema.FloreriaBack.mapper.UsuarioMapper;
 import com.sistema.FloreriaBack.model.Usuario;
+import com.sistema.FloreriaBack.model.enums.RolUsuario;
 import com.sistema.FloreriaBack.repository.UsuarioRepository;
 import com.sistema.FloreriaBack.service.UsuarioService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -55,5 +57,48 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado: " + id));
         return mapper.toResponseDTO(usuario);
+    }
+
+    @Override
+    @Transactional
+    public UsuarioResponseDTO actualizar(UUID id, UsuarioUpdateRequestDTO dto, UUID idUsuarioActual) {
+        Usuario usuario = buscarEntidad(id);
+
+        boolean cambioDeEmail = !usuario.getEmail().equals(dto.getEmail());
+        if (cambioDeEmail && repository.existsByEmail(dto.getEmail())) {
+            throw new BusinessRuleException("Ya existe un usuario con ese email");
+        }
+
+        // Evita que el sistema se quede sin administrador por error
+        if (id.equals(idUsuarioActual) && dto.getRol() != RolUsuario.ADMINISTRADOR) {
+            throw new BusinessRuleException("No puede quitarse su propio rol de administrador");
+        }
+
+        mapper.actualizarEntidad(usuario, dto);
+
+        // Contraseña opcional: solo se cambia (y se cifra) si se envió una nueva
+        if (dto.getContrasena() != null && !dto.getContrasena().isBlank()) {
+            usuario.setContrasena(passwordEncoder.encode(dto.getContrasena()));
+        }
+
+        return mapper.toResponseDTO(repository.save(usuario));
+    }
+
+    @Override
+    @Transactional
+    public UsuarioResponseDTO cambiarEstado(UUID id, boolean activo, UUID idUsuarioActual) {
+        Usuario usuario = buscarEntidad(id);
+
+        if (!activo && id.equals(idUsuarioActual)) {
+            throw new BusinessRuleException("No puede desactivar su propia cuenta");
+        }
+
+        usuario.setActivo(activo);
+        return mapper.toResponseDTO(repository.save(usuario));
+    }
+
+    private Usuario buscarEntidad(UUID id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado: " + id));
     }
 }

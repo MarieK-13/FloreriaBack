@@ -31,6 +31,11 @@ public class CategoriaController {
     @GetMapping("/{id}")
     public CategoriaResponseDTO buscarPorId(@PathVariable UUID id) { return service.buscarPorId(id); }
 
+    @PutMapping("/{id}")
+    public CategoriaResponseDTO actualizar(@PathVariable UUID id, @Valid @RequestBody CategoriaRequestDTO dto) {
+        return service.actualizar(id, dto);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable UUID id) {
         service.eliminar(id);

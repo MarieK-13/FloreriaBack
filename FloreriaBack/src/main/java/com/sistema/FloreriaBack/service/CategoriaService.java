@@ -10,5 +10,6 @@ public interface CategoriaService {
     CategoriaResponseDTO registrar(CategoriaRequestDTO dto);
     List<CategoriaResponseDTO> listar();
     CategoriaResponseDTO buscarPorId(UUID id);
+    CategoriaResponseDTO actualizar(UUID id, CategoriaRequestDTO dto);
     void eliminar(UUID id);
 }

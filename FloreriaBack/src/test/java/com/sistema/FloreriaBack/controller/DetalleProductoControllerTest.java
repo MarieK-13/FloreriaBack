@@ -22,6 +22,7 @@ import java.util.UUID;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -200,5 +201,73 @@ class DetalleProductoControllerTest {
                 .andExpect(jsonPath("$.status").value(404));
 
         verify(detalleProductoService, times(1)).buscarPorProducto(productoId);
+    }
+
+    private String crearUpdateJson() {
+        return """
+                {
+                    "cuidados": "Regar 2 veces por semana",
+                    "duracionDias": 15,
+                    "materiales": "Macetas de cerámica",
+                    "ocasion": "Aniversarios",
+                    "instruccionesEntrega": "Entregar en mano"
+                }
+                """;
+    }
+
+    @Test
+    @DisplayName("PUT /api/detalle-productos/{id} - Debe actualizar la ficha y retornar 200 OK")
+    void actualizar_Exitoso() throws Exception {
+        when(detalleProductoService.actualizar(eq(detalleId), any())).thenReturn(responseDTO);
+
+        mockMvc.perform(put("/api/detalle-productos/{id}", detalleId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(crearUpdateJson()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(detalleId.toString()))
+                .andExpect(jsonPath("$.productoId").value(productoId.toString()));
+    }
+
+    @Test
+    @DisplayName("PUT /api/detalle-productos/{id} - Debe retornar 404 si la ficha no existe")
+    void actualizar_NoEncontrado_Retorna404() throws Exception {
+        when(detalleProductoService.actualizar(eq(detalleId), any()))
+                .thenThrow(new ResourceNotFoundException("Detalle de producto no encontrado: " + detalleId));
+
+        mockMvc.perform(put("/api/detalle-productos/{id}", detalleId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(crearUpdateJson()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("PUT /api/detalle-productos/{id} - Debe retornar 400 si la duración no es positiva")
+    void actualizar_DuracionInvalida_Retorna400() throws Exception {
+        mockMvc.perform(put("/api/detalle-productos/{id}", detalleId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"duracionDias\": 0}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errores.duracionDias").exists());
+
+        verify(detalleProductoService, never()).actualizar(any(), any());
+    }
+
+    @Test
+    @DisplayName("DELETE /api/detalle-productos/{id} - Debe eliminar la ficha y retornar 204 No Content")
+    void eliminar_Exitoso() throws Exception {
+        mockMvc.perform(delete("/api/detalle-productos/{id}", detalleId))
+                .andExpect(status().isNoContent());
+
+        verify(detalleProductoService).eliminar(detalleId);
+    }
+
+    @Test
+    @DisplayName("DELETE /api/detalle-productos/{id} - Debe retornar 404 si la ficha no existe")
+    void eliminar_NoEncontrado_Retorna404() throws Exception {
+        doThrow(new ResourceNotFoundException("Detalle de producto no encontrado: " + detalleId))
+                .when(detalleProductoService).eliminar(detalleId);
+
+        mockMvc.perform(delete("/api/detalle-productos/{id}", detalleId))
+                .andExpect(status().isNotFound());
     }
 }

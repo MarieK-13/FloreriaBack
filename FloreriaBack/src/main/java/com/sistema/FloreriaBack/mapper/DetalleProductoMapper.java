@@ -1,6 +1,7 @@
 package com.sistema.FloreriaBack.mapper;
 
 import com.sistema.FloreriaBack.dto.request.DetalleProductoRequestDTO;
+import com.sistema.FloreriaBack.dto.request.DetalleProductoUpdateRequestDTO;
 import com.sistema.FloreriaBack.dto.response.DetalleProductoResponseDTO;
 import com.sistema.FloreriaBack.model.DetalleProducto;
 import com.sistema.FloreriaBack.model.Producto;
@@ -18,6 +19,15 @@ public class DetalleProductoMapper {
                 .ocasion(dto.getOcasion())
                 .instruccionesEntrega(dto.getInstruccionesEntrega())
                 .build();
+    }
+
+    /** Copia los datos editables a una ficha existente (para el PUT). No cambia el producto. */
+    public void actualizarEntidad(DetalleProducto detalle, DetalleProductoUpdateRequestDTO dto) {
+        detalle.setCuidados(dto.getCuidados());
+        detalle.setDuracionDias(dto.getDuracionDias());
+        detalle.setMateriales(dto.getMateriales());
+        detalle.setOcasion(dto.getOcasion());
+        detalle.setInstruccionesEntrega(dto.getInstruccionesEntrega());
     }
 
     public DetalleProductoResponseDTO toResponseDTO(DetalleProducto d) {

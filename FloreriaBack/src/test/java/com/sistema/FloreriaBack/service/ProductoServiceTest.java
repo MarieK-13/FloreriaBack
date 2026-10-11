@@ -2,17 +2,23 @@ package com.sistema.FloreriaBack.service;
 
 import com.sistema.FloreriaBack.dto.request.ProductoRequestDTO;
 import com.sistema.FloreriaBack.dto.response.ProductoResponseDTO;
+import com.sistema.FloreriaBack.exception.BusinessRuleException;
 import com.sistema.FloreriaBack.exception.ResourceNotFoundException;
 import com.sistema.FloreriaBack.mapper.ProductoMapper;
 import com.sistema.FloreriaBack.model.Categoria;
+import com.sistema.FloreriaBack.model.DetalleProducto;
 import com.sistema.FloreriaBack.model.Producto;
 import com.sistema.FloreriaBack.repository.CategoriaRepository;
+import com.sistema.FloreriaBack.repository.DetallePedidoRepository;
+import com.sistema.FloreriaBack.repository.DetalleProductoRepository;
+import com.sistema.FloreriaBack.repository.ItemCotizacionRepository;
 import com.sistema.FloreriaBack.repository.ProductoRepository;
 import com.sistema.FloreriaBack.service.impl.ProductoServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -34,6 +40,15 @@ class ProductoServiceTest {
     @Mock
     private CategoriaRepository categoriaRepository;
 
+    @Mock
+    private DetallePedidoRepository detallePedidoRepository;
+
+    @Mock
+    private ItemCotizacionRepository itemCotizacionRepository;
+
+    @Mock
+    private DetalleProductoRepository detalleProductoRepository;
+
     private ProductoMapper productoMapper;
 
     private ProductoServiceImpl productoService;
@@ -47,7 +62,8 @@ class ProductoServiceTest {
     @BeforeEach
     void setUp() {
         productoMapper = new ProductoMapper();
-        productoService = new ProductoServiceImpl(productoRepository, categoriaRepository, productoMapper);
+        productoService = new ProductoServiceImpl(productoRepository, categoriaRepository, productoMapper,
+                detallePedidoRepository, itemCotizacionRepository, detalleProductoRepository);
 
         productoId = UUID.randomUUID();
         categoriaId = UUID.randomUUID();
@@ -209,5 +225,47 @@ class ProductoServiceTest {
                 () -> productoService.eliminar(productoId));
 
         verify(productoRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("Eliminar: bloquea con 400 si el producto está en un pedido (evita el error 500 de clave foránea)")
+    void eliminar_ProductoEnPedido_LanzaExcepcion() {
+        when(productoRepository.existsById(productoId)).thenReturn(true);
+        when(detallePedidoRepository.existsByProductoId(productoId)).thenReturn(true);
+
+        BusinessRuleException ex = assertThrows(BusinessRuleException.class,
+                () -> productoService.eliminar(productoId));
+
+        assertTrue(ex.getMessage().contains("pedidos o cotizaciones asociados"));
+        verify(productoRepository, never()).deleteById(any());
+        verify(detalleProductoRepository, never()).delete(any());
+    }
+
+    @Test
+    @DisplayName("Eliminar: bloquea con 400 si el producto está en una cotización")
+    void eliminar_ProductoEnCotizacion_LanzaExcepcion() {
+        when(productoRepository.existsById(productoId)).thenReturn(true);
+        when(detallePedidoRepository.existsByProductoId(productoId)).thenReturn(false);
+        when(itemCotizacionRepository.existsByProductoId(productoId)).thenReturn(true);
+
+        assertThrows(BusinessRuleException.class, () -> productoService.eliminar(productoId));
+
+        verify(productoRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("Eliminar: si el producto tiene ficha técnica, se borra primero la ficha y luego el producto")
+    void eliminar_ConFichaTecnica_BorraFichaPrimero() {
+        DetalleProducto ficha = DetalleProducto.builder().id(UUID.randomUUID()).producto(producto).build();
+        when(productoRepository.existsById(productoId)).thenReturn(true);
+        when(detallePedidoRepository.existsByProductoId(productoId)).thenReturn(false);
+        when(itemCotizacionRepository.existsByProductoId(productoId)).thenReturn(false);
+        when(detalleProductoRepository.findByProductoId(productoId)).thenReturn(Optional.of(ficha));
+
+        productoService.eliminar(productoId);
+
+        InOrder orden = inOrder(detalleProductoRepository, productoRepository);
+        orden.verify(detalleProductoRepository).delete(ficha);
+        orden.verify(productoRepository).deleteById(productoId);
     }
 }

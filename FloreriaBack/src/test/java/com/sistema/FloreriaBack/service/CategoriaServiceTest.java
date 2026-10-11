@@ -155,4 +155,61 @@ class CategoriaServiceTest {
         verify(productoRepository, times(1)).existsByCategoriaId(categoriaId);
         verify(categoriaRepository, never()).deleteById(any());
     }
+
+    @Test
+    @DisplayName("Actualizar: cambia nombre y descripción de una categoría existente")
+    void actualizar_Exitoso() {
+        CategoriaRequestDTO cambios = new CategoriaRequestDTO();
+        cambios.setNombre("Orquideas Premium");
+        cambios.setDescripcion("Orquideas seleccionadas");
+        when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoria));
+        when(categoriaRepository.existsByNombre("Orquideas Premium")).thenReturn(false);
+        when(categoriaRepository.save(any(Categoria.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        CategoriaResponseDTO resultado = categoriaService.actualizar(categoriaId, cambios);
+
+        assertEquals("Orquideas Premium", resultado.getNombre());
+        assertEquals("Orquideas seleccionadas", resultado.getDescripcion());
+        verify(categoriaRepository).save(categoria);
+    }
+
+    @Test
+    @DisplayName("Actualizar: si el nombre no cambia, no valida duplicado contra sí misma")
+    void actualizar_MismoNombre_NoValidaDuplicado() {
+        CategoriaRequestDTO cambios = new CategoriaRequestDTO();
+        cambios.setNombre("Orquideas");
+        cambios.setDescripcion("Nueva descripción");
+        when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoria));
+        when(categoriaRepository.save(any(Categoria.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        CategoriaResponseDTO resultado = categoriaService.actualizar(categoriaId, cambios);
+
+        assertEquals("Nueva descripción", resultado.getDescripcion());
+        verify(categoriaRepository, never()).existsByNombre(any());
+    }
+
+    @Test
+    @DisplayName("Actualizar: lanza ResourceNotFoundException (404) si la categoría no existe")
+    void actualizar_NoEncontrada_LanzaExcepcion() {
+        when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> categoriaService.actualizar(categoriaId, requestDTO));
+
+        verify(categoriaRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Actualizar: lanza BusinessRuleException (400) si el nuevo nombre ya lo usa otra categoría")
+    void actualizar_NombreDuplicado_LanzaExcepcion() {
+        CategoriaRequestDTO cambios = new CategoriaRequestDTO();
+        cambios.setNombre("Rosas");
+        when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoria));
+        when(categoriaRepository.existsByNombre("Rosas")).thenReturn(true);
+
+        assertThrows(BusinessRuleException.class,
+                () -> categoriaService.actualizar(categoriaId, cambios));
+
+        verify(categoriaRepository, never()).save(any());
+    }
 }

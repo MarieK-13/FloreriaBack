@@ -15,6 +15,12 @@ public class CategoriaMapper {
                 .build();
     }
 
+    /** Copia los datos editables del DTO a una categoría existente (para el PUT). */
+    public void actualizarEntidad(Categoria categoria, CategoriaRequestDTO dto) {
+        categoria.setNombre(dto.getNombre());
+        categoria.setDescripcion(dto.getDescripcion());
+    }
+
     public CategoriaResponseDTO toResponseDTO(Categoria categoria) {
         return new CategoriaResponseDTO(
                 categoria.getId(), 

@@ -1,6 +1,7 @@
 package com.sistema.FloreriaBack.service;
 
 import com.sistema.FloreriaBack.dto.request.UsuarioRequestDTO;
+import com.sistema.FloreriaBack.dto.request.UsuarioUpdateRequestDTO;
 import com.sistema.FloreriaBack.dto.response.UsuarioResponseDTO;
 import com.sistema.FloreriaBack.exception.BusinessRuleException;
 import com.sistema.FloreriaBack.exception.ResourceNotFoundException;
@@ -131,5 +132,123 @@ class UsuarioServiceTest {
                 () -> usuarioService.buscarPorId(usuarioId));
 
         verify(usuarioRepository, times(1)).findById(usuarioId);
+    }
+
+    // ---------- Actualizar y desactivar (Avance 2) ----------
+
+    private UsuarioUpdateRequestDTO cambios(String email, RolUsuario rol, String contrasena) {
+        return new UsuarioUpdateRequestDTO("Juan Pérez Actualizado", email, rol, contrasena);
+    }
+
+    @Test
+    @DisplayName("Actualizar: cambia los datos y conserva la contraseña si no se envía una nueva")
+    void actualizar_SinContrasena_ConservaLaActual() {
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UsuarioResponseDTO resultado = usuarioService.actualizar(usuarioId,
+                cambios("juan@example.com", RolUsuario.OPERARIO, null), UUID.randomUUID());
+
+        assertEquals("Juan Pérez Actualizado", resultado.getNombre());
+        assertEquals(RolUsuario.OPERARIO, resultado.getRol());
+        assertEquals("password123", usuario.getContrasena());
+        verify(passwordEncoder, never()).encode(any());
+    }
+
+    @Test
+    @DisplayName("Actualizar: una contraseña vacía significa 'no cambiar'")
+    void actualizar_ContrasenaVacia_NoLaCambia() {
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        usuarioService.actualizar(usuarioId, cambios("juan@example.com", RolUsuario.CLIENTE, ""), UUID.randomUUID());
+
+        verify(passwordEncoder, never()).encode(any());
+    }
+
+    @Test
+    @DisplayName("Actualizar: la contraseña nueva se guarda cifrada, nunca en texto plano")
+    void actualizar_ConContrasenaNueva_SeCifra() {
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(passwordEncoder.encode("nuevaClave1")).thenReturn("hash_nuevo");
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        usuarioService.actualizar(usuarioId, cambios("juan@example.com", RolUsuario.CLIENTE, "nuevaClave1"),
+                UUID.randomUUID());
+
+        ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
+        verify(usuarioRepository).save(captor.capture());
+        assertEquals("hash_nuevo", captor.getValue().getContrasena());
+        assertNotEquals("nuevaClave1", captor.getValue().getContrasena());
+    }
+
+    @Test
+    @DisplayName("Actualizar: lanza BusinessRuleException (400) si el nuevo email ya existe")
+    void actualizar_EmailDuplicado_LanzaExcepcion() {
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.existsByEmail("otro@example.com")).thenReturn(true);
+
+        assertThrows(BusinessRuleException.class, () -> usuarioService.actualizar(usuarioId,
+                cambios("otro@example.com", RolUsuario.CLIENTE, null), UUID.randomUUID()));
+
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Actualizar: lanza ResourceNotFoundException (404) si el usuario no existe")
+    void actualizar_NoEncontrado_LanzaExcepcion() {
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> usuarioService.actualizar(usuarioId,
+                cambios("juan@example.com", RolUsuario.CLIENTE, null), UUID.randomUUID()));
+    }
+
+    @Test
+    @DisplayName("Actualizar: un administrador no puede quitarse su propio rol")
+    void actualizar_AdminSeQuitaElRol_LanzaExcepcion() {
+        usuario.setRol(RolUsuario.ADMINISTRADOR);
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+
+        assertThrows(BusinessRuleException.class, () -> usuarioService.actualizar(usuarioId,
+                cambios("juan@example.com", RolUsuario.CLIENTE, null), usuarioId));
+
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Desactivar: cambia activo a false (borrado lógico)")
+    void desactivar_Exitoso() {
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UsuarioResponseDTO resultado = usuarioService.cambiarEstado(usuarioId, false, UUID.randomUUID());
+
+        assertFalse(resultado.isActivo());
+        verify(usuarioRepository, never()).delete(any());
+        verify(usuarioRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("Activar: cambia activo a true")
+    void activar_Exitoso() {
+        usuario.setActivo(false);
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UsuarioResponseDTO resultado = usuarioService.cambiarEstado(usuarioId, true, UUID.randomUUID());
+
+        assertTrue(resultado.isActivo());
+    }
+
+    @Test
+    @DisplayName("Desactivar: un administrador no puede desactivar su propia cuenta")
+    void desactivar_ASiMismo_LanzaExcepcion() {
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+
+        assertThrows(BusinessRuleException.class,
+                () -> usuarioService.cambiarEstado(usuarioId, false, usuarioId));
+
+        assertTrue(usuario.isActivo());
+        verify(usuarioRepository, never()).save(any());
     }
 }
