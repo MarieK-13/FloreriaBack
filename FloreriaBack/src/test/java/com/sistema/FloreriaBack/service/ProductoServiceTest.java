@@ -62,8 +62,15 @@ class ProductoServiceTest {
     @BeforeEach
     void setUp() {
         productoMapper = new ProductoMapper();
-        productoService = new ProductoServiceImpl(productoRepository, categoriaRepository, productoMapper,
-                detallePedidoRepository, itemCotizacionRepository, detalleProductoRepository);
+        productoService = new ProductoServiceImpl(
+                productoRepository,
+                categoriaRepository,
+                productoMapper,
+                detallePedidoRepository,
+                itemCotizacionRepository,
+                detalleProductoRepository
+
+        );
 
         productoId = UUID.randomUUID();
         categoriaId = UUID.randomUUID();
@@ -209,6 +216,9 @@ class ProductoServiceTest {
     @DisplayName("Debe eliminar un producto exitosamente")
     void eliminar_Exitoso() {
         when(productoRepository.existsById(productoId)).thenReturn(true);
+        when(detallePedidoRepository.existsByProductoId(productoId)).thenReturn(false);
+        when(itemCotizacionRepository.existsByProductoId(productoId)).thenReturn(false);
+        when(detalleProductoRepository.findByProductoId(productoId)).thenReturn(Optional.empty());
 
         productoService.eliminar(productoId);
 

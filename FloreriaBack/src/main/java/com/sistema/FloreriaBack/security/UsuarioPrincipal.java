@@ -10,10 +10,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Representa al usuario autenticado dentro de Spring Security.
- * Guarda el ID del usuario para poder verificar que un CLIENTE solo acceda a sus propios datos.
- */
 public class UsuarioPrincipal implements UserDetails {
 
     private final UUID id;
@@ -50,7 +46,6 @@ public class UsuarioPrincipal implements UserDetails {
 
     public RolUsuario getRol() { return rol; }
 
-    /** Spring Security espera el prefijo "ROLE_" para usar hasRole('ADMINISTRADOR'). */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + rol.name()));
@@ -59,7 +54,6 @@ public class UsuarioPrincipal implements UserDetails {
     @Override
     public String getPassword() { return contrasena; }
 
-    /** El "username" del sistema es el email. */
     @Override
     public String getUsername() { return email; }
 
@@ -72,7 +66,6 @@ public class UsuarioPrincipal implements UserDetails {
     @Override
     public boolean isCredentialsNonExpired() { return true; }
 
-    /** Un usuario con activo = false no puede iniciar sesión ni usar su token. */
     @Override
     public boolean isEnabled() { return activo; }
 }

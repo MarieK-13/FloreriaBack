@@ -54,21 +54,14 @@ public class CategoriaServiceImpl implements CategoriaService {
         return mapper.toResponseDTO(categoria);
     }
 
-    /**
-     * Actualiza nombre y descripción. Si el nombre cambia y ya lo usa otra categoría,
-     * responde 400 en lugar de dejar que la base lance un error de clave única (500).
-     */
     @Override
     @Transactional
     public CategoriaResponseDTO actualizar(UUID id, CategoriaRequestDTO dto) {
         Categoria categoria = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada: " + id));
-
-        boolean cambioDeNombre = !categoria.getNombre().equals(dto.getNombre());
-        if (cambioDeNombre && repository.existsByNombre(dto.getNombre())) {
+        if (repository.existsByNombreIgnoreCaseAndIdNot(dto.getNombre(), id)) {
             throw new BusinessRuleException("Ya existe una categoría con ese nombre");
         }
-
         mapper.actualizarEntidad(categoria, dto);
         return mapper.toResponseDTO(repository.save(categoria));
     }

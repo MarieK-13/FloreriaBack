@@ -21,7 +21,6 @@ public class DetalleProductoMapper {
                 .build();
     }
 
-    /** Copia los datos editables a una ficha existente (para el PUT). No cambia el producto. */
     public void actualizarEntidad(DetalleProducto detalle, DetalleProductoUpdateRequestDTO dto) {
         detalle.setCuidados(dto.getCuidados());
         detalle.setDuracionDias(dto.getDuracionDias());
