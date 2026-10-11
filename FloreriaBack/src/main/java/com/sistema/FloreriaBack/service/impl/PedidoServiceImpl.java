@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -63,7 +64,7 @@ public class PedidoServiceImpl implements PedidoService {
         BigDecimal totalAcumulado = BigDecimal.ZERO;
 
         for (DetallePedidoRequestDTO itemDto : dto.getDetalles()) {
-            Producto producto = productoRepository.findById(itemDto.getProductoId())
+          Producto producto = productoRepository.buscarPorIdParaActualizar(itemDto.getProductoId())
                     .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado: " + itemDto.getProductoId()));
 
             if (!Boolean.TRUE.equals(producto.getDisponible()) || producto.getStock() < itemDto.getCantidad()) {
@@ -123,27 +124,38 @@ public class PedidoServiceImpl implements PedidoService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    @Transactional
-    public PedidoResponseDTO cambiarEstado(UUID id, EstadoPedido nuevoEstado) {
-        Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado con ID: " + id));
+@Transactional
+@Override
+public PedidoResponseDTO cambiarEstado(UUID id, EstadoPedido nuevoEstado) {
+    // 1. Corregido: Se quitó "message:" de la excepción
+    Pedido pedido = pedidoRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));
 
-        // Si se cancela el pedido, restaurar stock
-        if (nuevoEstado == EstadoPedido.CANCELADO && pedido.getEstado() != EstadoPedido.CANCELADO) {
-            for (DetallePedido detalle : pedido.getDetalles()) {
-                Producto producto = detalle.getProducto();
-                if (producto != null) {
-                    producto.setStock(producto.getStock() + detalle.getCantidad());
-                    producto.setDisponible(true);
-                    productoRepository.save(producto);
-                }
-            }
-        }
-
-        pedido.setEstado(nuevoEstado);
-        return mapper.toResponseDTO(pedidoRepository.save(pedido));
+    if (!pedido.getEstado().puedePasarA(nuevoEstado)) {
+        throw new BusinessRuleException("No se puede pasar de " + pedido.getEstado() + " a " + nuevoEstado);
     }
+
+    // Si pasa a CANCELADO, devolvemos el stock usando bloqueo pesimista
+    if (nuevoEstado == EstadoPedido.CANCELADO) {
+        List<DetallePedido> detallesOrdenados = pedido.getDetalles().stream()
+                .sorted(Comparator.comparing(d -> d.getProducto().getId()))
+                .collect(Collectors.toList());
+
+        for (DetallePedido detalle : detallesOrdenados) {
+            Producto producto = productoRepository.buscarPorIdParaActualizar(detalle.getProducto().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
+            producto.setStock(producto.getStock() + detalle.getCantidad());
+            productoRepository.save(producto);
+        }
+    }
+
+    pedido.setEstado(nuevoEstado);
+    Pedido pedidoGuardado = pedidoRepository.save(pedido);
+
+    // 2. Corregido: Se usa toResponseDTO (el método real de tu PedidoMapper)
+    return mapper.toResponseDTO(pedidoGuardado);
+}
+
 
     @Override
     @Transactional(readOnly = true)
@@ -182,6 +194,6 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
     private LocalDateTime finDelDia(LocalDate fecha) {
-        return fecha.atTime(LocalTime.MAX);
+        return fecha.plusDays(1).atStartOfDay();
     }
 }

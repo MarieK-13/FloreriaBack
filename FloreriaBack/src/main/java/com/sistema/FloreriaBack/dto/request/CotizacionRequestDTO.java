@@ -1,6 +1,7 @@
 package com.sistema.FloreriaBack.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -11,6 +12,7 @@ import java.util.*;
 @AllArgsConstructor
 public class CotizacionRequestDTO {
 
+    @NotNull(message = "El ID del usuario es obligatorio")
     private UUID usuarioId;
 
     private String mensajeCliente;

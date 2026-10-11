@@ -1,12 +1,15 @@
 package com.sistema.FloreriaBack.repository;
 
 import com.sistema.FloreriaBack.model.Producto;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ProductoRepository extends JpaRepository<Producto, UUID> {
@@ -25,7 +28,6 @@ public interface ProductoRepository extends JpaRepository<Producto, UUID> {
            "ORDER BY p.precio ASC")
     List<Producto> buscarPorNombreYPrecioMaximo(@Param("nombre") String nombre,
                                                 @Param("precioMax") BigDecimal precioMax);
-
     /**
      * Inventario: productos cuyo stock es menor o igual al límite indicado,
      * ordenados del más crítico al menos crítico. Sirve para alertas de reposición.
@@ -34,4 +36,11 @@ public interface ProductoRepository extends JpaRepository<Producto, UUID> {
            "WHERE p.stock <= :limite " +
            "ORDER BY p.stock ASC, p.nombre ASC")
     List<Producto> buscarConStockBajo(@Param("limite") Integer limite);
+    
+    /**
+     * Bloqueo pesimista para evitar carreras al actualizar el stock.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Producto p WHERE p.id = :id")
+    Optional<Producto> buscarPorIdParaActualizar(@Param("id") UUID id);
 }

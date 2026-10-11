@@ -112,7 +112,7 @@ class PedidoServiceTest {
     @DisplayName("Debe crear un pedido calculando el total con el precio real y descontando el stock")
     void crear_Exitoso() {
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
-        when(productoRepository.findById(productoId)).thenReturn(Optional.of(producto));
+        when(productoRepository.buscarPorIdParaActualizar(productoId)).thenReturn(Optional.of(producto));
         when(pedidoRepository.save(any(Pedido.class))).thenAnswer(inv -> inv.getArgument(0));
 
         PedidoResponseDTO resultado = pedidoService.crear(requestDTO);
@@ -153,7 +153,7 @@ class PedidoServiceTest {
     @DisplayName("Debe lanzar ResourceNotFoundException si un producto del pedido no existe")
     void crear_ProductoNoEncontrado_LanzaExcepcion() {
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
-        when(productoRepository.findById(productoId)).thenReturn(Optional.empty());
+        when(productoRepository.buscarPorIdParaActualizar(productoId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
                 () -> pedidoService.crear(requestDTO));
@@ -166,7 +166,7 @@ class PedidoServiceTest {
     void crear_StockInsuficiente_LanzaExcepcion() {
         producto.setStock(1); // Solicitó 2
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
-        when(productoRepository.findById(productoId)).thenReturn(Optional.of(producto));
+        when(productoRepository.buscarPorIdParaActualizar(productoId)).thenReturn(Optional.of(producto));
 
         BusinessRuleException ex = assertThrows(BusinessRuleException.class,
                 () -> pedidoService.crear(requestDTO));
@@ -242,6 +242,7 @@ class PedidoServiceTest {
     @DisplayName("Debe cambiar el estado del pedido a CANCELADO y restaurar el stock del producto")
     void cambiarEstado_Cancelado_RestauraStock() {
         when(pedidoRepository.findById(pedidoId)).thenReturn(Optional.of(pedido));
+        when(productoRepository.buscarPorIdParaActualizar(productoId)).thenReturn(Optional.of(producto));
         when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedido);
 
         PedidoResponseDTO resultado = pedidoService.cambiarEstado(pedidoId, EstadoPedido.CANCELADO);

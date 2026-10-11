@@ -69,7 +69,7 @@ class ConsultasJpqlServiceTest {
 
         assertEquals(4L, reporte.getCantidadPedidos());
         assertEquals(new BigDecimal("350.50"), reporte.getTotalVendido());
-        verify(pedidoRepository).sumarVentasEnRango(inicio.atStartOfDay(), fin.atTime(23, 59, 59, 999_999_999), EstadoPedido.CANCELADO);
+    verify(pedidoRepository).sumarVentasEnRango( inicio.atStartOfDay(),  fin.plusDays(1).atStartOfDay(),  EstadoPedido.CANCELADO);
     }
 
     @Test
