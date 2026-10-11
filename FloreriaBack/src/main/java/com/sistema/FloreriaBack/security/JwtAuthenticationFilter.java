@@ -15,17 +15,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * Se ejecuta una vez por cada petición HTTP:
- * 1. Lee la cabecera "Authorization: Bearer <token>".
- * 2. Valida el token y carga el usuario desde la base de datos.
- * 3. Registra al usuario en el SecurityContextHolder para que Spring sepa quién es y qué rol tiene.
- * Si no hay token o es inválido, la petición sigue como anónima y Spring Security
- * responderá 401 si el endpoint requiere autenticación.
- *
- * No se anota con @Component a propósito: se crea en SecurityConfig para que solo
- * se ejecute dentro de la cadena de Spring Security (y no dos veces).
- */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String PREFIJO_BEARER = "Bearer ";

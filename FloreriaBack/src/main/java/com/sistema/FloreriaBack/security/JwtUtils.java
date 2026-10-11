@@ -12,11 +12,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-/**
- * Genera y valida los tokens JWT firmados con HMAC-SHA256.
- * La clave secreta y la duración del token se leen de application.properties
- * (que a su vez las toma de variables de entorno).
- */
+
 @Component
 public class JwtUtils {
 
@@ -48,12 +44,10 @@ public class JwtUtils {
                 .compact();
     }
 
-    /** Devuelve el email guardado en el token. Lanza JwtException si el token es inválido o expiró. */
     public String obtenerEmail(String token) {
         return leerClaims(token).getSubject();
     }
 
-    /** El token es válido si la firma es correcta, no expiró y pertenece al usuario indicado. */
     public boolean esTokenValido(String token, UserDetails usuario) {
         try {
             Claims claims = leerClaims(token);

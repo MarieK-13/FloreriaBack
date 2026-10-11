@@ -64,19 +64,15 @@ public class UsuarioServiceImpl implements UsuarioService {
     public UsuarioResponseDTO actualizar(UUID id, UsuarioUpdateRequestDTO dto, UUID idUsuarioActual) {
         Usuario usuario = buscarEntidad(id);
 
-        boolean cambioDeEmail = !usuario.getEmail().equals(dto.getEmail());
-        if (cambioDeEmail && repository.existsByEmail(dto.getEmail())) {
-            throw new BusinessRuleException("Ya existe un usuario con ese email");
-        }
-
-        // Evita que el sistema se quede sin administrador por error
+        if (repository.existsByEmailIgnoreCaseAndIdNot(dto.getEmail(), id)) {
+        throw new BusinessRuleException("Ya existe un usuario con ese email");
+    }
         if (id.equals(idUsuarioActual) && dto.getRol() != RolUsuario.ADMINISTRADOR) {
             throw new BusinessRuleException("No puede quitarse su propio rol de administrador");
         }
 
         mapper.actualizarEntidad(usuario, dto);
 
-        // Contraseña opcional: solo se cambia (y se cifra) si se envió una nueva
         if (dto.getContrasena() != null && !dto.getContrasena().isBlank()) {
             usuario.setContrasena(passwordEncoder.encode(dto.getContrasena()));
         }

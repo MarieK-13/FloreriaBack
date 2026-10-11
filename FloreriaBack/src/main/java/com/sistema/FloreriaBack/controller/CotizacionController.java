@@ -24,7 +24,6 @@ public class CotizacionController {
         this.cotizacionService = cotizacionService;
     }
 
-    /** Un CLIENTE solo puede crear cotizaciones a su nombre; ADMINISTRADOR/OPERARIO para cualquiera. */
     @PostMapping
     @PreAuthorize("@seguridad.puedeActuarComo(#dto.usuarioId)")
     public ResponseEntity<CotizacionResponseDTO> crear(@Valid @RequestBody CotizacionRequestDTO dto) {
@@ -48,4 +47,4 @@ public class CotizacionController {
     public ResponseEntity<List<CotizacionResponseDTO>> listarPorUsuario(@PathVariable UUID usuarioId) {
         return ResponseEntity.ok(cotizacionService.listarPorUsuario(usuarioId));
     }
-}
+}

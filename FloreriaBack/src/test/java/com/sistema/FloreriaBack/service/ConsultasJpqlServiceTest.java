@@ -31,9 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-/**
- * Pruebas de la lógica de servicio que usa las consultas JPQL (@Query) nuevas.
- */
+
 @ExtendWith(MockitoExtension.class)
 class ConsultasJpqlServiceTest {
 

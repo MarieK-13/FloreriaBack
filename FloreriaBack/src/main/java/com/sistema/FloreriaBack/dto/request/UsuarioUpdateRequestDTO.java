@@ -10,10 +10,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Datos para actualizar un usuario (solo ADMINISTRADOR).
- * La contraseña es opcional: si no se envía o llega vacía, se conserva la actual.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,8 +27,6 @@ public class UsuarioUpdateRequestDTO {
     @NotNull(message = "Debe indicar el rol")
     private RolUsuario rol;
 
-    // Se usa @Pattern y no @Size(min = 6) porque @Size rechazaría la cadena vacía,
-    // y aquí vacía significa "no cambiar la contraseña". Acepta: vacía o 6+ caracteres.
     @Pattern(regexp = "^$|^.{6,}$", message = "La contraseña debe tener al menos 6 caracteres")
     private String contrasena;
 }

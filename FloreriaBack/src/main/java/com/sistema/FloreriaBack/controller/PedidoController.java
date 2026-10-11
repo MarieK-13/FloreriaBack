@@ -26,7 +26,6 @@ public class PedidoController {
         this.pedidoService = pedidoService;
     }
 
-    /** Un CLIENTE solo puede crear pedidos a su nombre; ADMINISTRADOR/OPERARIO para cualquiera. */
     @PostMapping
     @PreAuthorize("@seguridad.puedeActuarComo(#dto.usuarioId)")
     public ResponseEntity<PedidoResponseDTO> crear(@Valid @RequestBody PedidoRequestDTO dto) {
@@ -56,16 +55,16 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.cambiarEstado(id, nuevoEstado));
     }
 
-    /** Solo ADMINISTRADOR. Ej: GET /api/pedidos/reportes/rango?inicio=2026-10-01&fin=2026-10-31 */
     @GetMapping("/reportes/rango")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'OPERARIO')")
     public ResponseEntity<List<PedidoResponseDTO>> listarPorRangoDeFechas(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
         return ResponseEntity.ok(pedidoService.listarPorRangoDeFechas(inicio, fin));
     }
 
-    /** Solo ADMINISTRADOR. Ej: GET /api/pedidos/reportes/ventas?inicio=2026-10-01&fin=2026-10-31 */
     @GetMapping("/reportes/ventas")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'OPERARIO')")
     public ResponseEntity<ReporteVentasDTO> reporteDeVentas(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {

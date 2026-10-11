@@ -7,6 +7,5 @@ import java.util.UUID;
 
 public interface ItemCotizacionRepository extends JpaRepository<ItemCotizacion, UUID> {
 
-    /** true si el producto aparece en alguna cotización (se usa para bloquear su eliminación). */
     boolean existsByProductoId(UUID productoId);
 }

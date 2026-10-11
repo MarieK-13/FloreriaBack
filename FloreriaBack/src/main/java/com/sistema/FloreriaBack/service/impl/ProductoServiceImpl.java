@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
 @Service
 public class ProductoServiceImpl implements ProductoService {
 
-    // Mayor precio posible según la columna precio (precision = 10, scale = 2).
-    // Se usa cuando el cliente no indica un precio máximo en la búsqueda.
     private static final BigDecimal PRECIO_MAXIMO_POR_DEFECTO = new BigDecimal("99999999.99");
 
     private final ProductoRepository repository;
@@ -110,14 +108,11 @@ public class ProductoServiceImpl implements ProductoService {
             throw new ResourceNotFoundException("Producto no encontrado: " + id);
         }
 
-        // Si el producto está en un pedido o cotización, la base rechazaría el borrado por la
-        // clave foránea (error 500). Se bloquea antes con un mensaje claro (400) y se conserva el historial.
         if (detallePedidoRepository.existsByProductoId(id) || itemCotizacionRepository.existsByProductoId(id)) {
             throw new BusinessRuleException(
                     "No se puede eliminar el producto porque tiene pedidos o cotizaciones asociados");
         }
 
-        // La ficha técnica apunta al producto (relación uno a uno): se borra primero
         detalleProductoRepository.findByProductoId(id).ifPresent(ficha -> {
             detalleProductoRepository.delete(ficha);
             detalleProductoRepository.flush();
