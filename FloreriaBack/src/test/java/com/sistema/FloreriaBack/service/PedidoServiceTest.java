@@ -37,10 +37,8 @@ class PedidoServiceTest {
 
     @Mock
     private ProductoRepository productoRepository;
-
     private PedidoMapper pedidoMapper;
     private PedidoServiceImpl pedidoService;
-
     private Usuario usuario;
     private Producto producto;
     private Pedido pedido;
@@ -164,7 +162,7 @@ class PedidoServiceTest {
     @Test
     @DisplayName("Debe lanzar BusinessRuleException cuando el stock es insuficiente")
     void crear_StockInsuficiente_LanzaExcepcion() {
-        producto.setStock(1); // Solicitó 2
+        producto.setStock(1); 
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
         when(productoRepository.buscarPorIdParaActualizar(productoId)).thenReturn(Optional.of(producto));
 

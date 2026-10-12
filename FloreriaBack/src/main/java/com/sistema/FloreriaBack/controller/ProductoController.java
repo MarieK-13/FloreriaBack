@@ -36,7 +36,6 @@ public class ProductoController {
         return service.buscarPorNombreYPrecioMaximo(nombre, precioMax);
     }
 
-    /** ADMINISTRADOR u OPERARIO. Ej: GET /api/productos/stock-bajo?limite=5 */
     @GetMapping("/stock-bajo")
     public List<ProductoResponseDTO> stockBajo(@RequestParam(defaultValue = "5") Integer limite) {
         return service.listarConStockBajo(limite);

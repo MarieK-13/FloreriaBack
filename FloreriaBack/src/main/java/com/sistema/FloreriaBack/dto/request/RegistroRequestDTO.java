@@ -7,10 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Registro público: no incluye el rol a propósito.
- * Todo usuario que se registra por sí mismo queda como CLIENTE.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

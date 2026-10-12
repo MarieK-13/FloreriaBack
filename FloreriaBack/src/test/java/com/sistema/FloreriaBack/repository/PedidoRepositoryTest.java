@@ -57,14 +57,14 @@ class PedidoRepositoryTest {
     @DisplayName("buscarPorRangoDeFechas - Debe incluir extremos y ordenar del más reciente al más antiguo")
     void buscarPorRangoDeFechas_IncluyeExtremosYOrdenaDescendente() {
         LocalDateTime inicio = LocalDateTime.of(2026, 10, 1, 0, 0);
-        LocalDateTime fin = LocalDateTime.of(2026, 10, 10, 23, 59);
+        LocalDateTime fin = LocalDateTime.of(2026, 10, 11, 0, 0); 
 
         // Extremo inicial
         Pedido pInicio = crearPedido(inicio, new BigDecimal("100.00"), EstadoPedido.PENDIENTE);
         // Intermedio
         Pedido pMedio = crearPedido(LocalDateTime.of(2026, 10, 5, 12, 0), new BigDecimal("150.00"), EstadoPedido.PAGADO);
         // Extremo final
-        Pedido pFin = crearPedido(fin, new BigDecimal("200.00"), EstadoPedido.EN_CAMINO);
+        Pedido pFin = crearPedido(LocalDateTime.of(2026, 10, 10, 22, 0), new BigDecimal("200.00"), EstadoPedido.EN_CAMINO); 
         // Fuera de rango (anterior y posterior)
         Pedido pFueraAntes = crearPedido(LocalDateTime.of(2026, 9, 30, 23, 59), new BigDecimal("80.00"), EstadoPedido.PENDIENTE);
         Pedido pFueraDespues = crearPedido(LocalDateTime.of(2026, 10, 11, 0, 1), new BigDecimal("90.00"), EstadoPedido.PENDIENTE);
@@ -89,7 +89,7 @@ class PedidoRepositoryTest {
     @DisplayName("sumarVentasEnRango y contarPedidosEnRango - Excluyen pedidos CANCELADOS")
     void sumarVentasYContarPedidos_ExcluyenCancelados() {
         LocalDateTime inicio = LocalDateTime.of(2026, 10, 1, 0, 0);
-        LocalDateTime fin = LocalDateTime.of(2026, 10, 5, 23, 59);
+        LocalDateTime fin = LocalDateTime.of(2026, 10, 6, 0, 0);
 
         Pedido p1 = crearPedido(LocalDateTime.of(2026, 10, 2, 10, 0), new BigDecimal("100.00"), EstadoPedido.PAGADO);
         Pedido p2 = crearPedido(LocalDateTime.of(2026, 10, 3, 15, 0), new BigDecimal("150.00"), EstadoPedido.ENTREGADO);

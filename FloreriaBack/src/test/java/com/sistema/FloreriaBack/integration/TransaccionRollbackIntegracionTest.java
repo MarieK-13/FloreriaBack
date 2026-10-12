@@ -23,13 +23,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Prueba de integración para verificar el Rollback Transaccional de Spring (@Transactional).
- * 
- * IMPORTANTE: Esta clase y sus métodos de prueba NO llevan la anotación @Transactional,
- * permitiendo validar que el rollback es gestionado por la capa de servicio (@Transactional en PedidoServiceImpl)
- * y que los cambios parciales en la base de datos realmente se revierten.
- */
+
 @SpringBootTest
 class TransaccionRollbackIntegracionTest {
 

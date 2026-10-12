@@ -134,8 +134,6 @@ class UsuarioServiceTest {
         verify(usuarioRepository, times(1)).findById(usuarioId);
     }
 
-    // ---------- Actualizar y desactivar (Avance 2) ----------
-
     private UsuarioUpdateRequestDTO cambios(String email, RolUsuario rol, String contrasena) {
         return new UsuarioUpdateRequestDTO("Juan Pérez Actualizado", email, rol, contrasena);
     }
@@ -144,6 +142,7 @@ class UsuarioServiceTest {
     @DisplayName("Actualizar: cambia los datos y conserva la contraseña si no se envía una nueva")
     void actualizar_SinContrasena_ConservaLaActual() {
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.existsByEmailIgnoreCaseAndIdNot("juan@example.com", usuarioId)).thenReturn(false);
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
 
         UsuarioResponseDTO resultado = usuarioService.actualizar(usuarioId,
@@ -159,6 +158,7 @@ class UsuarioServiceTest {
     @DisplayName("Actualizar: una contraseña vacía significa 'no cambiar'")
     void actualizar_ContrasenaVacia_NoLaCambia() {
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.existsByEmailIgnoreCaseAndIdNot("juan@example.com", usuarioId)).thenReturn(false);
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
 
         usuarioService.actualizar(usuarioId, cambios("juan@example.com", RolUsuario.CLIENTE, ""), UUID.randomUUID());
@@ -171,6 +171,7 @@ class UsuarioServiceTest {
     void actualizar_ConContrasenaNueva_SeCifra() {
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
         when(passwordEncoder.encode("nuevaClave1")).thenReturn("hash_nuevo");
+        when(usuarioRepository.existsByEmailIgnoreCaseAndIdNot("juan@example.com", usuarioId)).thenReturn(false);
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
 
         usuarioService.actualizar(usuarioId, cambios("juan@example.com", RolUsuario.CLIENTE, "nuevaClave1"),
@@ -208,6 +209,7 @@ class UsuarioServiceTest {
     void actualizar_AdminSeQuitaElRol_LanzaExcepcion() {
         usuario.setRol(RolUsuario.ADMINISTRADOR);
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.existsByEmailIgnoreCaseAndIdNot("juan@example.com", usuarioId)).thenReturn(false);
 
         assertThrows(BusinessRuleException.class, () -> usuarioService.actualizar(usuarioId,
                 cambios("juan@example.com", RolUsuario.CLIENTE, null), usuarioId));

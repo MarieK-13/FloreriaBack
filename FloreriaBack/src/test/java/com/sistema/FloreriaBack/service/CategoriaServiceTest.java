@@ -192,6 +192,7 @@ class CategoriaServiceTest {
         cambios.setNombre("Orquideas");
         cambios.setDescripcion("Nueva descripción");
         when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoria));
+        when(categoriaRepository.existsByNombreIgnoreCaseAndIdNot("Orquideas", categoriaId)).thenReturn(false);
         when(categoriaRepository.save(any(Categoria.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CategoriaResponseDTO resultado = categoriaService.actualizar(categoriaId, cambios);

@@ -33,9 +33,9 @@ public class CotizacionServiceImpl implements CotizacionService {
     private final CotizacionMapper cotizacionMapper;
 
     public CotizacionServiceImpl(CotizacionRepository cotizacionRepository,
-                                  UsuarioRepository usuarioRepository,
-                                  ProductoRepository productoRepository,
-                                  CotizacionMapper cotizacionMapper) {
+            UsuarioRepository usuarioRepository,
+            ProductoRepository productoRepository,
+            CotizacionMapper cotizacionMapper) {
         this.cotizacionRepository = cotizacionRepository;
         this.usuarioRepository = usuarioRepository;
         this.productoRepository = productoRepository;
@@ -45,15 +45,13 @@ public class CotizacionServiceImpl implements CotizacionService {
     @Override
     @Transactional
     public CotizacionResponseDTO crearCotizacion(CotizacionRequestDTO dto) {
-        Usuario usuario = null;
-        if (dto.getUsuarioId() != null) {
-            usuario = usuarioRepository.findById(dto.getUsuarioId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + dto.getUsuarioId()));
-        }
+        Usuario usuario = usuarioRepository.findById(dto.getUsuarioId())
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Usuario no encontrado con ID: " + dto.getUsuarioId()));
 
         Cotizacion cotizacion = Cotizacion.builder()
                 .fechaCreacion(LocalDateTime.now())
-                .usuario(usuario)
+                .usuario(usuario) 
                 .mensajeCliente(dto.getMensajeCliente())
                 .presupuesto(dto.getPresupuesto())
                 .estado(EstadoCotizacion.PENDIENTE)
@@ -61,7 +59,6 @@ public class CotizacionServiceImpl implements CotizacionService {
                 .build();
 
         BigDecimal totalAcumulado = BigDecimal.ZERO;
-
         for (ItemCotizacionRequestDTO itemDto : dto.getItems()) {
             Producto producto = productoRepository.findById(itemDto.getProductoId())
                     .orElseThrow(() -> new ResourceNotFoundException(
@@ -76,9 +73,9 @@ public class CotizacionServiceImpl implements CotizacionService {
 
             ItemCotizacion item = ItemCotizacion.builder()
                     .producto(producto)
-                    .productoNombre(producto.getNombre())   // snapshot real, no del cliente
+                    .productoNombre(producto.getNombre()) 
                     .cantidad(itemDto.getCantidad())
-                    .precioUnitario(producto.getPrecio())   // precio real, no el del cliente
+                    .precioUnitario(producto.getPrecio()) 
                     .subtotal(subtotal)
                     .build();
 
@@ -88,7 +85,8 @@ public class CotizacionServiceImpl implements CotizacionService {
 
         if (dto.getPresupuesto() != null && totalAcumulado.compareTo(dto.getPresupuesto()) > 0) {
             throw new BusinessRuleException(
-                    "El total de la cotización (S/ " + totalAcumulado + ") supera el presupuesto indicado (S/ " + dto.getPresupuesto() + ")");
+                    "El total de la cotización (S/ " + totalAcumulado + ") supera el presupuesto indicado (S/ "
+                            + dto.getPresupuesto() + ")");
         }
 
         cotizacion.setTotal(totalAcumulado);

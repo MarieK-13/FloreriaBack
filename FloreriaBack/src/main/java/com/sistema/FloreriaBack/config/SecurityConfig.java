@@ -30,13 +30,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Configuración de Spring Security:
- * - API sin estado (STATELESS): no hay sesiones, cada petición trae su token JWT.
- * - Endpoints públicos: login, registro y consulta del catálogo.
- * - Endpoints protegidos por rol (ADMINISTRADOR, OPERARIO, CLIENTE).
- * - Reglas de propiedad (un cliente solo ve lo suyo) con @PreAuthorize en los controladores.
- */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -76,7 +69,6 @@ public class SecurityConfig {
                     .requestMatchers("/error").permitAll()
 
                     // --- Catálogo ---
-                    // (la regla de stock bajo va antes que la de GET público para que tenga prioridad)
                     .requestMatchers(HttpMethod.GET, "/api/productos/stock-bajo").hasAnyRole(ADMINISTRADOR, OPERARIO)
                     .requestMatchers(HttpMethod.GET,
                             "/api/productos/**", "/api/categorias/**", "/api/detalle-productos/**").permitAll()
@@ -102,7 +94,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /** Valida email + contraseña (BCrypt) contra la base de datos durante el login. */
     @Bean
     public AuthenticationManager authenticationManager(PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider proveedor = new DaoAuthenticationProvider(userDetailsService);
@@ -110,7 +101,6 @@ public class SecurityConfig {
         return new ProviderManager(proveedor);
     }
 
-    /** Permite que el front-end (en otro puerto/dominio) llame a la API enviando el token. */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -124,7 +114,6 @@ public class SecurityConfig {
         return source;
     }
 
-    /** Respuesta de error en JSON con el mismo formato que GlobalExceptionHandler. */
     private void escribirError(HttpServletResponse res, int status, String mensaje) throws IOException {
         res.setStatus(status);
         res.setContentType(MediaType.APPLICATION_JSON_VALUE);
