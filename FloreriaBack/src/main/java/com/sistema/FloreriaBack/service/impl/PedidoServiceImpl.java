@@ -63,7 +63,11 @@ public class PedidoServiceImpl implements PedidoService {
 
         BigDecimal totalAcumulado = BigDecimal.ZERO;
 
-        for (DetallePedidoRequestDTO itemDto : dto.getDetalles()) {
+        List<DetallePedidoRequestDTO> detallesOrdenados = dto.getDetalles().stream()
+                .sorted(Comparator.comparing(DetallePedidoRequestDTO::getProductoId))
+                .collect(Collectors.toList());
+
+        for (DetallePedidoRequestDTO itemDto : detallesOrdenados) {
           Producto producto = productoRepository.buscarPorIdParaActualizar(itemDto.getProductoId())
                     .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado: " + itemDto.getProductoId()));
 
@@ -145,6 +149,7 @@ public PedidoResponseDTO cambiarEstado(UUID id, EstadoPedido nuevoEstado) {
             Producto producto = productoRepository.buscarPorIdParaActualizar(detalle.getProducto().getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
             producto.setStock(producto.getStock() + detalle.getCantidad());
+            producto.setDisponible(true);
             productoRepository.save(producto);
         }
     }

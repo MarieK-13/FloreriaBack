@@ -34,7 +34,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     @Transactional
     public UsuarioResponseDTO registrar(UsuarioRequestDTO dto) {
-        if (repository.existsByEmail(dto.getEmail())) {
+        if (repository.existsByEmailIgnoreCase(dto.getEmail())) {
             throw new BusinessRuleException("Ya existe un usuario con ese email");
         }
         Usuario usuario = mapper.toEntity(dto);

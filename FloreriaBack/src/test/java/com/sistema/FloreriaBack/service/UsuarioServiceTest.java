@@ -70,7 +70,7 @@ class UsuarioServiceTest {
     @Test
     @DisplayName("Debe registrar un usuario y guardar la contraseña ya hasheada, no en texto plano")
     void registrar_Exitoso() {
-        when(usuarioRepository.existsByEmail("juan@example.com")).thenReturn(false);
+        when(usuarioRepository.existsByEmailIgnoreCase("juan@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("hash_encriptado");
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
 
@@ -88,7 +88,7 @@ class UsuarioServiceTest {
     @Test
     @DisplayName("Debe lanzar BusinessRuleException al registrar con un email ya existente")
     void registrar_EmailExistente_LanzaExcepcion() {
-        when(usuarioRepository.existsByEmail("juan@example.com")).thenReturn(true);
+        when(usuarioRepository.existsByEmailIgnoreCase("juan@example.com")).thenReturn(true);
 
         BusinessRuleException ex = assertThrows(BusinessRuleException.class,
                 () -> usuarioService.registrar(requestDTO));
@@ -213,6 +213,18 @@ class UsuarioServiceTest {
                 cambios("juan@example.com", RolUsuario.CLIENTE, null), usuarioId));
 
         verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Actualizar: si se actualiza con su mismo email propio, no cuenta como duplicado")
+    void actualizar_MismoEmailPropio_NoEsDuplicado() {
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        assertDoesNotThrow(() -> usuarioService.actualizar(usuarioId,
+                cambios("juan@example.com", RolUsuario.CLIENTE, null), UUID.randomUUID()));
+
+        verify(usuarioRepository).save(any(Usuario.class));
     }
 
     @Test

@@ -33,7 +33,7 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     @Transactional
     public CategoriaResponseDTO registrar(CategoriaRequestDTO dto) {
-        if (repository.existsByNombre(dto.getNombre())) {
+        if (repository.existsByNombreIgnoreCase(dto.getNombre())) {
             throw new BusinessRuleException("Ya existe una categoría con ese nombre");
         }
         Categoria guardada = repository.save(mapper.toEntity(dto));

@@ -250,5 +250,23 @@ class PedidoServiceTest {
         assertNotNull(resultado);
         verify(productoRepository, times(1)).save(producto);
         assertEquals(12, producto.getStock()); // 10 original + 2 devueltos al cancelar
+        assertTrue(producto.getDisponible());
+    }
+
+    @Test
+    @DisplayName("Debe restaurar disponibilidad a true al cancelar pedido si el producto estaba agotado")
+    void cambiarEstado_Cancelado_RestauraDisponibilidadSiEstabaAgotado() {
+        producto.setStock(0);
+        producto.setDisponible(false);
+        when(pedidoRepository.findById(pedidoId)).thenReturn(Optional.of(pedido));
+        when(productoRepository.buscarPorIdParaActualizar(productoId)).thenReturn(Optional.of(producto));
+        when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedido);
+
+        PedidoResponseDTO resultado = pedidoService.cambiarEstado(pedidoId, EstadoPedido.CANCELADO);
+
+        assertNotNull(resultado);
+        verify(productoRepository, times(1)).save(producto);
+        assertEquals(2, producto.getStock());
+        assertTrue(producto.getDisponible(), "El producto debe volver a estar disponible tras restaurar stock");
     }
 }
