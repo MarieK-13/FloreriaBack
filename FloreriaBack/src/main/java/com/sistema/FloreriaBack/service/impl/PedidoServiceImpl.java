@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -37,9 +36,9 @@ public class PedidoServiceImpl implements PedidoService {
     private final PedidoMapper mapper;
 
     public PedidoServiceImpl(PedidoRepository pedidoRepository,
-                             UsuarioRepository usuarioRepository,
-                             ProductoRepository productoRepository,
-                             PedidoMapper mapper) {
+            UsuarioRepository usuarioRepository,
+            ProductoRepository productoRepository,
+            PedidoMapper mapper) {
         this.pedidoRepository = pedidoRepository;
         this.usuarioRepository = usuarioRepository;
         this.productoRepository = productoRepository;
@@ -50,7 +49,8 @@ public class PedidoServiceImpl implements PedidoService {
     @Transactional
     public PedidoResponseDTO crear(PedidoRequestDTO dto) {
         Usuario usuario = usuarioRepository.findById(dto.getUsuarioId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + dto.getUsuarioId()));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Usuario no encontrado con ID: " + dto.getUsuarioId()));
 
         Pedido pedido = Pedido.builder()
                 .fechaPedido(LocalDateTime.now())
@@ -64,14 +64,15 @@ public class PedidoServiceImpl implements PedidoService {
         BigDecimal totalAcumulado = BigDecimal.ZERO;
 
         for (DetallePedidoRequestDTO itemDto : dto.getDetalles()) {
-          Producto producto = productoRepository.buscarPorIdParaActualizar(itemDto.getProductoId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado: " + itemDto.getProductoId()));
+            Producto producto = productoRepository.buscarPorIdParaActualizar(itemDto.getProductoId())
+                    .orElseThrow(
+                            () -> new ResourceNotFoundException("Producto no encontrado: " + itemDto.getProductoId()));
 
             if (!Boolean.TRUE.equals(producto.getDisponible()) || producto.getStock() < itemDto.getCantidad()) {
-                throw new BusinessRuleException("Stock insuficiente para \"" + producto.getNombre() + "\". Disponible: " + producto.getStock());
+                throw new BusinessRuleException(
+                        "Stock insuficiente para \"" + producto.getNombre() + "\". Disponible: " + producto.getStock());
             }
 
-            // Descontar stock
             producto.setStock(producto.getStock() - itemDto.getCantidad());
             if (producto.getStock() == 0) {
                 producto.setDisponible(false);
@@ -124,38 +125,34 @@ public class PedidoServiceImpl implements PedidoService {
                 .collect(Collectors.toList());
     }
 
-@Transactional
-@Override
-public PedidoResponseDTO cambiarEstado(UUID id, EstadoPedido nuevoEstado) {
-    // 1. Corregido: Se quitó "message:" de la excepción
-    Pedido pedido = pedidoRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));
+    @Transactional
+    @Override
+    public PedidoResponseDTO cambiarEstado(UUID id, EstadoPedido nuevoEstado) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));
 
-    if (!pedido.getEstado().puedePasarA(nuevoEstado)) {
-        throw new BusinessRuleException("No se puede pasar de " + pedido.getEstado() + " a " + nuevoEstado);
-    }
-
-    // Si pasa a CANCELADO, devolvemos el stock usando bloqueo pesimista
-    if (nuevoEstado == EstadoPedido.CANCELADO) {
-        List<DetallePedido> detallesOrdenados = pedido.getDetalles().stream()
-                .sorted(Comparator.comparing(d -> d.getProducto().getId()))
-                .collect(Collectors.toList());
-
-        for (DetallePedido detalle : detallesOrdenados) {
-            Producto producto = productoRepository.buscarPorIdParaActualizar(detalle.getProducto().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
-            producto.setStock(producto.getStock() + detalle.getCantidad());
-            productoRepository.save(producto);
+        if (!pedido.getEstado().puedePasarA(nuevoEstado)) {
+            throw new BusinessRuleException("No se puede pasar de " + pedido.getEstado() + " a " + nuevoEstado);
         }
+
+        if (nuevoEstado == EstadoPedido.CANCELADO) {
+            List<DetallePedido> detallesOrdenados = pedido.getDetalles().stream()
+                    .sorted(Comparator.comparing(d -> d.getProducto().getId()))
+                    .collect(Collectors.toList());
+
+            for (DetallePedido detalle : detallesOrdenados) {
+                Producto producto = productoRepository.buscarPorIdParaActualizar(detalle.getProducto().getId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
+                producto.setStock(producto.getStock() + detalle.getCantidad());
+                productoRepository.save(producto);
+            }
+        }
+
+        pedido.setEstado(nuevoEstado);
+        Pedido pedidoGuardado = pedidoRepository.save(pedido);
+
+        return mapper.toResponseDTO(pedidoGuardado);
     }
-
-    pedido.setEstado(nuevoEstado);
-    Pedido pedidoGuardado = pedidoRepository.save(pedido);
-
-    // 2. Corregido: Se usa toResponseDTO (el método real de tu PedidoMapper)
-    return mapper.toResponseDTO(pedidoGuardado);
-}
-
 
     @Override
     @Transactional(readOnly = true)
@@ -173,7 +170,6 @@ public PedidoResponseDTO cambiarEstado(UUID id, EstadoPedido nuevoEstado) {
         LocalDateTime desde = inicioDelDia(inicio);
         LocalDateTime hasta = finDelDia(fin);
 
-        // Los pedidos cancelados no cuentan como venta
         BigDecimal total = pedidoRepository.sumarVentasEnRango(desde, hasta, EstadoPedido.CANCELADO);
         long cantidad = pedidoRepository.contarPedidosEnRango(desde, hasta, EstadoPedido.CANCELADO);
 

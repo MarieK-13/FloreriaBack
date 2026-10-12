@@ -38,7 +38,6 @@ public class UsuarioController {
         return service.buscarPorId(id);
     }
 
-    /** Solo ADMINISTRADOR (regla de SecurityConfig para /api/usuarios/**). */
     @PutMapping("/{id}")
     public UsuarioResponseDTO actualizar(@PathVariable UUID id,
                                          @Valid @RequestBody UsuarioUpdateRequestDTO dto,
@@ -46,7 +45,6 @@ public class UsuarioController {
         return service.actualizar(id, dto, idDe(actual));
     }
 
-    /** Borrado lógico: el usuario ya no puede iniciar sesión y su token deja de funcionar. */
     @PatchMapping("/{id}/desactivar")
     public UsuarioResponseDTO desactivar(@PathVariable UUID id,
                                          @AuthenticationPrincipal UsuarioPrincipal actual) {

@@ -49,8 +49,13 @@ class ConsultasJpqlServiceTest {
     @BeforeEach
     void setUp() {
         pedidoService = new PedidoServiceImpl(pedidoRepository, usuarioRepository, productoRepository, new PedidoMapper());
-        productoService = new ProductoServiceImpl(productoRepository, categoriaRepository, new ProductoMapper(),
-                detallePedidoRepository, itemCotizacionRepository, detalleProductoRepository);
+        productoService = new ProductoServiceImpl(
+            productoRepository, 
+            categoriaRepository, 
+            new ProductoMapper(),
+            detallePedidoRepository, 
+            itemCotizacionRepository, 
+            detalleProductoRepository);
     }
 
     @Test
