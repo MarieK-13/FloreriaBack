@@ -186,7 +186,7 @@ class UsuarioServiceTest {
     @DisplayName("Actualizar: lanza BusinessRuleException (400) si el nuevo email ya existe")
     void actualizar_EmailDuplicado_LanzaExcepcion() {
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
-        when(usuarioRepository.existsByEmail("otro@example.com")).thenReturn(true);
+        when(usuarioRepository.existsByEmailIgnoreCaseAndIdNot("otro@example.com", usuarioId)).thenReturn(true);
 
         assertThrows(BusinessRuleException.class, () -> usuarioService.actualizar(usuarioId,
                 cambios("otro@example.com", RolUsuario.CLIENTE, null), UUID.randomUUID()));

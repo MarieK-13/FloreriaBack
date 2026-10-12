@@ -163,7 +163,7 @@ class CategoriaServiceTest {
         cambios.setNombre("Orquideas Premium");
         cambios.setDescripcion("Orquideas seleccionadas");
         when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoria));
-        when(categoriaRepository.existsByNombre("Orquideas Premium")).thenReturn(false);
+        when(categoriaRepository.existsByNombreIgnoreCaseAndIdNot("Orquideas Premium", categoriaId)).thenReturn(false);
         when(categoriaRepository.save(any(Categoria.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CategoriaResponseDTO resultado = categoriaService.actualizar(categoriaId, cambios);
@@ -205,7 +205,7 @@ class CategoriaServiceTest {
         CategoriaRequestDTO cambios = new CategoriaRequestDTO();
         cambios.setNombre("Rosas");
         when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoria));
-        when(categoriaRepository.existsByNombre("Rosas")).thenReturn(true);
+        when(categoriaRepository.existsByNombreIgnoreCaseAndIdNot("Rosas", categoriaId)).thenReturn(true);
 
         assertThrows(BusinessRuleException.class,
                 () -> categoriaService.actualizar(categoriaId, cambios));
