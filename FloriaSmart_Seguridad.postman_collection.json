@@ -842,7 +842,7 @@
     },
     {
       "key": "adminPassword",
-      "value": "Admin123"
+      "value": ""
     },
     {
       "key": "tokenAdmin",

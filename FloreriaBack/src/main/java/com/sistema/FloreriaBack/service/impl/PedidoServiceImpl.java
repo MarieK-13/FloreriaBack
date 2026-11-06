@@ -52,6 +52,10 @@ public class PedidoServiceImpl implements PedidoService {
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Usuario no encontrado con ID: " + dto.getUsuarioId()));
 
+        if (!usuario.isActivo()) {
+            throw new BusinessRuleException("El usuario está inactivo y no puede realizar pedidos");
+        }
+
         Pedido pedido = Pedido.builder()
                 .fechaPedido(LocalDateTime.now())
                 .usuario(usuario)
@@ -132,7 +136,7 @@ public class PedidoServiceImpl implements PedidoService {
     @Transactional
     @Override
     public PedidoResponseDTO cambiarEstado(UUID id, EstadoPedido nuevoEstado) {
-        Pedido pedido = pedidoRepository.findById(id)
+        Pedido pedido = pedidoRepository.buscarPorIdParaActualizar(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));
 
         if (!pedido.getEstado().puedePasarA(nuevoEstado)) {
@@ -140,23 +144,27 @@ public class PedidoServiceImpl implements PedidoService {
         }
 
         if (nuevoEstado == EstadoPedido.CANCELADO) {
-            List<DetallePedido> detallesOrdenados = pedido.getDetalles().stream()
-                    .sorted(Comparator.comparing(d -> d.getProducto().getId()))
-                    .collect(Collectors.toList());
-
-            for (DetallePedido detalle : detallesOrdenados) {
-                Producto producto = productoRepository.buscarPorIdParaActualizar(detalle.getProducto().getId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
-                producto.setStock(producto.getStock() + detalle.getCantidad());
-                producto.setDisponible(true);
-                productoRepository.save(producto);
-            }
+            restituirStock(pedido);
         }
 
         pedido.setEstado(nuevoEstado);
         Pedido pedidoGuardado = pedidoRepository.save(pedido);
 
         return mapper.toResponseDTO(pedidoGuardado);
+    }
+
+    private void restituirStock(Pedido pedido) {
+        List<DetallePedido> detallesOrdenados = pedido.getDetalles().stream()
+                .sorted(Comparator.comparing(d -> d.getProducto().getId()))
+                .collect(Collectors.toList());
+
+        for (DetallePedido detalle : detallesOrdenados) {
+            Producto producto = productoRepository.buscarPorIdParaActualizar(detalle.getProducto().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
+            producto.setStock(producto.getStock() + detalle.getCantidad());
+            producto.setDisponible(true); // el stock queda mayor que 0: el producto vuelve a poder venderse
+            productoRepository.save(producto);
+        }
     }
 
     @Override

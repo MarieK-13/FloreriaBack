@@ -29,16 +29,17 @@ public class Cotizacion {
     @Column(nullable = false)
     private LocalDateTime fechaCreacion;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal total;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false) 
+    @JoinColumn(name = "usuario_id", nullable = true) 
     private Usuario usuario;
 
     @Column(length = 500)
     private String mensajeCliente;
 
+    @Column(precision = 10, scale = 2)
     private BigDecimal presupuesto;
 
     @Enumerated(EnumType.STRING)

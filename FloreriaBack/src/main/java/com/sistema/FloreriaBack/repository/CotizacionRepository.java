@@ -23,10 +23,6 @@ public interface CotizacionRepository extends JpaRepository<Cotizacion, UUID> {
     @EntityGraph(attributePaths = {"items", "usuario"})
     List<Cotizacion> findByUsuarioId(UUID usuarioId);
 
-    /**
-     * Seguridad: devuelve el ID del dueño de una cotización, para verificar que un CLIENTE
-     * solo consulte sus propias cotizaciones.
-     */
     @Query("SELECT c.usuario.id FROM Cotizacion c WHERE c.id = :cotizacionId")
     Optional<UUID> buscarIdUsuarioDeCotizacion(@Param("cotizacionId") UUID cotizacionId);
 }

@@ -180,4 +180,83 @@ class CotizacionControllerTest extends BaseControllerTest {
 
         verify(cotizacionService, times(1)).listarPorUsuario(usuarioId);
     }
+
+    @Test
+    @DisplayName("POST /api/cotizaciones - Debe retornar 400 si un ítem tiene cantidad negativa")
+    void crear_ItemConCantidadNegativa_Retorna400() throws Exception {
+        String json = """
+                {
+                    "usuarioId": "%s",
+                    "items": [ { "productoId": "%s", "cantidad": -5 } ]
+                }
+                """.formatted(usuarioId, productoId);
+
+        mockMvc.perform(post("/api/cotizaciones")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.errores").isNotEmpty());
+
+        verify(cotizacionService, never()).crearCotizacion(any());
+    }
+
+    @Test
+    @DisplayName("POST /api/cotizaciones - Debe retornar 400 si un ítem no indica la cantidad")
+    void crear_ItemSinCantidad_Retorna400() throws Exception {
+        String json = """
+                {
+                    "usuarioId": "%s",
+                    "items": [ { "productoId": "%s" } ]
+                }
+                """.formatted(usuarioId, productoId);
+
+        mockMvc.perform(post("/api/cotizaciones")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errores").isNotEmpty());
+
+        verify(cotizacionService, never()).crearCotizacion(any());
+    }
+
+    @Test
+    @DisplayName("POST /api/cotizaciones - Debe retornar 400 si el presupuesto es negativo")
+    void crear_PresupuestoNegativo_Retorna400() throws Exception {
+        String json = """
+                {
+                    "usuarioId": "%s",
+                    "presupuesto": -10.00,
+                    "items": [ { "productoId": "%s", "cantidad": 1 } ]
+                }
+                """.formatted(usuarioId, productoId);
+
+        mockMvc.perform(post("/api/cotizaciones")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errores.presupuesto").exists());
+
+        verify(cotizacionService, never()).crearCotizacion(any());
+    }
+
+    @Test
+    @DisplayName("POST /api/cotizaciones - Debe retornar 400 si el mensaje supera 500 caracteres")
+    void crear_MensajeDemasiadoLargo_Retorna400() throws Exception {
+        String json = """
+                {
+                    "usuarioId": "%s",
+                    "mensajeCliente": "%s",
+                    "items": [ { "productoId": "%s", "cantidad": 1 } ]
+                }
+                """.formatted(usuarioId, "a".repeat(501), productoId);
+
+        mockMvc.perform(post("/api/cotizaciones")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errores.mensajeCliente").exists());
+
+        verify(cotizacionService, never()).crearCotizacion(any());
+    }
 }

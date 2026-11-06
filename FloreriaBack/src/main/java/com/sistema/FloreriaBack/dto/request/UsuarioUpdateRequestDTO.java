@@ -27,6 +27,6 @@ public class UsuarioUpdateRequestDTO {
     @NotNull(message = "Debe indicar el rol")
     private RolUsuario rol;
 
-    @Pattern(regexp = "^$|^.{6,}$", message = "La contraseña debe tener al menos 6 caracteres")
+    @Pattern(regexp = "^$|^.{6,72}$", message = "La contraseña debe tener entre 6 y 72 caracteres")
     private String contrasena;
 }

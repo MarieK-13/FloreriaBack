@@ -2,6 +2,7 @@ package com.sistema.FloreriaBack.repository;
 
 import com.sistema.FloreriaBack.model.Producto;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -13,7 +14,18 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ProductoRepository extends JpaRepository<Producto, UUID> {
+
+    @Override
+    @EntityGraph(attributePaths = "categoria")
+    List<Producto> findAll();
+
+    @Override
+    @EntityGraph(attributePaths = "categoria")
+    Optional<Producto> findById(UUID id);
+
+    @EntityGraph(attributePaths = "categoria")
     List<Producto> findByCategoriaId(UUID categoriaId);
+
     boolean existsByCategoriaId(UUID categoriaId);
 
     @Query("SELECT p FROM Producto p JOIN FETCH p.categoria " +
@@ -28,7 +40,7 @@ public interface ProductoRepository extends JpaRepository<Producto, UUID> {
            "WHERE p.stock <= :limite " +
            "ORDER BY p.stock ASC, p.nombre ASC")
     List<Producto> buscarConStockBajo(@Param("limite") Integer limite);
-    
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Producto p WHERE p.id = :id")
     Optional<Producto> buscarPorIdParaActualizar(@Param("id") UUID id);

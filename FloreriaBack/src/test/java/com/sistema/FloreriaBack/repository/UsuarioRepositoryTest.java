@@ -2,6 +2,7 @@ package com.sistema.FloreriaBack.repository;
 
 import com.sistema.FloreriaBack.model.Usuario;
 import com.sistema.FloreriaBack.model.enums.RolUsuario;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,9 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 class UsuarioRepositoryTest {
@@ -21,45 +24,42 @@ class UsuarioRepositoryTest {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @Test
-    @DisplayName("existsByEmailIgnoreCase: detecta email existente sin importar mayúsculas o minúsculas")
-    void existsByEmailIgnoreCase_DetectaCoincidencia() {
-        Usuario u = Usuario.builder()
-                .nombre("Juan")
-                .email("juan@example.com")
-                .contrasena("hash123")
+    private Usuario ana;
+
+    @BeforeEach
+    void setUp() {
+        ana = entityManager.persistAndFlush(Usuario.builder()
+                .nombre("Ana")
+                .email("ana@correo.com")
+                .contrasena("hash")
                 .rol(RolUsuario.CLIENTE)
                 .activo(true)
-                .build();
-        entityManager.persistAndFlush(u);
-
-        assertTrue(usuarioRepository.existsByEmailIgnoreCase("JUAN@EXAMPLE.COM"));
-        assertTrue(usuarioRepository.existsByEmailIgnoreCase("Juan@Example.Com"));
-        assertFalse(usuarioRepository.existsByEmailIgnoreCase("otro@example.com"));
+                .build());
     }
 
     @Test
-    @DisplayName("existsByEmailIgnoreCaseAndIdNot: valida duplicado ignorando el id propio")
-    void existsByEmailIgnoreCaseAndIdNot_ValidaDuplicado() {
-        Usuario u1 = Usuario.builder()
-                .nombre("Juan")
-                .email("juan@example.com")
-                .contrasena("hash123")
-                .rol(RolUsuario.CLIENTE)
-                .activo(true)
-                .build();
-        Usuario u2 = Usuario.builder()
-                .nombre("Maria")
-                .email("maria@example.com")
-                .contrasena("hash456")
-                .rol(RolUsuario.CLIENTE)
-                .activo(true)
-                .build();
+    @DisplayName("findByEmailIgnoreCase encuentra al usuario sin distinguir mayúsculas")
+    void findByEmailIgnoreCase() {
+        assertEquals(ana.getId(), usuarioRepository.findByEmailIgnoreCase("ANA@Correo.com").orElseThrow().getId());
+        assertTrue(usuarioRepository.findByEmailIgnoreCase("otra@correo.com").isEmpty());
+    }
 
-        UUID idJuan = entityManager.persistAndFlush(u1).getId();
-        UUID idMaria = entityManager.persistAndFlush(u2).getId();
+    @Test
+    @DisplayName("existsByEmailIgnoreCase detecta el email sin distinguir mayúsculas")
+    void existsByEmailIgnoreCase() {
+        assertTrue(usuarioRepository.existsByEmailIgnoreCase("Ana@CORREO.com"));
+        assertFalse(usuarioRepository.existsByEmailIgnoreCase("otra@correo.com"));
+    }
 
-        assertFalse(usuarioRepository.existsByEmailIgnoreCaseAndIdNot("JUAN@EXAMPLE.COM", idJuan));
-        assertTrue(usuarioRepository.existsByEmailIgnoreCaseAndIdNot("JUAN@EXAMPLE.COM", idMaria));
+    @Test
+    @DisplayName("existsByEmailIgnoreCaseAndIdNot permite el mismo email en su propio registro")
+    void existsByEmailIgnoreCaseAndIdNot_mismoId() {
+        assertFalse(usuarioRepository.existsByEmailIgnoreCaseAndIdNot("ANA@correo.com", ana.getId()));
+    }
+
+    @Test
+    @DisplayName("existsByEmailIgnoreCaseAndIdNot detecta el email usado por otro usuario")
+    void existsByEmailIgnoreCaseAndIdNot_otroId() {
+        assertTrue(usuarioRepository.existsByEmailIgnoreCaseAndIdNot("ANA@correo.com", UUID.randomUUID()));
     }
 }

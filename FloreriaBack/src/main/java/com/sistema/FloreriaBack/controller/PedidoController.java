@@ -56,7 +56,6 @@ public class PedidoController {
     }
 
     @GetMapping("/reportes/rango")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'OPERARIO')")
     public ResponseEntity<List<PedidoResponseDTO>> listarPorRangoDeFechas(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
@@ -64,7 +63,6 @@ public class PedidoController {
     }
 
     @GetMapping("/reportes/ventas")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'OPERARIO')")
     public ResponseEntity<ReporteVentasDTO> reporteDeVentas(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {

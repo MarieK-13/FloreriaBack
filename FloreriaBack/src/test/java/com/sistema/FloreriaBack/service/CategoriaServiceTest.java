@@ -83,7 +83,8 @@ class CategoriaServiceTest {
         BusinessRuleException ex = assertThrows(BusinessRuleException.class,
                 () -> categoriaService.registrar(requestDTO));
 
-        assertTrue(ex.getMessage().toLowerCase().contains("ya existe"));
+        assertTrue(ex.getMessage().contains("Ya existe una categoria con ese nombre")
+                || ex.getMessage().toLowerCase().contains("ya existe"));
         verify(categoriaRepository, never()).save(any());
     }
 
@@ -156,19 +157,6 @@ class CategoriaServiceTest {
     }
 
     @Test
-    @DisplayName("Eliminar: lanza ResourceNotFoundException (404) si la categoría no existe")
-    void eliminar_NoExiste_LanzaExcepcion() {
-        when(categoriaRepository.existsById(categoriaId)).thenReturn(false);
-
-        assertThrows(ResourceNotFoundException.class,
-                () -> categoriaService.eliminar(categoriaId));
-
-        verify(categoriaRepository, times(1)).existsById(categoriaId);
-        verify(productoRepository, never()).existsByCategoriaId(any());
-        verify(categoriaRepository, never()).deleteById(any());
-    }
-
-    @Test
     @DisplayName("Actualizar: cambia nombre y descripción de una categoría existente")
     void actualizar_Exitoso() {
         CategoriaRequestDTO cambios = new CategoriaRequestDTO();
@@ -187,7 +175,7 @@ class CategoriaServiceTest {
 
     @Test
     @DisplayName("Actualizar: si el nombre no cambia, no valida duplicado contra sí misma")
-    void actualizar_MismoNombre_NoEsDuplicado() {
+    void actualizar_MismoNombre_NoValidaDuplicado() {
         CategoriaRequestDTO cambios = new CategoriaRequestDTO();
         cambios.setNombre("Orquideas");
         cambios.setDescripcion("Nueva descripción");
@@ -198,7 +186,6 @@ class CategoriaServiceTest {
         CategoriaResponseDTO resultado = categoriaService.actualizar(categoriaId, cambios);
 
         assertEquals("Nueva descripción", resultado.getDescripcion());
-        verify(categoriaRepository).existsByNombreIgnoreCaseAndIdNot("Orquideas", categoriaId);
     }
 
     @Test

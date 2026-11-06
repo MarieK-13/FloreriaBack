@@ -1,6 +1,7 @@
 package com.sistema.FloreriaBack.security;
 
 import com.sistema.FloreriaBack.repository.UsuarioRepository;
+import com.sistema.FloreriaBack.util.EmailUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,7 +20,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return usuarioRepository.findByEmail(email)
+        return usuarioRepository.findByEmailIgnoreCase(EmailUtils.normalizar(email))
                 .map(UsuarioPrincipal::desde)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
     }

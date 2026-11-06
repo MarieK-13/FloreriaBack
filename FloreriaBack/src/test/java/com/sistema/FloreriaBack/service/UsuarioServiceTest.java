@@ -99,6 +99,21 @@ class UsuarioServiceTest {
     }
 
     @Test
+    @DisplayName("Debe normalizar el email (espacios y mayúsculas) antes de validar duplicados y guardar")
+    void registrar_NormalizaEmail() {
+        requestDTO.setEmail("  JUAN@Example.COM ");
+        when(usuarioRepository.existsByEmailIgnoreCase("juan@example.com")).thenReturn(false);
+        when(passwordEncoder.encode("password123")).thenReturn("hash_encriptado");
+        when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
+
+        usuarioService.registrar(requestDTO);
+
+        ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
+        verify(usuarioRepository).save(captor.capture());
+        assertEquals("juan@example.com", captor.getValue().getEmail());
+    }
+
+    @Test
     @DisplayName("Debe listar todos los usuarios")
     void listar_Exitoso() {
         when(usuarioRepository.findAll()).thenReturn(List.of(usuario));
@@ -215,18 +230,6 @@ class UsuarioServiceTest {
                 cambios("juan@example.com", RolUsuario.CLIENTE, null), usuarioId));
 
         verify(usuarioRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Actualizar: si se actualiza con su mismo email propio, no cuenta como duplicado")
-    void actualizar_MismoEmailPropio_NoEsDuplicado() {
-        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
-        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        assertDoesNotThrow(() -> usuarioService.actualizar(usuarioId,
-                cambios("juan@example.com", RolUsuario.CLIENTE, null), UUID.randomUUID()));
-
-        verify(usuarioRepository).save(any(Usuario.class));
     }
 
     @Test

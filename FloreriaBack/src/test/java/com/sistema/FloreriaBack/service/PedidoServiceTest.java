@@ -15,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -65,6 +66,7 @@ class PedidoServiceTest {
                 .id(usuarioId)
                 .nombre("Carlos Mendoza")
                 .email("carlos@example.com")
+                .activo(true)
                 .build();
 
         producto = Producto.builder()
@@ -237,9 +239,50 @@ class PedidoServiceTest {
     }
 
     @Test
-    @DisplayName("Debe cambiar el estado del pedido a CANCELADO y restaurar el stock del producto")
+    @DisplayName("Debe lanzar BusinessRuleException si el usuario del pedido está inactivo")
+    void crear_UsuarioInactivo_LanzaExcepcion() {
+        usuario.setActivo(false);
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+
+        BusinessRuleException ex = assertThrows(BusinessRuleException.class,
+                () -> pedidoService.crear(requestDTO));
+
+        assertTrue(ex.getMessage().contains("inactivo"));
+        verify(productoRepository, never()).buscarPorIdParaActualizar(any());
+        verify(pedidoRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Debe bloquear los productos siempre en orden por ID, sin importar el orden de la petición")
+    void crear_BloqueaProductosEnOrdenPorId() {
+        UUID idMenor = new UUID(0L, 1L);
+        UUID idMayor = new UUID(0L, 2L);
+        Producto productoMenor = Producto.builder().id(idMenor).nombre("Rosas").precio(new BigDecimal("10.00"))
+                .stock(5).disponible(true).build();
+        Producto productoMayor = Producto.builder().id(idMayor).nombre("Girasoles").precio(new BigDecimal("20.00"))
+                .stock(5).disponible(true).build();
+
+        // La petición trae primero el ID mayor y después el menor
+        requestDTO.setDetalles(List.of(
+                new DetallePedidoRequestDTO(idMayor, 1),
+                new DetallePedidoRequestDTO(idMenor, 1)));
+
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(productoRepository.buscarPorIdParaActualizar(idMenor)).thenReturn(Optional.of(productoMenor));
+        when(productoRepository.buscarPorIdParaActualizar(idMayor)).thenReturn(Optional.of(productoMayor));
+        when(pedidoRepository.save(any(Pedido.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
+
+        pedidoService.crear(requestDTO);
+
+        InOrder orden = inOrder(productoRepository);
+        orden.verify(productoRepository).buscarPorIdParaActualizar(idMenor);
+        orden.verify(productoRepository).buscarPorIdParaActualizar(idMayor);
+    }
+
+    @Test
+    @DisplayName("Debe cambiar el estado del pedido a CANCELADO, leerlo con bloqueo y restaurar el stock")
     void cambiarEstado_Cancelado_RestauraStock() {
-        when(pedidoRepository.findById(pedidoId)).thenReturn(Optional.of(pedido));
+        when(pedidoRepository.buscarPorIdParaActualizar(pedidoId)).thenReturn(Optional.of(pedido));
         when(productoRepository.buscarPorIdParaActualizar(productoId)).thenReturn(Optional.of(producto));
         when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedido);
 
@@ -247,24 +290,62 @@ class PedidoServiceTest {
 
         assertNotNull(resultado);
         verify(productoRepository, times(1)).save(producto);
-        assertEquals(12, producto.getStock()); // 10 original + 2 devueltos al cancelar
+        verify(pedidoRepository, never()).findById(any());
+        assertEquals(12, producto.getStock());
+        assertEquals(EstadoPedido.CANCELADO, pedido.getEstado());
+    }
+
+    @Test
+    @DisplayName("Al cancelar, un producto agotado debe volver a quedar disponible")
+    void cambiarEstado_Cancelado_ProductoAgotadoVuelveADisponible() {
+        producto.setStock(0);
+        producto.setDisponible(false);
+        when(pedidoRepository.buscarPorIdParaActualizar(pedidoId)).thenReturn(Optional.of(pedido));
+        when(productoRepository.buscarPorIdParaActualizar(productoId)).thenReturn(Optional.of(producto));
+        when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedido);
+
+        pedidoService.cambiarEstado(pedidoId, EstadoPedido.CANCELADO);
+
+        assertEquals(2, producto.getStock());
         assertTrue(producto.getDisponible());
     }
 
     @Test
-    @DisplayName("Debe restaurar disponibilidad a true al cancelar pedido si el producto estaba agotado")
-    void cambiarEstado_Cancelado_RestauraDisponibilidadSiEstabaAgotado() {
-        producto.setStock(0);
-        producto.setDisponible(false);
-        when(pedidoRepository.findById(pedidoId)).thenReturn(Optional.of(pedido));
-        when(productoRepository.buscarPorIdParaActualizar(productoId)).thenReturn(Optional.of(producto));
-        when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedido);
+    @DisplayName("Cancelar un pedido ya cancelado debe fallar y no restituir el stock por segunda vez")
+    void cambiarEstado_PedidoYaCancelado_NoRestituyeStockDeNuevo() {
+        pedido.setEstado(EstadoPedido.CANCELADO);
+        when(pedidoRepository.buscarPorIdParaActualizar(pedidoId)).thenReturn(Optional.of(pedido));
 
-        PedidoResponseDTO resultado = pedidoService.cambiarEstado(pedidoId, EstadoPedido.CANCELADO);
+        BusinessRuleException ex = assertThrows(BusinessRuleException.class,
+                () -> pedidoService.cambiarEstado(pedidoId, EstadoPedido.CANCELADO));
 
-        assertNotNull(resultado);
-        verify(productoRepository, times(1)).save(producto);
-        assertEquals(2, producto.getStock());
-        assertTrue(producto.getDisponible(), "El producto debe volver a estar disponible tras restaurar stock");
+        assertTrue(ex.getMessage().contains("No se puede pasar de CANCELADO a CANCELADO"));
+        verify(productoRepository, never()).buscarPorIdParaActualizar(any());
+        verify(productoRepository, never()).save(any());
+        assertEquals(10, producto.getStock());
+    }
+
+    @Test
+    @DisplayName("Debe rechazar una transición de estado inválida (PAGADO a ENTREGADO)")
+    void cambiarEstado_TransicionInvalida_LanzaExcepcion() {
+        pedido.setEstado(EstadoPedido.PAGADO);
+        when(pedidoRepository.buscarPorIdParaActualizar(pedidoId)).thenReturn(Optional.of(pedido));
+
+        BusinessRuleException ex = assertThrows(BusinessRuleException.class,
+                () -> pedidoService.cambiarEstado(pedidoId, EstadoPedido.ENTREGADO));
+
+        assertTrue(ex.getMessage().contains("No se puede pasar de PAGADO a ENTREGADO"));
+        verify(pedidoRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Debe lanzar ResourceNotFoundException al cambiar el estado de un pedido inexistente")
+    void cambiarEstado_PedidoNoEncontrado_LanzaExcepcion() {
+        when(pedidoRepository.buscarPorIdParaActualizar(pedidoId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> pedidoService.cambiarEstado(pedidoId, EstadoPedido.PAGADO));
+
+        verify(pedidoRepository, never()).save(any());
     }
 }

@@ -109,6 +109,25 @@ class DetalleProductoControllerTest {
     }
 
     @Test
+    @DisplayName("POST /api/detalle-productos - Los cuidados y la duración son obligatorios, igual que al actualizar")
+    void registrar_SinCuidadosNiDuracion_Retorna400() throws Exception {
+        String json = """
+                {
+                    "productoId": "%s"
+                }
+                """.formatted(productoId);
+
+        mockMvc.perform(post("/api/detalle-productos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errores.cuidados").exists())
+                .andExpect(jsonPath("$.errores.duracionDias").exists());
+
+        verify(detalleProductoService, never()).registrar(any());
+    }
+
+    @Test
     @DisplayName("POST /api/detalle-productos - Debe retornar 400 Bad Request cuando el producto ya tiene detalle")
     void registrar_DetalleExistente_Retorna400() throws Exception {
         when(detalleProductoService.registrar(any()))

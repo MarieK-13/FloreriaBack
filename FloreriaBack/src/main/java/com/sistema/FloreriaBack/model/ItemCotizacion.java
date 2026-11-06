@@ -31,10 +31,10 @@ public class ItemCotizacion {
     @Column(nullable = false)
     private Integer cantidad;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precioUnitario; 
     
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal subtotal;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -55,7 +55,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (JwtException | IllegalArgumentException | UsernameNotFoundException e) {
-            // Token inválido, expirado o de un usuario que ya no existe: se sigue como anónimo
             SecurityContextHolder.clearContext();
         }
 

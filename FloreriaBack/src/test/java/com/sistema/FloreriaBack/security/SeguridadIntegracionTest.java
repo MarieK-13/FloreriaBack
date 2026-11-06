@@ -57,7 +57,7 @@ class SeguridadIntegracionTest {
 
     @BeforeEach
     void setUp() {
-        admin = usuarioRepository.findByEmail("admin.seguridad@test.com")
+        admin = usuarioRepository.findByEmailIgnoreCase("admin.seguridad@test.com")
                 .orElseGet(() -> usuarioRepository.save(Usuario.builder()
                         .nombre("Admin Seguridad")
                         .email("admin.seguridad@test.com")
@@ -66,7 +66,7 @@ class SeguridadIntegracionTest {
                         .activo(true)
                         .build()));
 
-        cliente = usuarioRepository.findByEmail("cliente.seguridad@test.com")
+        cliente = usuarioRepository.findByEmailIgnoreCase("cliente.seguridad@test.com")
                 .orElseGet(() -> usuarioRepository.save(Usuario.builder()
                         .nombre("Cliente Seguridad")
                         .email("cliente.seguridad@test.com")
@@ -209,15 +209,7 @@ class SeguridadIntegracionTest {
     @Test
     @DisplayName("GET /api/pedidos - Con token de OPERARIO debe retornar 200 OK")
     void listarPedidos_ConTokenOperario_Retorna200() throws Exception {
-        Usuario operario = usuarioRepository.findByEmail("operario.seguridad@test.com")
-                .orElseGet(() -> usuarioRepository.save(Usuario.builder()
-                        .nombre("Operario Test")
-                        .email("operario.seguridad@test.com")
-                        .contrasena(passwordEncoder.encode("OperarioPass123!"))
-                        .rol(RolUsuario.OPERARIO)
-                        .activo(true)
-                        .build()));
-        String tokenOperario = jwtUtils.generarToken(UsuarioPrincipal.desde(operario));
+        String tokenOperario = generarTokenOperario();
 
         mockMvc.perform(get("/api/pedidos")
                         .header("Authorization", "Bearer " + tokenOperario))
@@ -227,15 +219,7 @@ class SeguridadIntegracionTest {
     @Test
     @DisplayName("GET /api/pedidos/reportes/ventas - Con token de OPERARIO debe retornar 403 Forbidden")
     void verReportesVentas_ConTokenOperario_Retorna403() throws Exception {
-        Usuario operario = usuarioRepository.findByEmail("operario.seguridad@test.com")
-                .orElseGet(() -> usuarioRepository.save(Usuario.builder()
-                        .nombre("Operario Test")
-                        .email("operario.seguridad@test.com")
-                        .contrasena(passwordEncoder.encode("OperarioPass123!"))
-                        .rol(RolUsuario.OPERARIO)
-                        .activo(true)
-                        .build()));
-        String tokenOperario = jwtUtils.generarToken(UsuarioPrincipal.desde(operario));
+        String tokenOperario = generarTokenOperario();
 
         mockMvc.perform(get("/api/pedidos/reportes/ventas")
                         .param("inicio", "2026-10-01")
@@ -244,7 +228,7 @@ class SeguridadIntegracionTest {
                 .andExpect(status().isForbidden());
     }
 
-    // 7. REGLA DE PROPIEDAD DE RECURSO: CLIENTE A CONSULTA AL CLIENTE B (TAREA 3.3)
+    // 7. REGLA DE PROPIEDAD DE RECURSO: CLIENTE A CONSULTA AL CLIENTE B
     @Test
     @DisplayName("GET /api/pedidos/usuario/{id} - Un CLIENTE A no puede consultar los pedidos de un CLIENTE B (403)")
     void clienteA_ConsultaPedidosClienteB_Retorna403() throws Exception {
@@ -255,25 +239,103 @@ class SeguridadIntegracionTest {
                 .andExpect(status().isForbidden());
     }
 
-    // 8. USUARIO DESACTIVADO 
+    // 8. USUARIO DESACTIVADO
+    @Test
     @DisplayName("Filtro JWT: Un usuario que pasó a estar inactivo es expulsado con 401 Unauthorized")
     void peticion_ConTokenDeUsuarioQuePasoAInactivo_Retorna401() throws Exception {
         Usuario mutante = usuarioRepository.save(Usuario.builder()
                 .nombre("Usuario Mutante")
-                .email("mutante.seguridad@test.com")
+                .email("mutante." + UUID.randomUUID() + "@test.com")
                 .contrasena(passwordEncoder.encode("Mutante123!"))
                 .rol(RolUsuario.CLIENTE)
-                .activo(true) 
+                .activo(true)
                 .build());
-        
-        String tokenMutante = jwtUtils.generarToken(UsuarioPrincipal.desde(mutante));
 
-        mutante.setActivo(false);
-        usuarioRepository.save(mutante);
+        try {
+            String tokenMutante = jwtUtils.generarToken(UsuarioPrincipal.desde(mutante));
 
-        mockMvc.perform(get("/api/categorias")
-                        .header("Authorization", "Bearer " + tokenMutante))
-                .andExpect(status().isUnauthorized()); 
+            // Con el usuario activo, el mismo token funciona
+            mockMvc.perform(get("/api/auth/me")
+                            .header("Authorization", "Bearer " + tokenMutante))
+                    .andExpect(status().isOk());
+
+            mutante.setActivo(false);
+            usuarioRepository.save(mutante);
+
+            // /api/auth/me es un endpoint protegido: el token del usuario desactivado deja de servir
+            mockMvc.perform(get("/api/auth/me")
+                            .header("Authorization", "Bearer " + tokenMutante))
+                    .andExpect(status().isUnauthorized());
+        } finally {
+            usuarioRepository.delete(mutante);
+        }
+    }
+
+    // 9. PERFIL AUTENTICADO
+    @Test
+    @DisplayName("GET /api/auth/me - Sin token debe retornar 401 Unauthorized")
+    void me_SinToken_Retorna401() throws Exception {
+        mockMvc.perform(get("/api/auth/me"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("GET /api/auth/me - Con token válido debe retornar 200 OK con los datos del usuario")
+    void me_ConTokenValido_Retorna200() throws Exception {
+        mockMvc.perform(get("/api/auth/me")
+                        .header("Authorization", "Bearer " + tokenCliente))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("cliente.seguridad@test.com"));
+    }
+
+    // 10. REGLAS POR ROL DEFINIDAS EN SecurityConfig (única fuente de verdad)
+    @Test
+    @DisplayName("POST /api/categorias - Con token de OPERARIO debe retornar 403 Forbidden (solo ADMINISTRADOR)")
+    void crearCategoria_ConTokenOperario_Retorna403() throws Exception {
+        CategoriaRequestDTO dto = new CategoriaRequestDTO();
+        dto.setNombre("Categoria Operario Prohibida");
+
+        mockMvc.perform(post("/api/categorias")
+                        .header("Authorization", "Bearer " + generarTokenOperario())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("GET /api/pedidos/reportes/ventas - Con token de CLIENTE debe retornar 403 Forbidden")
+    void verReportesVentas_ConTokenCliente_Retorna403() throws Exception {
+        mockMvc.perform(get("/api/pedidos/reportes/ventas")
+                        .param("inicio", "2026-10-01")
+                        .param("fin", "2026-10-31")
+                        .header("Authorization", "Bearer " + tokenCliente))
+                .andExpect(status().isForbidden());
+    }
+
+    // 11. EMAIL SIN DISTINGUIR MAYÚSCULAS
+    @Test
+    @DisplayName("POST /api/auth/login - El email se acepta sin distinguir mayúsculas")
+    void login_EmailConOtraCapitalizacion_Retorna200() throws Exception {
+        LoginRequestDTO loginDTO = new LoginRequestDTO();
+        loginDTO.setEmail("ADMIN.Seguridad@TEST.com");
+        loginDTO.setContrasena("AdminPass123!");
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("admin.seguridad@test.com"));
+    }
+
+    private String generarTokenOperario() {
+        Usuario operario = usuarioRepository.findByEmailIgnoreCase("operario.seguridad@test.com")
+                .orElseGet(() -> usuarioRepository.save(Usuario.builder()
+                        .nombre("Operario Test")
+                        .email("operario.seguridad@test.com")
+                        .contrasena(passwordEncoder.encode("OperarioPass123!"))
+                        .rol(RolUsuario.OPERARIO)
+                        .activo(true)
+                        .build()));
+        return jwtUtils.generarToken(UsuarioPrincipal.desde(operario));
     }
 }
-

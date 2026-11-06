@@ -10,6 +10,7 @@ import com.sistema.FloreriaBack.model.Usuario;
 import com.sistema.FloreriaBack.model.enums.RolUsuario;
 import com.sistema.FloreriaBack.repository.UsuarioRepository;
 import com.sistema.FloreriaBack.service.UsuarioService;
+import com.sistema.FloreriaBack.util.EmailUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +35,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     @Transactional
     public UsuarioResponseDTO registrar(UsuarioRequestDTO dto) {
-        if (repository.existsByEmailIgnoreCase(dto.getEmail())) {
+        if (repository.existsByEmailIgnoreCase(EmailUtils.normalizar(dto.getEmail()))) {
             throw new BusinessRuleException("Ya existe un usuario con ese email");
         }
         Usuario usuario = mapper.toEntity(dto);
@@ -64,9 +65,9 @@ public class UsuarioServiceImpl implements UsuarioService {
     public UsuarioResponseDTO actualizar(UUID id, UsuarioUpdateRequestDTO dto, UUID idUsuarioActual) {
         Usuario usuario = buscarEntidad(id);
 
-        if (repository.existsByEmailIgnoreCaseAndIdNot(dto.getEmail(), id)) {
-        throw new BusinessRuleException("Ya existe un usuario con ese email");
-    }
+        if (repository.existsByEmailIgnoreCaseAndIdNot(EmailUtils.normalizar(dto.getEmail()), id)) {
+            throw new BusinessRuleException("Ya existe un usuario con ese email");
+        }
         if (id.equals(idUsuarioActual) && dto.getRol() != RolUsuario.ADMINISTRADOR) {
             throw new BusinessRuleException("No puede quitarse su propio rol de administrador");
         }

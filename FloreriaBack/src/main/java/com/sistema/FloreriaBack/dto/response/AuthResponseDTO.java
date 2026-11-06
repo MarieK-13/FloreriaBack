@@ -10,7 +10,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AuthResponseDTO {
     private String token;
-    private String tipo;          // siempre "Bearer"
+    private String tipo;          
     private long expiraEnMs;
     private UUID usuarioId;
     private String nombre;

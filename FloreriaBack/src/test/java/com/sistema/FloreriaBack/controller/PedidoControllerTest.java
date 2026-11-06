@@ -238,4 +238,49 @@ class PedidoControllerTest {
 
         verify(pedidoService, times(1)).cambiarEstado(eq(pedidoId), eq(EstadoPedido.PAGADO));
     }
+
+    @Test
+    @DisplayName("PATCH /api/pedidos/{id}/estado - Un estado inexistente debe retornar 400 con el formato JSON estándar")
+    void cambiarEstado_EstadoInexistente_Retorna400() throws Exception {
+        mockMvc.perform(patch("/api/pedidos/{id}/estado", pedidoId)
+                        .param("nuevoEstado", "VOLANDO"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.mensaje", containsString("nuevoEstado")));
+
+        verify(pedidoService, never()).cambiarEstado(any(), any());
+    }
+
+    @Test
+    @DisplayName("PATCH /api/pedidos/{id}/estado - Sin el parámetro nuevoEstado debe retornar 400")
+    void cambiarEstado_SinParametro_Retorna400() throws Exception {
+        mockMvc.perform(patch("/api/pedidos/{id}/estado", pedidoId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.mensaje", containsString("nuevoEstado")));
+
+        verify(pedidoService, never()).cambiarEstado(any(), any());
+    }
+
+    @Test
+    @DisplayName("GET /api/pedidos/{id} - Un UUID mal escrito debe retornar 400")
+    void buscarPorId_UuidInvalido_Retorna400() throws Exception {
+        mockMvc.perform(get("/api/pedidos/{id}", "no-es-un-uuid"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+
+        verify(pedidoService, never()).buscarPorId(any());
+    }
+
+    @Test
+    @DisplayName("POST /api/pedidos - Un JSON mal formado debe retornar 400")
+    void crear_JsonMalFormado_Retorna400() throws Exception {
+        mockMvc.perform(post("/api/pedidos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ esto no es json"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+
+        verify(pedidoService, never()).crear(any());
+    }
 }

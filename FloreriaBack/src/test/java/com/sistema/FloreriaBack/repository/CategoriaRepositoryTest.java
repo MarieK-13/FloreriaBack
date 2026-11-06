@@ -1,6 +1,7 @@
 package com.sistema.FloreriaBack.repository;
 
 import com.sistema.FloreriaBack.model.Categoria;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,8 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 class CategoriaRepositoryTest {
@@ -20,36 +22,32 @@ class CategoriaRepositoryTest {
     @Autowired
     private CategoriaRepository categoriaRepository;
 
-    @Test
-    @DisplayName("existsByNombreIgnoreCase: detecta coincidencia sin importar mayúsculas o minúsculas")
-    void existsByNombreIgnoreCase_DetectaCoincidencia() {
-        Categoria c = Categoria.builder()
-                .nombre("Rosas")
-                .descripcion("Rosas variadas")
-                .build();
-        entityManager.persistAndFlush(c);
+    private Categoria rosas;
 
-        assertTrue(categoriaRepository.existsByNombreIgnoreCase("rosas"));
-        assertTrue(categoriaRepository.existsByNombreIgnoreCase("ROSAS"));
+    @BeforeEach
+    void setUp() {
+        rosas = entityManager.persistAndFlush(Categoria.builder()
+                .nombre("Rosas")
+                .descripcion("Arreglos con rosas")
+                .build());
+    }
+
+    @Test
+    @DisplayName("existsByNombreIgnoreCase detecta el nombre sin distinguir mayúsculas")
+    void existsByNombreIgnoreCase() {
+        assertTrue(categoriaRepository.existsByNombreIgnoreCase("rOSAS"));
         assertFalse(categoriaRepository.existsByNombreIgnoreCase("Girasoles"));
     }
 
     @Test
-    @DisplayName("existsByNombreIgnoreCaseAndIdNot: valida duplicado ignorando el id propio")
-    void existsByNombreIgnoreCaseAndIdNot_ValidaDuplicado() {
-        Categoria c1 = Categoria.builder()
-                .nombre("Rosas")
-                .descripcion("Rosas rojas")
-                .build();
-        Categoria c2 = Categoria.builder()
-                .nombre("Tulipanes")
-                .descripcion("Tulipanes holandeses")
-                .build();
+    @DisplayName("existsByNombreIgnoreCaseAndIdNot permite el mismo nombre en su propio registro")
+    void existsByNombreIgnoreCaseAndIdNot_mismoId() {
+        assertFalse(categoriaRepository.existsByNombreIgnoreCaseAndIdNot("rosas", rosas.getId()));
+    }
 
-        UUID idRosas = entityManager.persistAndFlush(c1).getId();
-        UUID idTulipanes = entityManager.persistAndFlush(c2).getId();
-
-        assertFalse(categoriaRepository.existsByNombreIgnoreCaseAndIdNot("ROSAS", idRosas));
-        assertTrue(categoriaRepository.existsByNombreIgnoreCaseAndIdNot("ROSAS", idTulipanes));
+    @Test
+    @DisplayName("existsByNombreIgnoreCaseAndIdNot detecta el nombre usado por otro registro")
+    void existsByNombreIgnoreCaseAndIdNot_otroId() {
+        assertTrue(categoriaRepository.existsByNombreIgnoreCaseAndIdNot("ROSAS", UUID.randomUUID()));
     }
 }
