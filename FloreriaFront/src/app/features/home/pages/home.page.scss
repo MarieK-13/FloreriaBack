@@ -1,0 +1,50 @@
+.welcome {
+  margin: clamp(4rem, 14vh, 9rem) auto;
+  max-width: 48rem;
+  padding: 0 1.5rem;
+  text-align: center;
+}
+
+.eyebrow {
+  color: #547562;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+h1 {
+  color: #254c3b;
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+  margin: 1rem 0;
+}
+
+h1 span {
+  color: #b65f76;
+}
+
+.description {
+  color: #626963;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin: 0 auto;
+  max-width: 37rem;
+}
+
+.status {
+  align-items: center;
+  color: #547562;
+  display: inline-flex;
+  font-size: 0.9rem;
+  gap: 0.55rem;
+  margin-top: 2rem;
+}
+
+.status span {
+  background: #5a9c70;
+  border-radius: 50%;
+  height: 0.55rem;
+  width: 0.55rem;
+}
