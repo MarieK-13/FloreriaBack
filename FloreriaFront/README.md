@@ -23,13 +23,13 @@ src/
 │   ├── core/                 # Infraestructura transversal
 │   │   ├── api/              # URL base y configuración HTTP
 │   │   ├── guards/           # Protección de rutas privadas
-│   │   ├── interceptors/     # JWT y errores HTTP comunes
-│   │   ├── models/           # Tipos verdaderamente compartidos
+│   │   ├── interceptors/     # JWT y manejo común de errores HTTP
+│   │   ├── models/           # Tipos compartidos entre funcionalidades
 │   │   └── services/         # Sesión y servicios globales
-│   ├── features/             # Flujos de usuario mostrados en los mockups
-│   │   ├── auth/             # Iniciar sesión y crear cuenta
-│   │   ├── carrito/          # Carrito, entrega y confirmación
-│   │   ├── catalogo/         # Categorías, filtros y detalle de producto
+│   ├── features/             # Funcionalidades agrupadas por flujo
+│   │   ├── auth/             # Inicio de sesión y registro
+│   │   ├── carrito/          # Carrito y entrega
+│   │   ├── catalogo/         # Categorías, filtros y productos
 │   │   ├── cotizaciones/     # Asistente y cotización personalizada
 │   │   ├── fechas/           # Fechas importantes y recordatorios
 │   │   ├── favoritos/        # Productos guardados
@@ -37,11 +37,18 @@ src/
 │   │   ├── nosotros/         # Información de la florería
 │   │   ├── pedidos/          # Historial y seguimiento
 │   │   └── perfil/           # Datos personales y seguridad
-│   ├── layout/               # Cabecera, navegación y pie comunes
-│   ├── shared/               # UI, directivas y pipes reutilizables
+│   ├── layout/               # Cabecera y pie compartidos
+│   │   └── components/
+│   ├── shared/               # Componentes visuales sin lógica de negocio
 │   │   ├── components/
+│   │   │   ├── product-card/
+│   │   │   ├── section-heading/
+│   │   │   └── ui-button/
 │   │   ├── directives/
-│   │   └── pipes/
+│   │   ├── pipes/
+│   │   └── utils/
+│   ├── app.ts                # Root: monta layout y router-outlet
+│   ├── app.scss
 │   ├── app.config.ts
 │   └── app.routes.ts
 ├── environments/             # Configuración por entorno
@@ -52,6 +59,23 @@ src/
 La organización sigue los recorridos que aparecen en los mockups, no una carpeta por cada tabla de la base de datos. Cada feature contiene sus `pages/`, `services/` y `models/`; por ejemplo, el catálogo reúne la navegación por categoría, los filtros y el detalle del producto. La sesión, guards e interceptores van en `core/`; la cabecera, navegación y pie que se repiten en las pantallas van en `layout/`. `shared/` queda para componentes visuales reutilizados que no pertenecen a un flujo específico.
 
 Las rutas de cada flujo se cargan de forma diferida desde `app.routes.ts`. El acceso a la API vive en servicios y usa la URL de `core/api/api.config.ts`. Las pantallas de administración no se agregaron porque no aparecen en los mockups recibidos; se pueden incorporar cuando exista ese diseño.
+
+## Plantillas en TypeScript
+
+Las plantillas Angular de los componentes se escriben inline en la propiedad `template` del decorador `@Component`; no se crean archivos `.html` por pantalla o componente. `src/index.html` se conserva porque Angular lo necesita como documento host para arrancar la aplicación. Aunque la plantilla esté dentro de TypeScript, el marcado que contiene sigue usando la sintaxis de templates Angular.
+
+## Base visual para nuevas pantallas
+
+El root de la aplicación (`app.ts`) mantiene la cabecera y el pie de página alrededor del `router-outlet`; las páginas nuevas no deben duplicarlos. Los estilos globales y tokens visuales viven en `src/styles.scss`: usar las variables `--color-*`, `--radius-card`, `--shadow-card` y `--content-width` para conservar la paleta verde, rosa y crema de los mockups.
+
+La página de inicio sirve como referencia para el equipo y demuestra los componentes reutilizables:
+
+- `app-ui-button`: variantes `primary`, `outline` y `quiet`; acepta contenido con `<ng-content />`.
+- `app-section-heading`: encabezado de sección con `title`, `eyebrow` y `subtitle`.
+- `app-product-card`: tarjeta de producto tipada, con precio, etiquetas, imagen opcional y evento `add`.
+- `app-site-header` y `app-site-footer`: navegación persistente y enlaces generales.
+
+Al crear un componente compartido, seguir el patrón `shared/components/<nombre>/<nombre>.ts` y `<nombre>.scss`; escribir la plantilla en la propiedad `template` del decorador `@Component`. Mantenerlo configurable mediante inputs tipados, emitir eventos mediante outputs y evitar acoplarlo a servicios o datos propios de una feature. Los componentes exclusivos de una pantalla permanecen dentro de la feature correspondiente. Las imágenes definitivas se agregan en `public/` y se referencian desde sus datos; no incrustar recursos temporales en los estilos.
 
 ## Convenciones
 

@@ -1,33 +1,9 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
 
-.site-header {
-  align-items: center;
-  border-bottom: 1px solid #e8e4e1;
-  display: flex;
-  min-height: 4.5rem;
-  padding: 0 clamp(1.25rem, 6vw, 5rem);
-}
-
-.brand {
-  align-items: center;
-  color: #254c3b;
-  display: inline-flex;
-  font-size: 1.15rem;
-  font-weight: 700;
-  gap: 0.65rem;
-  text-decoration: none;
-}
-
-.brand-mark {
-  align-items: center;
-  background: #254c3b;
-  border-radius: 50%;
-  color: #fff;
-  display: inline-flex;
-  height: 2rem;
-  justify-content: center;
-  width: 2rem;
+main {
+  flex: 1;
 }
