@@ -45,6 +45,7 @@ src/
 │   │   │   ├── section-heading/
 │   │   │   └── ui-button/
 │   │   ├── directives/
+│   │   ├── models/
 │   │   ├── pipes/
 │   │   └── utils/
 │   ├── app.ts                # Root: monta layout y router-outlet
@@ -59,6 +60,12 @@ src/
 La organización sigue los recorridos que aparecen en los mockups, no una carpeta por cada tabla de la base de datos. Cada feature contiene sus `pages/`, `services/` y `models/`; por ejemplo, el catálogo reúne la navegación por categoría, los filtros y el detalle del producto. La sesión, guards e interceptores van en `core/`; la cabecera, navegación y pie que se repiten en las pantallas van en `layout/`. `shared/` queda para componentes visuales reutilizados que no pertenecen a un flujo específico.
 
 Las rutas de cada flujo se cargan de forma diferida desde `app.routes.ts`. El acceso a la API vive en servicios y usa la URL de `core/api/api.config.ts`. Las pantallas de administración no se agregaron porque no aparecen en los mockups recibidos; se pueden incorporar cuando exista ese diseño.
+
+La parte de Tienda pública cubre Inicio, Catálogo con filtros y orden, detalle de productos/packs y Nosotros. El catálogo consulta los endpoints públicos `/api/productos`, `/api/categorias` y `/api/detalle-productos`; no usa un catálogo paralelo de datos ficticios.
+
+Los filtros de precio, color, tamaño, ocasión, categoría y disponibilidad usan campos existentes en el catálogo y sus fichas. El mockup también muestra “Más recientes” y productos en campaña/descuento; la fecha de creación y los datos de campañas no están incluidos en el DTO actual del backend. Por eso esa opción de ordenamiento se muestra deshabilitada y el filtro de campañas solo coincide si la descripción de un producto declara una campaña o descuento.
+
+`CartService` mantiene en memoria las cantidades y el subtotal mientras la aplicación está abierta. Es el estado compartido para que la tarjeta de producto y la cabecera reflejen los artículos agregados; no implementa persistencia ni confirmación de pedidos.
 
 ## Plantillas en TypeScript
 

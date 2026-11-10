@@ -1,29 +1,36 @@
-import { Component, signal } from '@angular/core';
-import { ProductCard, ProductCardData } from '../../../shared/components/product-card/product-card';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { CartService } from '../../../core/services/cart.service';
+import { CatalogService } from '../../catalogo/services/catalog.service';
+import { Product } from '../../../shared/models/product.model';
+import { CampaignPanel } from '../components/campaign-panel/campaign-panel';
+import { ProductCard } from '../../../shared/components/product-card/product-card';
 import { SectionHeading } from '../../../shared/components/section-heading/section-heading';
 import { UiButton } from '../../../shared/components/ui-button/ui-button';
 
 @Component({
   selector: 'app-home-page',
-  imports: [ProductCard, SectionHeading, UiButton],
+  imports: [CampaignPanel, ProductCard, RouterLink, SectionHeading, UiButton],
   template: `
     <section class="hero page-width" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <span class="eyebrow-pill">Especial para cada ocasión</span>
+        <span class="eyebrow-pill">Especial Día de la Madre</span>
         <h1 id="hero-title">Flores que cuentan <em>tu historia</em></h1>
         <p>
           Elige de nuestro catálogo o cuéntale a nuestro asistente qué necesitas y recibe tu
           cotización al instante.
         </p>
         <div class="hero-actions">
-          <a class="button-link" href="#catalogo">Ver catálogo</a>
-          <a class="button-link button-link--outline" href="#cotizador">Cotiza tu arreglo</a>
+          <a class="button-link" routerLink="/catalogo">Ver catálogo</a>
+          <a class="button-link button-link--outline" href="/#cotizador">Cotiza tu arreglo</a>
         </div>
       </div>
       <div class="hero-art" role="img" aria-label="Arreglo floral de temporada">
         <span class="delivery-note">Entrega hoy</span>
         <span class="hero-flower" aria-hidden="true">✿</span>
-        <span class="occasion-note"><strong>Tu aniversario es en 7 días</strong><br />Mira arreglos para esa fecha</span>
+        <span class="occasion-note">
+          <strong>Tu aniversario es en 7 días</strong><br />Mira arreglos para esa fecha
+        </span>
       </div>
     </section>
 
@@ -55,7 +62,11 @@ import { UiButton } from '../../../shared/components/ui-button/ui-button';
       />
       <div class="occasion-grid">
         @for (occasion of occasions; track occasion.name) {
-          <a class="occasion-card" href="#catalogo">
+          <a
+            class="occasion-card"
+            routerLink="/catalogo"
+            [queryParams]="{ ocasion: occasion.name }"
+          >
             <span class="occasion-icon" aria-hidden="true">{{ occasion.icon }}</span>
             <strong>{{ occasion.name }}</strong>
             <small>{{ occasion.detail }}</small>
@@ -64,28 +75,69 @@ import { UiButton } from '../../../shared/components/ui-button/ui-button';
       </div>
     </section>
 
-    <section class="products-section page-width" id="catalogo" aria-labelledby="products-title">
+    <app-campaign-panel />
+
+    <section class="products-section page-width" aria-labelledby="products-title">
       <app-section-heading
         headingId="products-title"
         eyebrow="Hechos con cariño"
-        title="Nuestros favoritos"
+        title="Productos destacados"
         subtitle="Arreglos frescos para regalar o alegrar tu espacio."
       />
-      <div class="product-grid">
-        @for (product of products; track product.id) {
-          <app-product-card [product]="product" (add)="onAddProduct($event)" />
-        }
-      </div>
+
+      @if (isLoading()) {
+        <p class="catalog-state" role="status">Cargando productos...</p>
+      } @else if (loadError()) {
+        <div class="catalog-state catalog-state--error" role="alert">
+          <p>{{ loadError() }}</p>
+          <app-ui-button variant="outline" (click)="loadCatalog()">Volver a intentar</app-ui-button>
+        </div>
+      } @else if (featuredProducts().length === 0) {
+        <p class="catalog-state">Pronto encontrarás aquí los arreglos destacados.</p>
+      } @else {
+        <div class="product-grid">
+          @for (product of featuredProducts(); track product.id) {
+            <app-product-card [product]="product" (add)="addToCart($event)" />
+          }
+        </div>
+      }
+
       <p class="cart-message" aria-live="polite">{{ cartMessage() }}</p>
       <div class="catalog-action">
-        <app-ui-button variant="outline">Explorar catálogo</app-ui-button>
+        <app-ui-button variant="outline" routerLink="/catalogo">Explorar catálogo</app-ui-button>
       </div>
     </section>
+
+    @if (newProducts().length > 0) {
+      <section class="products-section new-products page-width" aria-labelledby="new-products-title">
+        <app-section-heading
+          headingId="new-products-title"
+          eyebrow="Para regalar"
+          title="Novedades"
+          subtitle="Packs de flores preparados para regalar."
+        />
+        <div class="product-grid">
+          @for (product of newProducts(); track product.id) {
+            <app-product-card [product]="product" (add)="addToCart($event)" />
+          }
+        </div>
+      </section>
+    }
   `,
   styleUrl: './home.page.scss',
 })
-export class HomePage {
+export class HomePage implements OnInit {
+  private readonly catalogService = inject(CatalogService);
+  private readonly cartService = inject(CartService);
+
+  protected readonly isLoading = signal(true);
+  protected readonly loadError = signal('');
+  protected readonly products = signal<Product[]>([]);
   protected readonly cartMessage = signal('');
+  protected readonly featuredProducts = computed(() => this.products().slice(0, 4));
+  protected readonly newProducts = computed(() =>
+    this.products().filter((product) => product.kind === 'pack').slice(0, 3),
+  );
 
   protected readonly occasions = [
     { name: 'Aniversario', detail: 'Todo el año', icon: '✿' },
@@ -95,50 +147,32 @@ export class HomePage {
     { name: 'Navidad', detail: 'Diciembre', icon: '❀' },
   ];
 
-  protected readonly products: ProductCardData[] = [
-    {
-      id: 'ramo-rosas',
-      name: 'Ramo de 12 Rosas Rojas',
-      category: 'Rosas',
-      description: 'Un clásico para decir lo que sientes.',
-      price: 65,
-      tags: ['Rojo', 'Mediano', 'Aniversario'],
-      availability: 'Quedan 4',
-    },
-    {
-      id: 'caja-girasoles',
-      name: 'Caja Radiante de Girasoles',
-      category: 'Girasoles',
-      description: 'Un detalle lleno de luz y alegría.',
-      price: 78,
-      tags: ['Amarillo', 'Grande', 'Cumpleaños'],
-    },
-    {
-      id: 'ramo-mixto',
-      name: 'Ramo de Temporada',
-      category: 'Arreglos florales',
-      description: 'Flores frescas elegidas para sorprender.',
-      price: 85,
-      tags: ['Colorido', 'Mediano', 'Regalo'],
-      badge: 'Nuevo',
-    },
-    {
-      id: 'caja-premium',
-      name: 'Caja Premium de Rosas',
-      category: 'Rosas',
-      description: 'Un arreglo especial para grandes momentos.',
-      price: 95,
-      tags: ['Rosado', 'Grande', 'Aniversario'],
-    },
-  ];
+  ngOnInit(): void {
+    this.loadCatalog();
+  }
 
-  protected onAddProduct(productId: string): void {
-    const product = this.products.find(({ id }) => id === productId);
+  protected loadCatalog(): void {
+    this.isLoading.set(true);
+    this.loadError.set('');
 
-    if (!product) {
-      throw new Error(`No se encontró el producto "${productId}" en el catálogo destacado.`);
-    }
+    this.catalogService.getCatalog().subscribe({
+      next: (catalog) => {
+        this.products.set(catalog.products);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.loadError.set('No se pudieron cargar los productos. Verifica la conexión con el catálogo.');
+        this.isLoading.set(false);
+      },
+    });
+  }
 
-    this.cartMessage.set(`${product.name} se añadió al carrito.`);
+  protected addToCart(product: Product): void {
+    this.cartService.addProduct(product);
+    this.cartMessage.set(
+      product.available
+        ? `${product.name} se añadió al carrito.`
+        : `${product.name} no está disponible.`,
+    );
   }
 }

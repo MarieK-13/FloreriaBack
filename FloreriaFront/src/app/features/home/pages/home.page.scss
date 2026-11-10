@@ -257,6 +257,10 @@
   padding-bottom: 5rem;
 }
 
+.new-products {
+  padding-top: 0.5rem;
+}
+
 .product-grid {
   display: grid;
   gap: 1.1rem;
@@ -303,6 +307,7 @@
   .product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
 }
 
 @media (max-width: 540px) {

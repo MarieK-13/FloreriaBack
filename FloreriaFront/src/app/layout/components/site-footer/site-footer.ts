@@ -1,17 +1,19 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-site-footer',
+  imports: [RouterLink],
   template: `
     <footer class="footer" id="nosotros">
       <div class="footer-inner">
         <section class="footer-brand">
-          <a href="/" class="brand">FloriaSmart</a>
+          <a routerLink="/" class="brand">FloriaSmart</a>
           <p>Flores frescas, cotizaciones a tu medida y recordatorios de tus fechas especiales.</p>
         </section>
         <nav class="footer-links" aria-label="Tienda">
           <h2>Tienda</h2>
-          <a href="/#catalogo">Catálogo</a>
+          <a routerLink="/catalogo">Catálogo</a>
           <a href="/#cotizador">Cotizador</a>
           <a href="/#fechas">Mis fechas</a>
         </nav>

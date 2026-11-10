@@ -1,37 +1,33 @@
 import { Component, input, output } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { UiButton } from '../ui-button/ui-button';
-
-export interface ProductCardData {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-  price: number;
-  tags: string[];
-  imageUrl?: string;
-  badge?: string;
-  availability?: string;
-}
+import { Product } from '../../models/product.model';
 
 @Component({
   selector: 'app-product-card',
-  imports: [CurrencyPipe, UiButton],
+  imports: [CurrencyPipe, RouterLink, UiButton],
   template: `
     <article class="card">
-      <a class="product-link" href="/#catalogo" [attr.aria-label]="'Ver ' + product().name">
+      <a
+        class="product-link"
+        [routerLink]="productRoute()"
+        [attr.aria-label]="'Ver ' + product().name"
+      >
         <div
           class="photo"
           [class.photo--has-image]="product().imageUrl"
           [style.background-image]="product().imageUrl ? 'url(' + product().imageUrl + ')' : null"
           role="img"
-          [attr.aria-label]="product().imageUrl ? product().name : 'Imagen referencial de ' + product().name"
+          [attr.aria-label]="
+            product().imageUrl ? product().name : 'Imagen referencial de ' + product().name
+          "
         >
           @if (!product().imageUrl) {
             <span class="photo-placeholder" aria-hidden="true">✿</span>
           }
-          @if (product().availability) {
-            <span class="badge badge--availability">{{ product().availability }}</span>
+          @if (product().stock <= 4 && product().stock > 0) {
+            <span class="badge badge--availability">Quedan {{ product().stock }}</span>
           }
           @if (product().badge) {
             <span class="badge badge--new">{{ product().badge }}</span>
@@ -41,7 +37,7 @@ export interface ProductCardData {
 
       <div class="details">
         <p class="category">{{ product().category }}</p>
-        <h3><a href="/#catalogo">{{ product().name }}</a></h3>
+        <h3><a [routerLink]="productRoute()">{{ product().name }}</a></h3>
         <p class="description">{{ product().description }}</p>
         <ul class="tags" aria-label="Características">
           @for (tag of product().tags; track tag) {
@@ -50,7 +46,13 @@ export interface ProductCardData {
         </ul>
         <div class="purchase-row">
           <strong class="price">{{ product().price | currency: 'PEN' : 'symbol' : '1.2-2' : 'es-PE' }}</strong>
-          <app-ui-button variant="outline" (click)="addToCart()">Añadir</app-ui-button>
+          <app-ui-button
+            variant="outline"
+            [disabled]="!product().available"
+            (click)="addToCart()"
+          >
+            {{ product().available ? 'Añadir' : 'Sin stock' }}
+          </app-ui-button>
         </div>
       </div>
     </article>
@@ -58,10 +60,17 @@ export interface ProductCardData {
   styleUrl: './product-card.scss',
 })
 export class ProductCard {
-  readonly product = input.required<ProductCardData>();
-  readonly add = output<string>();
+  readonly product = input.required<Product>();
+  readonly add = output<Product>();
+
+  protected productRoute(): string[] {
+    return [
+      this.product().kind === 'pack' ? '/packs' : '/productos',
+      this.product().id,
+    ];
+  }
 
   protected addToCart(): void {
-    this.add.emit(this.product().id);
+    this.add.emit(this.product());
   }
 }
