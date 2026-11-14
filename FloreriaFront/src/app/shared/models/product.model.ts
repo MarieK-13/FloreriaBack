@@ -20,6 +20,13 @@ export interface Product {
   imageUrl?: string;
   tags: string[];
   badge?: string;
+  components?: ProductComponent[];
+  validUntil?: string;
+}
+
+export interface ProductComponent {
+  quantity: number;
+  description: string;
 }
 
 export interface ProductCategory {

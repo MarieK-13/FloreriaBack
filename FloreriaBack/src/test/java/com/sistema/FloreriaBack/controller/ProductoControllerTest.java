@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -49,17 +50,17 @@ class ProductoControllerTest extends BaseControllerTest{
         productoId = UUID.randomUUID();
         categoriaId = UUID.randomUUID();
 
-        responseDTO = new ProductoResponseDTO(
-                productoId,
-                "Rosas Rojas",
-                "Ramo de 12 rosas rojas",
-                new BigDecimal("25.00"),
-                10,
-                true,
-                "Rojo",
-                "Grande",
-                "Flores"
-        );
+        responseDTO = ProductoResponseDTO.builder()
+        .id(productoId)
+        .nombre("Rosas Rojas")
+        .descripcion("Ramo de 12 rosas rojas")
+        .precio(new BigDecimal("25.00"))
+        .stock(10)
+        .activo(true)
+        .color("Rojo")
+        .tamano("Grande")
+        .categoriaNombre("Flores")
+        .build();
     }
 
     private String crearRequestJson(UUID catId) {

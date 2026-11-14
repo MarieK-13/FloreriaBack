@@ -16,4 +16,15 @@ public interface ProductoService {
     void eliminar(UUID id);
     List<ProductoResponseDTO> buscarPorNombreYPrecioMaximo(String nombre, BigDecimal precioMax);
     List<ProductoResponseDTO> listarConStockBajo(Integer limite);
+    List<ProductoResponseDTO> filtrarCatalogo(
+        String nombre,
+        UUID categoriaId,
+        String ocasion,
+        String color,
+        String tamano,
+        BigDecimal precioMax,
+        Boolean soloDisponibles,
+        String sortBy,
+        String sortDir
+    );
 }

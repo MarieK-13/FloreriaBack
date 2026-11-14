@@ -1,0 +1,21 @@
+@use '../abstracts' as *;
+
+:root {
+  --color-brand: #{$color-brand};
+  --color-brand-dark: #{$color-brand-dark};
+  --color-brand-soft: #{$color-brand-soft};
+  --color-mintGreen: #{$color-mintGreen};
+  --color-rose: #{$color-rose};
+  --color-rose-dark: #{$color-rose-dark};
+  --color-pink: #{$color-pink};
+  --color-accent: #{$color-accent};
+  --color-mint: #{$color-mint};
+  --color-cream: #{$color-cream};
+  --color-surface: #{$color-surface};
+  --color-text: #{$color-text};
+  --color-muted: #{$color-muted};
+  --color-border: #{$color-border};
+  --color-ink: #{$color-ink};
+  --color-borpink: #{$color-borpink};
+  --color-danger: #{$color-danger};
+}

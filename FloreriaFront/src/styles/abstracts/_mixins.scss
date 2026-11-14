@@ -1,0 +1,35 @@
+@use 'sass:map';
+@use 'variables' as *;
+
+@mixin respond-to($name) {
+  @media (min-width: map.get($breakpoints, $name)) {
+    @content;
+  }
+}
+
+@mixin card($padding: $space-5) {
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  padding: $padding;
+}
+
+@mixin focus-ring {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin truncate-lines($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
