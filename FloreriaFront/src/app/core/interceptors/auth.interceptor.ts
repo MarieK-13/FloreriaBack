@@ -5,10 +5,7 @@ import { catchError, throwError } from 'rxjs';
 import { API_BASE_URL } from '../api/api.config';
 import { AuthService } from '../services/auth.service';
 
-/**
- * Agrega "Authorization: Bearer <token>" a las peticiones hacia nuestra API.
- * Si el backend responde 401 (token vencido o inválido), cierra la sesión y manda al login.
- */
+
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const auth = inject(AuthService);
   const router = inject(Router);

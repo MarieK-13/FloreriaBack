@@ -10,13 +10,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-/**
- * Crea el primer ADMINISTRADOR al arrancar la aplicación.
- * Es necesario porque el registro público (/api/auth/register) solo crea CLIENTES
- * y /api/usuarios ahora exige ser ADMINISTRADOR.
- * Solo actúa si se definieron las variables ADMIN_EMAIL y ADMIN_PASSWORD
- * y si ese email todavía no existe.
- */
 @Component
 public class AdminInitializer implements CommandLineRunner {
 

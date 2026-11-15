@@ -67,6 +67,27 @@
   justify-self: end;
 }
 
+.fav-badge {
+  align-items: center;
+  background: var(--color-rose-dark);
+  border: 1.5px solid var(--color-cream);
+  border-radius: var(--radius-pill);
+  color: var(--color-surface);
+  display: inline-flex;
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 700;
+  height: 1.05rem;
+  justify-content: center;
+  line-height: 1;
+  min-width: 1.05rem;
+  padding-inline: 0.24rem;
+  position: absolute;
+  right: -0.32rem;
+  top: -0.32rem;
+  z-index: 2;
+}
+
 .navigation a {
   color: var(--color-text);
   font-size: 0.93rem;
@@ -119,6 +140,7 @@
   font-size: 2rem;
   line-height: 1;
   padding-bottom: 0;
+  position: relative;
 }
 
 .navigation .cart-link {

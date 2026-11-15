@@ -2,8 +2,9 @@ import { CurrencyPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { CartService } from '../../../core/services/cart.service';
 import { BRAND_CONFIG } from '../../../core/config/brand.config';
+import { FavoritosService } from '../../../features/favoritos/services/favoritos.service';
+import { CarritoService } from '../../../features/carrito/services/carrito.service';
 
 @Component({
   selector: 'app-site-header',
@@ -24,6 +25,7 @@ import { BRAND_CONFIG } from '../../../core/config/brand.config';
             <img [src]="brand.logoDesktop" [alt]="brand.logoAlt" class="brand-logo" />
           </picture>
         </a>
+
         <nav class="navigation main-nav" aria-label="Navegación principal">
           <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
             Inicio
@@ -34,7 +36,7 @@ import { BRAND_CONFIG } from '../../../core/config/brand.config';
         </nav>
 
         <div class="navigation user-actions">
-          <a class="date-link" href="/#fechas">
+          <a class="date-link" routerLink="/mis-fechas" routerLinkActive="is-active">
             <svg
               aria-hidden="true"
               width="16"
@@ -54,7 +56,12 @@ import { BRAND_CONFIG } from '../../../core/config/brand.config';
             Mis fechas
           </a>
 
-          <a class="icon-link" href="/#favoritos" aria-label="Mis favoritos">
+          <a
+            class="icon-link"
+            routerLink="/favoritos"
+            routerLinkActive="is-active"
+            aria-label="Mis favoritos"
+          >
             <svg
               aria-hidden="true"
               width="18"
@@ -70,6 +77,10 @@ import { BRAND_CONFIG } from '../../../core/config/brand.config';
                 d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"
               />
             </svg>
+
+            @if (favoritosService.totalFavoritos() > 0) {
+              <span class="fav-badge">{{ favoritosService.totalFavoritos() }}</span>
+            }
           </a>
 
           @if (auth.user(); as user) {
@@ -114,10 +125,11 @@ import { BRAND_CONFIG } from '../../../core/config/brand.config';
               <span>Iniciar sesión</span>
             </a>
           }
+
           <a
             class="cart-link"
-            href="/#carrito"
-            [attr.aria-label]="'Carrito: ' + cart.itemCount() + ' productos'"
+            routerLink="/carrito"
+            [attr.aria-label]="'Carrito: ' + carritoService.totalUnidades() + ' productos'"
           >
             <svg
               aria-hidden="true"
@@ -128,7 +140,8 @@ import { BRAND_CONFIG } from '../../../core/config/brand.config';
               stroke="currentColor"
               stroke-width="2"
               stroke-linecap="round"
-              stroke-linejoin="round">
+              stroke-linejoin="round"
+            >
               <path
                 d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18"
               />
@@ -138,7 +151,9 @@ import { BRAND_CONFIG } from '../../../core/config/brand.config';
               <circle cx="18" cy="20" r="2" />
               <circle cx="8" cy="20" r="2" />
             </svg>
-            <span>{{ cart.subtotal() | currency: 'PEN' : 'symbol' : '1.2-2' : 'es-PE' }}</span>
+            <span class="cart-amount">{{
+              carritoService.subtotal() | currency: 'PEN' : 'S/ ' : '1.2-2'
+            }}</span>
           </a>
         </div>
       </div>
@@ -147,11 +162,16 @@ import { BRAND_CONFIG } from '../../../core/config/brand.config';
   styleUrl: './site-header.scss',
 })
 export class SiteHeader {
-  protected readonly cart = inject(CartService);
   protected readonly auth = inject(AuthService);
   protected readonly brand = BRAND_CONFIG;
+  protected readonly favoritosService = inject(FavoritosService);
+  protected readonly carritoService = inject(CarritoService);
 
   protected firstName(fullName: string): string {
     return fullName.trim().split(/\s+/)[0] || fullName;
+  }
+
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('token');
   }
 }

@@ -1,7 +1,11 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { Product } from '../../models/product.model';
 import { UiButton } from '../ui-button/ui-button';
+import { FavoritosService } from '../../../features/favoritos/services/favoritos.service';
+import { CarritoService } from '../../../features/carrito/services/carrito.service';
+import { ToastService } from '../toast-notification/service/toast.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-product-card',
@@ -47,8 +51,8 @@ import { UiButton } from '../ui-button/ui-button';
 
         <div class="purchase-row">
           <strong class="price">{{ product().price | currency: 'PEN' : 'S/ ' }}</strong>
-          <app-ui-button [disabled]="!product().available" (click)="add.emit(product())">
-            Añadir
+          <app-ui-button [disabled]="!product().available" (click)="onAddToCart()">
+            {{ recienAgregado() ? '✓ Añadido' : 'Añadir' }}
           </app-ui-button>
         </div>
       </div>
@@ -68,7 +72,6 @@ import { UiButton } from '../ui-button/ui-button';
           </button>
 
           <div class="modal-grid">
-
             <div
               class="modal-photo"
               [style.backgroundImage]="
@@ -143,7 +146,7 @@ import { UiButton } from '../ui-button/ui-button';
                 <app-ui-button
                   variant="outline"
                   [disabled]="!product().available"
-                  (click)="add.emit(product()); closeModal()"
+                  (click)="onAddToCart(true)"
                 >
                   {{ product().available ? 'Añadir al carrito' : 'Agotado' }}
                 </app-ui-button>
@@ -157,15 +160,30 @@ import { UiButton } from '../ui-button/ui-button';
   styleUrl: './product-card.scss',
 })
 export class ProductCard {
+  private readonly favoritosService = inject(FavoritosService);
+  private readonly carritoService = inject(CarritoService);
+  private readonly toastService = inject(ToastService);
+
   readonly product = input.required<Product>();
   readonly add = output<Product>();
   readonly favorite = output<Product>();
-
-  protected readonly isModalOpen = signal(false);
-  protected readonly isFavorite = signal(false);
   readonly horizontal = input(false);
 
+  protected readonly recienAgregado = signal(false);
+  protected readonly isModalOpen = signal(false);
+
+  private readonly router = inject(Router);
+  readonly modoPaginaDetalle = input(false);
+
+  protected readonly isFavorite = computed(() =>
+    this.favoritosService.esFavorito(this.product().id),
+  );
+
   protected openModal(): void {
+    if (this.modoPaginaDetalle()) {
+      this.router.navigate(['/catalogo', this.product().id]);
+      return;
+    }
     this.isModalOpen.set(true);
   }
 
@@ -174,7 +192,26 @@ export class ProductCard {
   }
 
   protected toggleFavorite(): void {
-    this.isFavorite.update((val) => !val);
+    const yaEstaba = this.isFavorite();
+    this.favoritosService.toggleFavorito(this.product().id, this.product());
     this.favorite.emit(this.product());
+
+    this.toastService.mostrar(
+      yaEstaba ? 'Quitado de favoritos' : 'Guardado en favoritos',
+      this.product().name,
+      'info',
+    );
+  }
+
+  protected onAddToCart(closeAfter = false): void {
+    this.carritoService.agregarProducto(this.product());
+    this.add.emit(this.product());
+
+    this.recienAgregado.set(true);
+    setTimeout(() => this.recienAgregado.set(false), 1100);
+
+    if (closeAfter) {
+      this.closeModal();
+    }
   }
 }

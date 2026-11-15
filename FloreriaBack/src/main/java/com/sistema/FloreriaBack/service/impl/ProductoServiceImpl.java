@@ -137,6 +137,7 @@ public class ProductoServiceImpl implements ProductoService {
         producto.setColor(dto.getColor());
         producto.setTamano(dto.getTamano());
         producto.setImagenUrl(dto.getImagenUrl());
+        producto.setImagenesGaleria(dto.getImagenesGaleria());
         producto.setCategoria(categoria);
 
         producto.getOcasiones().clear();

@@ -285,7 +285,7 @@ type FilterSection = 'categories' | 'occasions' | 'colors' | 'flowers' | 'sizes'
             @if (pagedProducts().length > 0) {
               <div class="product-grid" [class.product-grid--two-cols]="gridColumns() === 2">
                 @for (product of pagedProducts(); track product.id) {
-                  <app-product-card [product]="product" [horizontal]="gridColumns() === 2" (add)="addToCart($event)"/>
+                  <app-product-card [product]="product" [modoPaginaDetalle]="true" [horizontal]="gridColumns() === 2" (add)="addToCart($event)"/>
                 }
               </div>
 

@@ -3,135 +3,130 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { safeRedirect } from '../../../core/guards/auth.guards';
 import { AuthService } from '../../../core/services/auth.service';
-import { IconName, UiIcon } from '../../../shared/components/ui-icon/ui-icon';
+import { FavoritosService } from '../../favoritos/services/favoritos.service';
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule, RouterLink, UiIcon],
+  imports: [ReactiveFormsModule, RouterLink],
   template: `
-    <div class="auth-page">
-      <div class="auth-layout">
-        <section class="auth-column" aria-labelledby="login-title">
-          <h1 id="login-title">Bienvenida de nuevo</h1>
-          <p class="auth-subtitle">Ingresa para ver tus pedidos, favoritos y fechas importantes.</p>
+    <section class="auth-viewport">
+      <div class="auth-boutique-card auth-animate-in">
+        <aside class="auth-visual-pane" aria-hidden="true">
+          <span class="visual-kicker">✿ FloriaSmart</span>
+          <div class="visual-frame">
+            <img src="/images/ramo-rosas.svg" alt="" />
+          </div>
+          <p class="visual-caption">
+            Tus arreglos favoritos y pedidos especiales, reunidos en un solo lugar.
+          </p>
+        </aside>
 
-          <div class="auth-card">
-            @if (sessionExpired) {
-              <p class="auth-alert auth-alert--info" role="status">
-                Tu sesión expiró. Vuelve a ingresar para continuar.
-              </p>
-            }
-            @if (serverError()) {
-              <p class="auth-alert" role="alert">{{ serverError() }}</p>
-            }
+        <div class="auth-form-pane" aria-labelledby="login-title">
+          <header class="auth-header">
+            <span class="kicker">Acceso a tu cuenta</span>
+            <h1 id="login-title">Bienvenida de nuevo</h1>
+            <p class="auth-subtitle">Ingresa tus datos para continuar con tu experiencia floral.</p>
+          </header>
 
-            <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-              <div class="field">
-                <label for="login-email">Correo electrónico</label>
-                <input
-                  id="login-email"
-                  type="email"
-                  formControlName="email"
-                  autocomplete="email"
-                  placeholder="tucorreo@correo.com"
-                  [attr.aria-invalid]="showError('email')"
-                  aria-describedby="login-email-error"
-                />
-                @if (showError('email')) {
-                  <span class="field-error" id="login-email-error">
-                    @if (form.controls.email.hasError('required')) {
-                      Ingresa tu correo.
-                    } @else if (form.controls.email.hasError('email')) {
-                      El correo no tiene un formato válido.
-                    } @else {
-                      {{ fieldErrors()['email'] }}
-                    }
-                  </span>
-                }
-              </div>
+          @if (sessionExpired) {
+            <p class="auth-alert auth-alert--info" role="status">
+              Tu sesión expiró. Vuelve a ingresar para continuar.
+            </p>
+          }
+          @if (serverError()) {
+            <p class="auth-alert auth-alert--error" role="alert">{{ serverError() }}</p>
+          }
 
-              <div class="field">
-                <label for="login-password">Contraseña</label>
+          <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="auth-form">
+            <div class="field">
+              <label for="login-email">Correo electrónico</label>
+              <input
+                id="login-email"
+                class="control"
+                type="email"
+                formControlName="email"
+                autocomplete="email"
+                placeholder="tucorreo@ejemplo.com"
+                [attr.aria-invalid]="showError('email')"
+                aria-describedby="login-email-error"
+              />
+              @if (showError('email')) {
+                <span class="field-error" id="login-email-error">
+                  @if (form.controls.email.hasError('required')) {
+                    Ingresa tu correo electrónico.
+                  } @else if (form.controls.email.hasError('email')) {
+                    El formato del correo no es válido.
+                  } @else {
+                    {{ fieldErrors()['email'] }}
+                  }
+                </span>
+              }
+            </div>
+
+            <div class="field">
+              <label for="login-password">Contraseña</label>
+              <div class="password-box control" [class.is-invalid]="showError('contrasena')">
                 <input
                   id="login-password"
-                  type="password"
+                  [type]="showPassword() ? 'text' : 'password'"
                   formControlName="contrasena"
                   autocomplete="current-password"
+                  placeholder="••••••••"
                   [attr.aria-invalid]="showError('contrasena')"
                   aria-describedby="login-password-error"
                 />
-                @if (showError('contrasena')) {
-                  <span class="field-error" id="login-password-error">
-                    @if (form.controls.contrasena.hasError('required')) {
-                      Ingresa tu contraseña.
-                    } @else {
-                      {{ fieldErrors()['contrasena'] }}
-                    }
-                  </span>
-                }
-              </div>
-
-              <div class="form-options">
-                <label class="checkbox">
-                  <input type="checkbox" formControlName="recordarme" />
-                  <span>Recordarme</span>
-                </label>
-                <button type="button" class="link-button" (click)="showForgotHelp.set(true)">
-                  ¿Olvidaste tu contraseña?
+                <button
+                  type="button"
+                  class="toggle-pass-btn"
+                  (click)="showPassword.update((v) => !v)"
+                  [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                >
+                  {{ showPassword() ? 'Ocultar' : 'Ver' }}
                 </button>
               </div>
-
-              @if (showForgotHelp()) {
-                <p class="auth-alert auth-alert--info" role="status">
-                  La recuperación de contraseña todavía no está disponible en línea. Escríbenos y te
-                  ayudamos a recuperar tu acceso.
-                </p>
+              @if (showError('contrasena')) {
+                <span class="field-error" id="login-password-error">
+                  @if (form.controls.contrasena.hasError('required')) {
+                    Ingresa tu contraseña.
+                  } @else {
+                    {{ fieldErrors()['contrasena'] }}
+                  }
+                </span>
               }
+            </div>
 
-              <button class="auth-submit" type="submit" [disabled]="loading()">
-                {{ loading() ? 'Ingresando…' : 'Iniciar sesión' }}
+            <div class="form-options">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="recordarme" />
+                <span>Recordarme</span>
+              </label>
+
+              <button type="button" class="link-subtle" (click)="showForgotHelp.update((v) => !v)">
+                ¿Olvidaste tu contraseña?
               </button>
-            </form>
-          </div>
-        </section>
+            </div>
 
-        <aside class="auth-showcase" aria-label="Por qué comprar en FloriaSmart">
-          <div class="art-wrap">
-            <div class="auth-art">
-              <!-- Ilustración propia; si tienen fotos de sus arreglos, basta con cambiar el archivo -->
-              <img src="/images/ramo-rosas.svg" alt="Ramo de rosas rosadas envuelto en papel" />
-            </div>
-            <span class="floating-chip"
-              ><span class="dot" aria-hidden="true"></span> Entrega hoy</span
-            >
-            <div class="floating-card">
-              <app-ui-icon name="bell" [size]="18" />
-              <div>
-                <strong>Tus fechas, siempre a tiempo</strong>
-                <span>Te avisamos antes de cada ocasión</span>
-              </div>
-            </div>
-          </div>
-        </aside>
+            @if (showForgotHelp()) {
+              <p class="auth-alert auth-alert--info" role="status">
+                La recuperación automática aún no está habilitada. Escríbenos por WhatsApp o correo
+                y restablecemos tu acceso enseguida.
+              </p>
+            }
+
+            <button class="btn-primary-pill" type="submit" [disabled]="loading()">
+              {{ loading() ? 'Ingresando…' : 'Iniciar sesión' }}
+            </button>
+          </form>
+
+          <div class="divider-floral" aria-hidden="true"><span></span><i>✿</i><span></span></div>
+
+          <p class="auth-switch">
+            ¿Aún no tienes una cuenta?
+            <a routerLink="/registro" [queryParams]="redirectParams">Regístrate aquí</a>
+          </p>
+        </div>
       </div>
-
-      <p class="auth-switch">
-        ¿Aún no tienes cuenta?
-        <a routerLink="/registro" [queryParams]="redirectParams">Regístrate</a>
-      </p>
-
-      <ul class="auth-benefits" aria-label="Beneficios">
-        @for (benefit of benefits; track benefit.title) {
-          <li>
-            <span class="benefit-icon"><app-ui-icon [name]="benefit.icon" /></span>
-            <div>
-              <strong>{{ benefit.title }}</strong>
-              <span>{{ benefit.text }}</span>
-            </div>
-          </li>
-        }
-      </ul>
-    </div>
+    </section>
   `,
   styleUrl: './auth-page.scss',
 })
@@ -141,22 +136,17 @@ export class LoginPage {
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(NonNullableFormBuilder);
 
+  private readonly favoritos = inject(FavoritosService);
   private readonly redirect = safeRedirect(this.route.snapshot.queryParamMap.get('redirect'));
   protected readonly redirectParams = this.redirect === '/' ? {} : { redirect: this.redirect };
   protected readonly sessionExpired =
     this.route.snapshot.queryParamMap.get('motivo') === 'sesion-expirada';
 
-  protected readonly benefits: { icon: IconName; title: string; text: string }[] = [
-    { icon: 'truck', title: 'Entrega el mismo día', text: 'En Ica y alrededores' },
-    { icon: 'calendar', title: 'Pedidos programados', text: 'Elige fecha y hora' },
-    { icon: 'flower', title: 'Flores frescas', text: 'Duran de 5 a 10 días' },
-    { icon: 'chat', title: 'Asistente de cotización', text: 'Arma tu arreglo a medida' },
-  ];
-
   protected readonly loading = signal(false);
   protected readonly serverError = signal<string | null>(null);
   protected readonly fieldErrors = signal<Record<string, string>>({});
   protected readonly showForgotHelp = signal(false);
+  protected readonly showPassword = signal(false);
 
   protected readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -183,9 +173,10 @@ export class LoginPage {
     this.fieldErrors.set({});
 
     const { email, contrasena, recordarme } = this.form.getRawValue();
-    this.auth.login({ email, contrasena }, recordarme).subscribe({
+    this.auth.login({ email: email.trim().toLowerCase(), contrasena }, recordarme).subscribe({
       next: () => {
         this.loading.set(false);
+        this.favoritos.sincronizarYCargarDesdeBackend();
         void this.router.navigateByUrl(this.redirect);
       },
       error: (error: unknown) => {

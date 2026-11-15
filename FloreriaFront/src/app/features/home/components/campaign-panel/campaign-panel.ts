@@ -1,6 +1,7 @@
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { UiButton } from '../../../../shared/components/ui-button/ui-button';
+import { MisFechasService } from '../../../../core/services/mis-fechas.service';
 
 interface CampaignItem {
   id: string;
@@ -28,9 +29,16 @@ interface CampaignItem {
           </p>
 
           <div class="campaign-actions">
-            <app-ui-button (click)="activarAviso()">
-              {{ avisoActivado() ? '✓ Aviso activado' : 'Avísame cuando empiece' }}
+            <app-ui-button [disabled]="guardandoAviso() || avisoActivado()" (click)="activarAviso()">
+              @if (guardandoAviso()) {
+                Activando...
+              } @else if (avisoActivado()) {
+                ✓ Aviso activado
+              } @else {
+                Avísame cuando empiece
+              }
             </app-ui-button>
+
             <app-ui-button
               variant="outline"
               routerLink="/catalogo"
@@ -40,9 +48,15 @@ interface CampaignItem {
             </app-ui-button>
           </div>
 
+          <p class="campaign-personal-link">
+            ¿Tienes un cumpleaños o aniversario propio?
+            <a routerLink="/mis-fechas">Guárdalo en Mis fechas importantes →</a>
+          </p>
+
           @if (avisoActivado()) {
             <p class="campaign-feedback" role="status">
-              ¡Listo! Te avisaremos en cuanto comience la campaña de {{ activeCampaign().titulo }}.
+              ¡Listo! Guardamos <strong>{{ activeCampaign().titulo }}</strong> en tus
+              <a routerLink="/mis-fechas">fechas importantes</a> para avisarte antes de que empiece.
             </p>
           }
         </div>
@@ -85,6 +99,8 @@ interface CampaignItem {
 })
 export class CampaignPanel implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  private readonly misFechasService = inject(MisFechasService);
 
   private readonly campanasAnuales: CampaignItem[] = [
     {
@@ -116,6 +132,20 @@ export class CampaignPanel implements OnInit {
       ],
     },
     {
+      id: 'flores-amarillas',
+      titulo: 'Día de las Flores Amarillas',
+      ocasionParam: 'Flores Amarillas',
+      descuentoTexto: '15% de descuento en ramos de girasoles y flores amarillas',
+      rangoFechasTexto: 'del 19 al 21 de marzo',
+      month: 3,
+      day: 19,
+      itemsIncluidos: [
+        'Ramos de girasoles',
+        'Boxes de flores amarillas',
+        'Arreglos con rosas amarillas y margaritas',
+      ],
+    },
+    {
       id: 'dia-madre',
       titulo: 'Día de la Madre',
       ocasionParam: 'Día de la Madre',
@@ -129,7 +159,6 @@ export class CampaignPanel implements OnInit {
         'Combos especiales para mamá',
       ],
     },
-
     {
       id: 'dia-padre',
       titulo: 'Día del Padre',
@@ -170,20 +199,6 @@ export class CampaignPanel implements OnInit {
         'Ramos de flores coloridas',
         'Mini bouquets para amigas',
         'Boxes de amistad',
-      ],
-    },
-    {
-      id: 'flores-amarillas',
-      titulo: 'Día de las Flores Amarillas',
-      ocasionParam: 'Flores Amarillas',
-      descuentoTexto: '15% de descuento en ramos de girasoles y flores amarillas',
-      rangoFechasTexto: 'del 19 al 21 de marzo',
-      month: 3,
-      day: 19,
-      itemsIncluidos: [
-        'Ramos de girasoles',
-        'Boxes de flores amarillas',
-        'Arreglos con rosas amarillas y margaritas',
       ],
     },
     {
@@ -228,7 +243,6 @@ export class CampaignPanel implements OnInit {
         'Arreglos personalizados para graduados',
       ],
     },
-
     {
       id: 'navidad',
       titulo: 'Navidad',
@@ -247,6 +261,7 @@ export class CampaignPanel implements OnInit {
 
   protected readonly now = signal(new Date());
   protected readonly avisoActivado = signal(false);
+  protected readonly guardandoAviso = signal(false);
 
   protected readonly nextCampaignData = computed(() => {
     const current = this.now();
@@ -294,10 +309,56 @@ export class CampaignPanel implements OnInit {
     }, 1000);
 
     this.destroyRef.onDestroy(() => clearInterval(interval));
+
+    // Si ya inició sesión, verificamos si esta campaña ya estaba guardada en su cuenta
+    if (localStorage.getItem('token')) {
+      this.verificarSiYaEstaSuscrito();
+    }
+  }
+
+  private verificarSiYaEstaSuscrito(): void {
+    const tituloActual = this.activeCampaign().titulo.toLowerCase();
+    this.misFechasService.listarMisFechas().subscribe({
+      next: (fechas) => {
+        const yaExiste = fechas.some((f) => f.ocasion.toLowerCase() === tituloActual);
+        if (yaExiste) {
+          this.avisoActivado.set(true);
+        }
+      },
+    });
   }
 
   protected activarAviso(): void {
-    this.avisoActivado.update((v) => !v);
-    // Futuro: aquí llamarás a CampaignService.suscribirAviso(this.activeCampaign().id) en Spring Boot
+    const token = localStorage.getItem('token'); // <-- Ajusta si tu clave de token en localStorage es distinta
+
+    // Si no está logueado, lo llevamos a iniciar sesión
+    if (!token) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: '/' } });
+      return;
+    }
+
+    if (this.avisoActivado() || this.guardandoAviso()) return;
+
+    this.guardandoAviso.set(true);
+    const { campaign, targetDate } = this.nextCampaignData();
+    const fechaIso = `${targetDate.getFullYear()}-${String(campaign.month).padStart(2, '0')}-${String(campaign.day).padStart(2, '0')}`;
+
+    this.misFechasService
+      .crearFecha({
+        ocasion: campaign.titulo,
+        persona: 'Campaña FloriaSmart',
+        fecha: fechaIso,
+        diasAnticipacion: 3,
+      })
+      .subscribe({
+        next: () => {
+          this.guardandoAviso.set(false);
+          this.avisoActivado.set(true);
+        },
+        error: () => {
+          this.guardandoAviso.set(false);
+          this.router.navigate(['/login'], { queryParams: { returnUrl: '/' } });
+        },
+      });
   }
 }

@@ -56,6 +56,7 @@ public class ProductoMapper {
                 p.getColor(),
                 p.getTamano(),
                 p.getImagenUrl(),
+                p.getImagenesGaleria(),
                 p.getOcasiones() != null ? new HashSet<>(p.getOcasiones()) : new HashSet<>(), componentesDTO,
                 p.getFechaValidez(),
                 p.getCategoria() != null ? p.getCategoria().getNombre() : null

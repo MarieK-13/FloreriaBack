@@ -29,257 +29,254 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
-class ProductoControllerTest extends BaseControllerTest{
+class ProductoControllerTest extends BaseControllerTest {
 
-    private MockMvc mockMvc;
+        private MockMvc mockMvc;
 
-    @Mock
-    private ProductoService productoService;
+        @Mock
+        private ProductoService productoService;
 
-    @InjectMocks
-    private ProductoController productoController;
+        @InjectMocks
+        private ProductoController productoController;
 
-    private ProductoResponseDTO responseDTO;
-    private UUID productoId;
-    private UUID categoriaId;
+        private ProductoResponseDTO responseDTO;
+        private UUID productoId;
+        private UUID categoriaId;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = crearMockMvc(productoController);
+        @BeforeEach
+        void setUp() {
+                mockMvc = crearMockMvc(productoController);
 
-        productoId = UUID.randomUUID();
-        categoriaId = UUID.randomUUID();
+                productoId = UUID.randomUUID();
+                categoriaId = UUID.randomUUID();
 
-        responseDTO = new ProductoResponseDTO(
-                productoId,
-                "Rosas Rojas",
-                "Ramo de 12 rosas rojas",
-                new BigDecimal("25.00"),
-                10,
-                true,
-                "Rojo",
-                "Grande",
-                null,
-                Collections.emptySet(),
-                List.of(),
-                null,
-                "Flores");
-    }
+                responseDTO = ProductoResponseDTO.builder()
+                                .id(productoId)
+                                .nombre("Rosas Rojas")
+                                .descripcion("Ramo de 12 rosas rojas")
+                                .precio(new BigDecimal("25.00"))
+                                .stock(10)
+                                .disponible(true)
+                                .color("Rojo")
+                                .tamano("Grande")
+                                .categoriaNombre("Flores")
+                                .build();
+        }
 
-    private String crearRequestJson(UUID catId) {
-        return """
-                {
-                    "nombre": "Rosas Rojas",
-                    "descripcion": "Ramo de 12 rosas rojas",
-                    "precio": 25.00,
-                    "stock": 10,
-                    "color": "Rojo",
-                    "tamano": "Grande",
-                    "categoriaId": "%s"
-                }
-                """.formatted(catId);
-    }
+        private String crearRequestJson(UUID catId) {
+                return """
+                                {
+                                    "nombre": "Rosas Rojas",
+                                    "descripcion": "Ramo de 12 rosas rojas",
+                                    "precio": 25.00,
+                                    "stock": 10,
+                                    "color": "Rojo",
+                                    "tamano": "Grande",
+                                    "categoriaId": "%s"
+                                }
+                                """.formatted(catId);
+        }
 
-    @Test
-    @DisplayName("POST /api/productos - Debe registrar un producto exitosamente y retornar 201 Created")
-    void registrar_Exitoso() throws Exception {
-        when(productoService.registrar(any(ProductoRequestDTO.class))).thenReturn(responseDTO);
+        @Test
+        @DisplayName("POST /api/productos - Debe registrar un producto exitosamente y retornar 201 Created")
+        void registrar_Exitoso() throws Exception {
+                when(productoService.registrar(any(ProductoRequestDTO.class))).thenReturn(responseDTO);
 
-        mockMvc.perform(post("/api/productos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(crearRequestJson(categoriaId)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(productoId.toString()))
-                .andExpect(jsonPath("$.nombre").value("Rosas Rojas"))
-                .andExpect(jsonPath("$.precio").value(25.00))
-                .andExpect(jsonPath("$.stock").value(10))
-                .andExpect(jsonPath("$.disponible").value(true))
-                .andExpect(jsonPath("$.categoriaNombre").value("Flores"));
+                mockMvc.perform(post("/api/productos")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(crearRequestJson(categoriaId)))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.id").value(productoId.toString()))
+                                .andExpect(jsonPath("$.nombre").value("Rosas Rojas"))
+                                .andExpect(jsonPath("$.precio").value(25.00))
+                                .andExpect(jsonPath("$.stock").value(10))
+                                .andExpect(jsonPath("$.disponible").value(true))
+                                .andExpect(jsonPath("$.categoriaNombre").value("Flores"));
 
-        verify(productoService, times(1)).registrar(any(ProductoRequestDTO.class));
-    }
+                verify(productoService, times(1)).registrar(any(ProductoRequestDTO.class));
+        }
 
-    @Test
-    @DisplayName("POST /api/productos - Debe retornar 400 Bad Request cuando la validación del DTO falla")
-    void registrar_ValidacionFallida_Retorna400() throws Exception {
-        String jsonInvalido = "{}";
+        @Test
+        @DisplayName("POST /api/productos - Debe retornar 400 Bad Request cuando la validación del DTO falla")
+        void registrar_ValidacionFallida_Retorna400() throws Exception {
+                String jsonInvalido = "{}";
 
-        mockMvc.perform(post("/api/productos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonInvalido))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.errores.nombre").exists())
-                .andExpect(jsonPath("$.errores.precio").exists())
-                .andExpect(jsonPath("$.errores.stock").exists())
-                .andExpect(jsonPath("$.errores.categoriaId").exists());
+                mockMvc.perform(post("/api/productos")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(jsonInvalido))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.status").value(400))
+                                .andExpect(jsonPath("$.errores.nombre").exists())
+                                .andExpect(jsonPath("$.errores.precio").exists())
+                                .andExpect(jsonPath("$.errores.stock").exists())
+                                .andExpect(jsonPath("$.errores.categoriaId").exists());
 
-        verify(productoService, never()).registrar(any());
-    }
+                verify(productoService, never()).registrar(any());
+        }
 
-    @Test
-    @DisplayName("POST /api/productos - Debe retornar 404 Not Found cuando la categoría no existe")
-    void registrar_CategoriaNoEncontrada_Retorna404() throws Exception {
-        when(productoService.registrar(any(ProductoRequestDTO.class)))
-                .thenThrow(new ResourceNotFoundException("Categoría no encontrada: " + categoriaId));
+        @Test
+        @DisplayName("POST /api/productos - Debe retornar 404 Not Found cuando la categoría no existe")
+        void registrar_CategoriaNoEncontrada_Retorna404() throws Exception {
+                when(productoService.registrar(any(ProductoRequestDTO.class)))
+                                .thenThrow(new ResourceNotFoundException("Categoría no encontrada: " + categoriaId));
 
-        mockMvc.perform(post("/api/productos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(crearRequestJson(categoriaId)))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.mensaje", containsString("Categoría no encontrada")));
+                mockMvc.perform(post("/api/productos")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(crearRequestJson(categoriaId)))
+                                .andExpect(status().isNotFound())
+                                .andExpect(jsonPath("$.status").value(404))
+                                .andExpect(jsonPath("$.mensaje", containsString("Categoría no encontrada")));
 
-        verify(productoService, times(1)).registrar(any(ProductoRequestDTO.class));
-    }
+                verify(productoService, times(1)).registrar(any(ProductoRequestDTO.class));
+        }
 
-    @Test
-    @DisplayName("GET /api/productos - Debe listar todos los productos y retornar 200 OK")
-    void listar_Exitoso() throws Exception {
-        when(productoService.filtrarCatalogo(
-                null, null, null, null, null, null, null, null, null))
-                .thenReturn(List.of(responseDTO));
+        @Test
+        @DisplayName("GET /api/productos - Debe listar todos los productos y retornar 200 OK")
+        void listar_Exitoso() throws Exception {
+                when(productoService.filtrarCatalogo(
+                                null, null, null, null, null, null, null, null, null))
+                                .thenReturn(List.of(responseDTO));
 
-        mockMvc.perform(get("/api/productos"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id").value(productoId.toString()))
-                .andExpect(jsonPath("$[0].nombre").value("Rosas Rojas"));
+                mockMvc.perform(get("/api/productos"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$", hasSize(1)))
+                                .andExpect(jsonPath("$[0].id").value(productoId.toString()))
+                                .andExpect(jsonPath("$[0].nombre").value("Rosas Rojas"));
 
-        verify(productoService, times(1)).filtrarCatalogo(
-                null, null, null, null, null, null, null, null, null);
-    }
+                verify(productoService, times(1)).filtrarCatalogo(
+                                null, null, null, null, null, null, null, null, null);
+        }
 
-    @Test
-    @DisplayName("GET /api/productos - Debe retornar lista vacía cuando no existen productos")
-    void listar_ListaVacia() throws Exception {
-        when(productoService.filtrarCatalogo(
-                null, null, null, null, null, null, null, null, null))
-                .thenReturn(Collections.emptyList());
+        @Test
+        @DisplayName("GET /api/productos - Debe retornar lista vacía cuando no existen productos")
+        void listar_ListaVacia() throws Exception {
+                when(productoService.filtrarCatalogo(
+                                null, null, null, null, null, null, null, null, null))
+                                .thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/api/productos"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                mockMvc.perform(get("/api/productos"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$", hasSize(0)));
 
-        verify(productoService, times(1)).filtrarCatalogo(
-                null, null, null, null, null, null, null, null, null);
-    }
+                verify(productoService, times(1)).filtrarCatalogo(
+                                null, null, null, null, null, null, null, null, null);
+        }
 
-    @Test
-    @DisplayName("GET /api/productos/{id} - Debe buscar un producto por ID y retornar 200 OK")
-    void buscarPorId_Exitoso() throws Exception {
-        when(productoService.buscarPorId(productoId)).thenReturn(responseDTO);
+        @Test
+        @DisplayName("GET /api/productos/{id} - Debe buscar un producto por ID y retornar 200 OK")
+        void buscarPorId_Exitoso() throws Exception {
+                when(productoService.buscarPorId(productoId)).thenReturn(responseDTO);
 
-        mockMvc.perform(get("/api/productos/{id}", productoId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(productoId.toString()))
-                .andExpect(jsonPath("$.nombre").value("Rosas Rojas"));
+                mockMvc.perform(get("/api/productos/{id}", productoId))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").value(productoId.toString()))
+                                .andExpect(jsonPath("$.nombre").value("Rosas Rojas"));
 
-        verify(productoService, times(1)).buscarPorId(productoId);
-    }
+                verify(productoService, times(1)).buscarPorId(productoId);
+        }
 
-    @Test
-    @DisplayName("GET /api/productos/{id} - Debe retornar 404 Not Found cuando el producto no existe")
-    void buscarPorId_NoEncontrado_Retorna404() throws Exception {
-        when(productoService.buscarPorId(productoId))
-                .thenThrow(new ResourceNotFoundException("Producto no encontrado: " + productoId));
+        @Test
+        @DisplayName("GET /api/productos/{id} - Debe retornar 404 Not Found cuando el producto no existe")
+        void buscarPorId_NoEncontrado_Retorna404() throws Exception {
+                when(productoService.buscarPorId(productoId))
+                                .thenThrow(new ResourceNotFoundException("Producto no encontrado: " + productoId));
 
-        mockMvc.perform(get("/api/productos/{id}", productoId))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.mensaje", containsString("Producto no encontrado")));
+                mockMvc.perform(get("/api/productos/{id}", productoId))
+                                .andExpect(status().isNotFound())
+                                .andExpect(jsonPath("$.status").value(404))
+                                .andExpect(jsonPath("$.mensaje", containsString("Producto no encontrado")));
 
-        verify(productoService, times(1)).buscarPorId(productoId);
-    }
+                verify(productoService, times(1)).buscarPorId(productoId);
+        }
 
-    @Test
-    @DisplayName("GET /api/productos/categoria/{categoriaId} - Debe listar productos por categoría y retornar 200 OK")
-    void listarPorCategoria_Exitoso() throws Exception {
-        when(productoService.listarPorCategoria(categoriaId)).thenReturn(List.of(responseDTO));
+        @Test
+        @DisplayName("GET /api/productos/categoria/{categoriaId} - Debe listar productos por categoría y retornar 200 OK")
+        void listarPorCategoria_Exitoso() throws Exception {
+                when(productoService.listarPorCategoria(categoriaId)).thenReturn(List.of(responseDTO));
 
-        mockMvc.perform(get("/api/productos/categoria/{categoriaId}", categoriaId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].categoriaNombre").value("Flores"));
+                mockMvc.perform(get("/api/productos/categoria/{categoriaId}", categoriaId))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$", hasSize(1)))
+                                .andExpect(jsonPath("$[0].categoriaNombre").value("Flores"));
 
-        verify(productoService, times(1)).listarPorCategoria(categoriaId);
-    }
+                verify(productoService, times(1)).listarPorCategoria(categoriaId);
+        }
 
-    @Test
-    @DisplayName("PUT /api/productos/{id} - Debe actualizar un producto exitosamente y retornar 200 OK")
-    void actualizar_Exitoso() throws Exception {
-        when(productoService.actualizar(eq(productoId), any(ProductoRequestDTO.class))).thenReturn(responseDTO);
+        @Test
+        @DisplayName("PUT /api/productos/{id} - Debe actualizar un producto exitosamente y retornar 200 OK")
+        void actualizar_Exitoso() throws Exception {
+                when(productoService.actualizar(eq(productoId), any(ProductoRequestDTO.class))).thenReturn(responseDTO);
 
-        mockMvc.perform(put("/api/productos/{id}", productoId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(crearRequestJson(categoriaId)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(productoId.toString()))
-                .andExpect(jsonPath("$.nombre").value("Rosas Rojas"));
+                mockMvc.perform(put("/api/productos/{id}", productoId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(crearRequestJson(categoriaId)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").value(productoId.toString()))
+                                .andExpect(jsonPath("$.nombre").value("Rosas Rojas"));
 
-        verify(productoService, times(1)).actualizar(eq(productoId), any(ProductoRequestDTO.class));
-    }
+                verify(productoService, times(1)).actualizar(eq(productoId), any(ProductoRequestDTO.class));
+        }
 
-    @Test
-    @DisplayName("PUT /api/productos/{id} - Debe retornar 404 Not Found cuando el producto a actualizar no existe")
-    void actualizar_ProductoNoEncontrado_Retorna404() throws Exception {
-        when(productoService.actualizar(eq(productoId), any(ProductoRequestDTO.class)))
-                .thenThrow(new ResourceNotFoundException("Producto no encontrado: " + productoId));
+        @Test
+        @DisplayName("PUT /api/productos/{id} - Debe retornar 404 Not Found cuando el producto a actualizar no existe")
+        void actualizar_ProductoNoEncontrado_Retorna404() throws Exception {
+                when(productoService.actualizar(eq(productoId), any(ProductoRequestDTO.class)))
+                                .thenThrow(new ResourceNotFoundException("Producto no encontrado: " + productoId));
 
-        mockMvc.perform(put("/api/productos/{id}", productoId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(crearRequestJson(categoriaId)))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404));
+                mockMvc.perform(put("/api/productos/{id}", productoId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(crearRequestJson(categoriaId)))
+                                .andExpect(status().isNotFound())
+                                .andExpect(jsonPath("$.status").value(404));
 
-        verify(productoService, times(1)).actualizar(eq(productoId), any(ProductoRequestDTO.class));
-    }
+                verify(productoService, times(1)).actualizar(eq(productoId), any(ProductoRequestDTO.class));
+        }
 
-    @Test
-    @DisplayName("DELETE /api/productos/{id} - Debe eliminar un producto y retornar 204 No Content")
-    void eliminar_Exitoso() throws Exception {
-        doNothing().when(productoService).eliminar(productoId);
+        @Test
+        @DisplayName("DELETE /api/productos/{id} - Debe eliminar un producto y retornar 204 No Content")
+        void eliminar_Exitoso() throws Exception {
+                doNothing().when(productoService).eliminar(productoId);
 
-        mockMvc.perform(delete("/api/productos/{id}", productoId))
-                .andExpect(status().isNoContent());
+                mockMvc.perform(delete("/api/productos/{id}", productoId))
+                                .andExpect(status().isNoContent());
 
-        verify(productoService, times(1)).eliminar(productoId);
-    }
+                verify(productoService, times(1)).eliminar(productoId);
+        }
 
-    @Test
-    @DisplayName("DELETE /api/productos/{id} - Debe retornar 404 Not Found cuando el producto a eliminar no existe")
-    void eliminar_ProductoNoEncontrado_Retorna404() throws Exception {
-        doThrow(new ResourceNotFoundException("Producto no encontrado: " + productoId))
-                .when(productoService).eliminar(productoId);
+        @Test
+        @DisplayName("DELETE /api/productos/{id} - Debe retornar 404 Not Found cuando el producto a eliminar no existe")
+        void eliminar_ProductoNoEncontrado_Retorna404() throws Exception {
+                doThrow(new ResourceNotFoundException("Producto no encontrado: " + productoId))
+                                .when(productoService).eliminar(productoId);
 
-        mockMvc.perform(delete("/api/productos/{id}", productoId))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404));
+                mockMvc.perform(delete("/api/productos/{id}", productoId))
+                                .andExpect(status().isNotFound())
+                                .andExpect(jsonPath("$.status").value(404));
 
-        verify(productoService, times(1)).eliminar(productoId);
-    }
+                verify(productoService, times(1)).eliminar(productoId);
+        }
 
-    @Test
-    @DisplayName("DELETE /api/productos/{id} - Debe retornar 400 (no 500) si el producto está en pedidos o cotizaciones")
-    void eliminar_ProductoEnUso_Retorna400() throws Exception {
-        doThrow(new BusinessRuleException(
-                "No se puede eliminar el producto porque tiene pedidos o cotizaciones asociados"))
-                .when(productoService).eliminar(productoId);
+        @Test
+        @DisplayName("DELETE /api/productos/{id} - Debe retornar 400 (no 500) si el producto está en pedidos o cotizaciones")
+        void eliminar_ProductoEnUso_Retorna400() throws Exception {
+                doThrow(new BusinessRuleException(
+                                "No se puede eliminar el producto porque tiene pedidos o cotizaciones asociados"))
+                                .when(productoService).eliminar(productoId);
 
-        mockMvc.perform(delete("/api/productos/{id}", productoId))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.mensaje", containsString("pedidos o cotizaciones asociados")));
-    }
+                mockMvc.perform(delete("/api/productos/{id}", productoId))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.mensaje", containsString("pedidos o cotizaciones asociados")));
+        }
 
-    @Test
-    @DisplayName("Integridad de datos: una violación de clave en la base responde 409 Conflict, no 500")
-    void eliminar_ViolacionDeIntegridad_Retorna409() throws Exception {
-        doThrow(new DataIntegrityViolationException("violación de clave foránea"))
-                .when(productoService).eliminar(productoId);
+        @Test
+        @DisplayName("Integridad de datos: una violación de clave en la base responde 409 Conflict, no 500")
+        void eliminar_ViolacionDeIntegridad_Retorna409() throws Exception {
+                doThrow(new DataIntegrityViolationException("violación de clave foránea"))
+                                .when(productoService).eliminar(productoId);
 
-        mockMvc.perform(delete("/api/productos/{id}", productoId))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.status").value(409))
-                .andExpect(jsonPath("$.mensaje", containsString("está en uso o ya existe")));
-    }
+                mockMvc.perform(delete("/api/productos/{id}", productoId))
+                                .andExpect(status().isConflict())
+                                .andExpect(jsonPath("$.status").value(409))
+                                .andExpect(jsonPath("$.mensaje", containsString("está en uso o ya existe")));
+        }
 }

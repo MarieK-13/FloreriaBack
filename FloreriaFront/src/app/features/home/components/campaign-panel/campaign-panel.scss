@@ -152,6 +152,23 @@
   width: 1.85rem;
 }
 
+.campaign-personal-link {
+  color: var(--color-muted);
+  font-size: 0.84rem;
+  margin-top: var(--space-3);
+
+  a {
+    color: var(--color-brand);
+    font-weight: 700;
+    margin-left: 0.25rem;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
 @media (max-width: 850px) {
   .campaign-inner {
     grid-template-columns: 1fr;

@@ -1,5 +1,6 @@
 package com.sistema.FloreriaBack.service;
 
+import com.sistema.FloreriaBack.dto.request.CheckoutClienteRequestDTO;
 import com.sistema.FloreriaBack.dto.request.PedidoRequestDTO;
 import com.sistema.FloreriaBack.dto.response.PedidoResponseDTO;
 import com.sistema.FloreriaBack.dto.response.ReporteVentasDTO;
@@ -11,10 +12,20 @@ import java.util.UUID;
 
 public interface PedidoService {
     PedidoResponseDTO crear(PedidoRequestDTO dto);
+
     PedidoResponseDTO buscarPorId(UUID id);
+
     List<PedidoResponseDTO> listar();
+
     List<PedidoResponseDTO> listarPorUsuario(UUID usuarioId);
+
     PedidoResponseDTO cambiarEstado(UUID id, EstadoPedido nuevoEstado);
+
     List<PedidoResponseDTO> listarPorRangoDeFechas(LocalDate inicio, LocalDate fin);
+
     ReporteVentasDTO reporteDeVentas(LocalDate inicio, LocalDate fin);
+
+    PedidoResponseDTO crearParaCliente(String emailUsuario, CheckoutClienteRequestDTO dto);
+
+    List<PedidoResponseDTO> listarMisPedidos(String emailUsuario);
 }

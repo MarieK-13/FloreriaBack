@@ -1,0 +1,859 @@
+/* Ancho completo con márgenes respirables a derecha e izquierda */
+.full-bounds {
+  margin-inline: auto;
+  max-width: 1480px;
+  padding-inline: clamp(1.5rem, 4.5vw, 4rem);
+  width: 100%;
+}
+
+.dates-page {
+  color: var(--color-text);
+  font-family: var(--font-body);
+  padding-block: var(--space-6) var(--space-8);
+}
+
+.dates-header {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+.eyebrow-tag,
+.card-kicker {
+  color: var(--color-rose-dark);
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.card-kicker--brand {
+  color: var(--color-brand);
+}
+
+.dates-header h1 {
+  color: var(--color-brand-dark);
+  font-family: var(--font-display);
+  font-size: clamp(2.15rem, 4vw, 2.95rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin: 0 0 0.45rem;
+}
+
+.dates-header p {
+  color: var(--color-muted);
+  font-size: 0.95rem;
+  margin: 0;
+  max-width: 60ch;
+}
+
+/* 2. Franja de 3 pasos */
+.steps-strip {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: var(--space-5);
+}
+
+.step-card {
+  align-items: flex-start;
+  background: var(--color-surface);
+  border: 1px solid var(--color-borpink);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  gap: 0.95rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.step-num {
+  align-items: center;
+  background: var(--color-brand-soft);
+  border-radius: 50%;
+  color: var(--color-brand-dark);
+  display: flex;
+  flex: 0 0 auto;
+  font-size: 0.8rem;
+  font-weight: 700;
+  height: 2.2rem;
+  justify-content: center;
+  width: 2.2rem;
+}
+
+.step-card h3 {
+  color: var(--color-ink);
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+}
+
+.step-card p {
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Banner de vista previa centrado */
+.guest-banner {
+  align-items: center;
+  background: var(--color-rose);
+  border: 1px solid var(--color-borpink);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  display: flex;
+  font-size: 0.88rem;
+  justify-content: center;
+  margin-bottom: var(--space-5);
+  padding: 0.9rem 1.5rem;
+  text-align: center;
+}
+
+/* 3. BANNER SUPERIOR DE PRÓXIMA OCASIÓN */
+.highlight-banner {
+  align-items: center;
+  background: linear-gradient(120deg, var(--color-brand-dark), var(--color-brand));
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-surface);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+  padding: 1.5rem 2rem;
+}
+
+.banner-badge {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius-pill);
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.45rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.highlight-banner h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 2.5vw, 1.95rem);
+  font-weight: 600;
+  margin: 0 0 0.3rem;
+}
+
+.highlight-banner p {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.btn-white-pill {
+  background: var(--color-surface);
+  border-radius: var(--radius-pill);
+  color: var(--color-brand-dark);
+  font-size: 0.86rem;
+  font-weight: 700;
+  padding: 0.72rem 1.45rem;
+  text-decoration: none;
+  transition: transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-white-pill:hover {
+  transform: translateY(-2px);
+}
+
+/* 4. FILA CENTRAL: CALENDARIO (IZQUIERDA) + FORMULARIO (DERECHA) */
+.top-workspace-grid {
+  align-items: stretch;
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1.35fr 1fr;
+  margin-bottom: var(--space-5);
+}
+
+/* Calendario estilo Pinterest editorial */
+.calendar-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-borpink);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  padding: 1.6rem;
+}
+
+.calendar-top {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.calendar-top h2 {
+  color: var(--color-brand-dark);
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.calendar-nav {
+  align-items: center;
+  display: flex;
+  gap: 0.45rem;
+}
+
+.nav-circle {
+  align-items: center;
+  background: var(--color-brand-soft);
+  border: 0;
+  border-radius: 50%;
+  color: var(--color-brand-dark);
+  cursor: pointer;
+  display: flex;
+  font-size: 1.2rem;
+  font-weight: 700;
+  height: 2.15rem;
+  justify-content: center;
+  transition: all 0.15s ease;
+  width: 2.15rem;
+}
+
+.nav-circle:hover {
+  background: var(--color-brand);
+  color: var(--color-surface);
+}
+
+.today-chip {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-ink);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.9rem;
+}
+
+.calendar-weekdays {
+  color: var(--color-muted);
+  display: grid;
+  font-size: 0.74rem;
+  font-weight: 700;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  margin-bottom: 0.5rem;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.calendar-grid {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 0.45rem;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.cal-cell {
+  align-items: flex-start;
+  background: var(--color-bg);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--color-ink);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 4.15rem;
+  padding: 0.45rem 0.5rem;
+  transition: all 0.15s ease;
+}
+
+.cal-cell--empty {
+  background: transparent;
+  cursor: default;
+}
+
+.cal-cell:not(.cal-cell--empty):hover {
+  border-color: var(--color-brand);
+  transform: translateY(-1px);
+}
+
+.cal-cell.is-today {
+  border-color: var(--color-brand);
+  box-shadow: inset 0 0 0 1px var(--color-brand);
+}
+
+.cal-cell.has-event {
+  background: var(--color-rose);
+  border-color: var(--color-borpink);
+}
+
+.cal-cell.is-selected {
+  background: var(--color-brand-soft);
+  border-color: var(--color-brand);
+}
+
+.cal-day-num {
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.cal-event-pill {
+  background: var(--color-rose-dark);
+  border-radius: 999px;
+  color: var(--color-surface);
+  font-size: 0.65rem;
+  font-weight: 700;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0.14rem 0.45rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-legend {
+  align-items: center;
+  border-top: 1px solid var(--color-borpink);
+  color: var(--color-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.76rem;
+  gap: 1rem;
+  margin-top: var(--space-4);
+  padding-top: 0.85rem;
+}
+
+.dot {
+  border-radius: 50%;
+  display: inline-block;
+  height: 0.55rem;
+  margin-right: 0.3rem;
+  width: 0.55rem;
+}
+
+.dot--event {
+  background: var(--color-rose-dark);
+}
+
+.dot--today {
+  border: 2px solid var(--color-brand);
+}
+
+.legend-hint {
+  margin-left: auto;
+}
+
+/* Derecha: Formulario Agregar Nueva Fecha */
+.add-date-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-borpink);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.6rem;
+}
+
+.add-card-intro h2 {
+  color: var(--color-brand-dark);
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0 0 0.4rem;
+}
+
+.add-card-intro p {
+  color: var(--color-muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  margin: 0 0 var(--space-4);
+}
+
+.add-date-form {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--space-3);
+  justify-content: space-between;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field-group span {
+  color: var(--color-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.field-group input {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font-size: 0.9rem;
+  padding: 0.72rem 0.9rem;
+  width: 100%;
+}
+
+.field-group input:focus {
+  background: var(--color-surface);
+  border-color: var(--color-brand);
+  outline: none;
+}
+
+.form-error {
+  color: var(--color-danger);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.btn-lg {
+  margin-top: var(--space-2);
+  padding-block: 0.82rem;
+}
+
+/* 5. FILA INFERIOR: 3 TARJETAS VISIBLES (FECHAS + SINCRONIZACIÓN + IDEAS PINTEREST) */
+.bottom-workspace-grid {
+  align-items: stretch;
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1.15fr 0.95fr 1.25fr;
+}
+
+.dates-list-panel,
+.sync-card,
+.suggestions-card {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+}
+
+.dates-list-panel,
+.sync-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-borpink);
+}
+
+.suggestions-card {
+  background: var(--color-mint);
+  border: 1px solid rgba(46, 107, 86, 0.16);
+}
+
+.panel-toolbar {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.panel-toolbar h2,
+.sync-card h2,
+.suggestions-card h2 {
+  color: var(--color-brand-dark);
+  font-family: var(--font-display);
+  font-size: 1.42rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.filter-pills {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.filter-chip {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-muted);
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0.32rem 0.75rem;
+}
+
+.filter-chip.is-active {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: var(--color-surface);
+}
+
+.dates-scroll-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-height: 23rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.date-card {
+  align-items: center;
+  background: var(--color-bg);
+  border: 1px solid var(--color-borpink);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  gap: var(--space-3);
+  padding: 0.75rem 0.95rem;
+  transition: all 0.15s ease;
+}
+
+.date-card:hover,
+.date-card.is-selected {
+  background: var(--color-surface);
+  border-color: var(--color-brand);
+}
+
+.date-box {
+  align-items: center;
+  background: var(--color-brand-soft);
+  border-radius: 10px;
+  color: var(--color-brand-dark);
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  height: 3rem;
+  justify-content: center;
+  width: 3rem;
+}
+
+.date-box__day {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.date-box__month {
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.date-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.date-info h3 {
+  color: var(--color-ink);
+  font-size: 0.94rem;
+  font-weight: 700;
+  margin: 0 0 0.15rem;
+}
+
+.date-info p {
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.date-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.55rem;
+}
+
+.days-badge {
+  background: var(--color-brand-soft);
+  border-radius: var(--radius-pill);
+  color: var(--color-brand-dark);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  white-space: nowrap;
+}
+
+.days-badge--urgent {
+  background: var(--color-rose);
+  color: var(--color-rose-dark);
+}
+
+.delete-btn {
+  background: none;
+  border: 0;
+  color: var(--color-muted);
+  cursor: pointer;
+  font-size: 0.84rem;
+  padding: 0.2rem;
+}
+
+.delete-btn:hover {
+  color: var(--color-danger);
+}
+
+/* Sincronización */
+.sync-desc {
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin: 0 0 var(--space-3);
+}
+
+.anticipation-block {
+  margin-bottom: var(--space-4);
+}
+
+.anticipation-label {
+  color: var(--color-ink);
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.anticipation-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.day-chip {
+  background: var(--color-brand-soft);
+  border: 0;
+  border-radius: var(--radius-pill);
+  color: var(--color-brand-dark);
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.42rem 0.8rem;
+}
+
+.day-chip.is-active {
+  background: var(--color-brand);
+  color: var(--color-surface);
+}
+
+.sync-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ics-helper {
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  color: var(--color-muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+  margin: var(--space-3) 0 0;
+  padding: 0.7rem 0.85rem;
+}
+
+.sync-feedback {
+  color: var(--color-brand);
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin: 0.6rem 0 0;
+}
+
+/* Galería estilo Pinterest de Ideas Recomendadas */
+.pinterest-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: var(--space-3);
+}
+
+.pin-card {
+  background: var(--color-surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.pin-card:hover {
+  transform: translateY(-3px);
+}
+
+.pin-image-wrap {
+  aspect-ratio: 4 / 3;
+  background: var(--color-rose);
+  overflow: hidden;
+  position: relative;
+}
+
+.pin-image-wrap img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.pin-tag {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: var(--radius-pill);
+  color: var(--color-brand-dark);
+  font-size: 0.66rem;
+  font-weight: 700;
+  left: 0.55rem;
+  padding: 0.2rem 0.55rem;
+  position: absolute;
+  top: 0.55rem;
+}
+
+.pin-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.75rem;
+}
+
+.pin-body h3 {
+  color: var(--color-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0 0 0.5rem;
+}
+
+.pin-footer {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.pin-price {
+  color: var(--color-brand);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.pin-btn {
+  background: var(--color-brand-soft);
+  border-radius: var(--radius-pill);
+  color: var(--color-brand-dark);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.28rem 0.7rem;
+  text-decoration: none;
+}
+
+.pin-btn:hover {
+  background: var(--color-brand);
+  color: var(--color-surface);
+}
+
+/* Tarjeta de enlace al Chatbot */
+.chatbot-cta-card {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-borpink);
+  border-radius: 12px;
+  color: var(--color-ink);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin-top: auto;
+  padding: 0.8rem 1rem;
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+
+.chatbot-cta-card:hover {
+  border-color: var(--color-brand);
+}
+
+.chatbot-cta-card strong {
+  color: var(--color-brand-dark);
+  display: block;
+  font-size: 0.82rem;
+  margin-bottom: 0.15rem;
+}
+
+.chatbot-cta-card span {
+  color: var(--color-muted);
+  display: block;
+  font-size: 0.74rem;
+}
+
+.chatbot-arrow {
+  color: var(--color-brand) !important;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Botones globales */
+.btn-brand-pill {
+  background: var(--color-brand);
+  border: 0;
+  border-radius: var(--radius-pill);
+  color: var(--color-surface);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.84rem;
+  font-weight: 700;
+  justify-content: center;
+  padding: 0.68rem 1.35rem;
+  text-decoration: none;
+}
+
+.btn-brand-pill:hover:not(:disabled) {
+  background: var(--color-brand-dark);
+}
+
+.btn-outline-pill {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-ink);
+  cursor: pointer;
+  font-size: 0.83rem;
+  font-weight: 600;
+  padding: 0.62rem 1.2rem;
+}
+
+.btn-outline-pill:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.empty-card {
+  color: var(--color-muted);
+  font-size: 0.86rem;
+  padding: var(--space-4);
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 1150px) {
+  .bottom-workspace-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .suggestions-card {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 900px) {
+  .top-workspace-grid,
+  .bottom-workspace-grid,
+  .steps-strip {
+    grid-template-columns: 1fr;
+  }
+}

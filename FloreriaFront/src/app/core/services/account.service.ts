@@ -11,14 +11,6 @@ import {
 } from '../models/auth.model';
 import { AuthService } from './auth.service';
 
-/**
- * CRUD de la cuenta propia ("Mi cuenta"). El alta es el registro (AuthService.register).
- *  R  GET    /api/auth/me
- *  U  PUT    /api/auth/me             datos personales
- *  U  PUT    /api/auth/me/contrasena  contraseña
- *  U  PUT    /api/auth/me/email       correo (devuelve token nuevo)
- *  D  DELETE /api/auth/me             eliminar cuenta
- */
 @Injectable({ providedIn: 'root' })
 export class AccountService {
   private readonly http = inject(HttpClient);
@@ -45,7 +37,6 @@ export class AccountService {
     return this.http.put<void>(`${this.url}/contrasena`, data);
   }
 
-  /** Devuelve el correo nuevo y deja guardado el token nuevo (el anterior ya no sirve). */
   changeEmail(data: ChangeEmailRequest): Observable<string> {
     return this.http
       .put<AuthResponse>(`${this.url}/email`, {
@@ -58,7 +49,6 @@ export class AccountService {
       );
   }
 
-  /** Elimina la cuenta y cierra la sesión. */
   deleteAccount(contrasena: string): Observable<void> {
     return this.http
       .delete<void>(this.url, { body: { contrasena } })

@@ -2,6 +2,7 @@ package com.sistema.FloreriaBack.dto.response;
 
 import com.sistema.FloreriaBack.dto.ComponenteProductoDTO;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -11,6 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Data
+@Builder
 @AllArgsConstructor
 public class ProductoResponseDTO {
     private UUID id;
@@ -22,6 +24,7 @@ public class ProductoResponseDTO {
     private String color;
     private String tamano;
     private String imagenUrl;
+    private List<String> imagenesGaleria;
     private Set<String> ocasiones;
     private List<ComponenteProductoDTO> componentes;
     private LocalDate fechaValidez;

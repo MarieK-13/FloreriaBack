@@ -31,6 +31,7 @@ public class ProductoRequestDTO {
     private String imagenUrl;
     private Set<String> ocasiones;
 
+    private List<String> imagenesGaleria;
     @NotNull(message = "Debe indicar la categoría")
     private UUID categoriaId;
 

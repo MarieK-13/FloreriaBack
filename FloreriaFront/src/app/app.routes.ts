@@ -15,6 +15,14 @@ export const routes: Routes = [
       import('./features/catalogo/pages/catalogo.page').then((module) => module.CatalogoPage),
   },
   {
+    path: 'catalogo/:id',
+    title: 'Detalle del producto | FloriaSmart',
+    loadComponent: () =>
+      import('./features/catalogo/pages/detalle-producto.page').then(
+        (module) => module.DetalleProductoPage,
+      ),
+  },
+  {
     path: 'productos/:id',
     title: 'Producto | FloriaSmart',
     loadComponent: () =>
@@ -60,6 +68,23 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/perfil/pages/mi-cuenta.page').then((module) => module.MiCuentaPage),
+  },
+  {
+    path: 'mis-fechas',
+    title: 'Mis fechas | FloriaSmart',
+    loadComponent: () =>
+      import('./features/mis-fechas/pages/mis-fechas.page').then((m) => m.MisFechasPage),
+  },
+  {
+    path: 'favoritos',
+    title: 'Mis Favoritos | FloriaSmart',
+    loadComponent: () =>
+      import('./features/favoritos/pages/favoritos.page').then((m) => m.FavoritosPage),
+  },
+  {
+    path: 'carrito',
+    title: 'Carrito de Compras | FloriaSmart',
+    loadComponent: () => import('./features/carrito/pages/carrito.page').then((m) => m.CarritoPage),
   },
   {
     path: '**',

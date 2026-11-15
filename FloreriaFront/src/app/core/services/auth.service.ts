@@ -21,17 +21,11 @@ export class AuthService {
   private readonly router = inject(Router);
 
   private readonly session = signal<StoredSession | null>(this.readStoredSession());
-  /** Si la sesión actual se guardó con "Recordarme" (localStorage) o no (sessionStorage). */
   private remember = this.isRememberedSession();
 
-  /** Usuario con sesión iniciada, o null si nadie ha ingresado. */
   readonly user = computed<SessionUser | null>(() => this.session()?.user ?? null);
   readonly isLoggedIn = computed(() => this.session() !== null);
 
-  /**
-   * @param remember "Recordarme": si es true la sesión sigue al cerrar el navegador (localStorage);
-   * si es false se borra al cerrarlo (sessionStorage).
-   */
   login(credentials: LoginRequest, remember = true): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${API_BASE_URL}/auth/login`, {
@@ -54,7 +48,6 @@ export class AuthService {
       .pipe(tap((response) => this.startSession(response, true)));
   }
 
-  /** Cierra la sesión. Si se indica, lleva al usuario a otra página (por defecto, al inicio). */
   logout(redirectTo: string | null = '/'): void {
     this.session.set(null);
     this.removeStoredSession();
@@ -63,7 +56,6 @@ export class AuthService {
     }
   }
 
-  /** Token vigente para la cabecera Authorization, o null si no hay sesión o ya expiró. */
   getToken(): string | null {
     const current = this.session();
     if (!current) {
@@ -76,12 +68,10 @@ export class AuthService {
     return current.token;
   }
 
-  /** Reemplaza la sesión con un token nuevo (por ejemplo, después de cambiar el correo). */
   replaceSession(response: AuthResponse): void {
     this.startSession(response, this.remember);
   }
 
-  /** Actualiza el nombre que muestra el encabezado después de editar "Mi cuenta". */
   updateSessionName(name: string): void {
     const current = this.session();
     if (!current) {
@@ -97,7 +87,6 @@ export class AuthService {
     return role !== undefined && roles.includes(role);
   }
 
-  /** Convierte la respuesta de error del backend en un mensaje general y errores por campo. */
   toAuthError(error: unknown): AuthError {
     if (!(error instanceof HttpErrorResponse)) {
       return { message: 'Ocurrió un error inesperado. Inténtalo otra vez.', fieldErrors: {} };
@@ -173,7 +162,6 @@ export class AuthService {
       this.removeStoredSession();
       (remember ? localStorage : sessionStorage).setItem(STORAGE_KEY, JSON.stringify(session));
     } catch {
-      // Si el navegador no permite guardar (modo privado, etc.), la sesión dura hasta recargar.
     }
   }
 
@@ -182,7 +170,6 @@ export class AuthService {
       localStorage.removeItem(STORAGE_KEY);
       sessionStorage.removeItem(STORAGE_KEY);
     } catch {
-      // Nada que limpiar.
     }
   }
 }

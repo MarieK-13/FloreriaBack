@@ -1,5 +1,6 @@
 package com.sistema.FloreriaBack.service.impl;
 
+import com.sistema.FloreriaBack.dto.request.CheckoutClienteRequestDTO;
 import com.sistema.FloreriaBack.dto.request.DetallePedidoRequestDTO;
 import com.sistema.FloreriaBack.dto.request.PedidoRequestDTO;
 import com.sistema.FloreriaBack.dto.response.PedidoResponseDTO;
@@ -51,19 +52,47 @@ public class PedidoServiceImpl implements PedidoService {
         Usuario usuario = usuarioRepository.findById(dto.getUsuarioId())
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Usuario no encontrado con ID: " + dto.getUsuarioId()));
+        return procesarCreacionPedido(usuario, dto.getDireccionEntrega(), dto.getInstruccionesEntrega(), dto.getDetalles());
+    }
+
+    @Override
+    @Transactional
+    public PedidoResponseDTO crearParaCliente(String emailUsuario, CheckoutClienteRequestDTO dto) {
+        Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Usuario no encontrado con email: " + emailUsuario));
+        return procesarCreacionPedido(usuario, dto.getDireccionEntrega(), dto.getInstruccionesEntrega(), dto.getDetalles());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PedidoResponseDTO> listarMisPedidos(String emailUsuario) {
+        Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Usuario no encontrado con email: " + emailUsuario));
+        return pedidoRepository.findByUsuarioId(usuario.getId()).stream()
+                .map(mapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    private PedidoResponseDTO procesarCreacionPedido(
+            Usuario usuario,
+            String direccionEntrega,
+            String instruccionesEntrega,
+            List<DetallePedidoRequestDTO> detalles) {
 
         Pedido pedido = Pedido.builder()
                 .fechaPedido(LocalDateTime.now())
                 .usuario(usuario)
-                .direccionEntrega(dto.getDireccionEntrega())
-                .instruccionesEntrega(dto.getInstruccionesEntrega())
+                .direccionEntrega(direccionEntrega)
+                .instruccionesEntrega(instruccionesEntrega)
                 .estado(EstadoPedido.PENDIENTE)
                 .total(BigDecimal.ZERO)
                 .build();
 
         BigDecimal totalAcumulado = BigDecimal.ZERO;
 
-        List<DetallePedidoRequestDTO> detallesOrdenados = dto.getDetalles().stream()
+        List<DetallePedidoRequestDTO> detallesOrdenados = detalles.stream()
                 .sorted(Comparator.comparing(DetallePedidoRequestDTO::getProductoId))
                 .collect(Collectors.toList());
 

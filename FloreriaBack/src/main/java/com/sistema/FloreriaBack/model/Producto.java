@@ -48,6 +48,12 @@ public class Producto {
 
     private String imagenUrl;
 
+    @ElementCollection
+    @CollectionTable(name = "producto_imagenes", joinColumns = @JoinColumn(name = "producto_id"))
+    @Column(name = "imagen_url", length = 500)
+    @Builder.Default
+    private List<String> imagenesGaleria = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;

@@ -18,6 +18,7 @@ export interface Product {
   care?: string;
   deliveryInstructions?: string;
   imageUrl?: string;
+  galleryImages?: string[];
   tags: string[];
   badge?: string;
   components?: ProductComponent[];

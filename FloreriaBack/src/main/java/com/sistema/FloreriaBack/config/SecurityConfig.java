@@ -86,11 +86,19 @@ public class SecurityConfig {
                     // --- Cotizaciones ---
                     .requestMatchers(HttpMethod.GET, "/api/cotizaciones").hasAnyRole(ADMINISTRADOR, OPERARIO)
 
-                    // --- Todo lo demás requiere estar autenticado (cualquier rol) ---
-                    .anyRequest().authenticated())
-            .addFilterBefore(new JwtAuthenticationFilter(jwtUtils, userDetailsService),
-                    UsernamePasswordAuthenticationFilter.class);
+                  // --- Mis fechas importantes  ---
+                    .requestMatchers("/api/mis-fechas/**").authenticated()
 
+                    // --- Favoritos ---
+                    .requestMatchers("/api/favoritos/**").authenticated()
+
+                    // --- Pedidos del cliente  ---
+                    .requestMatchers("/api/pedidos/mis-pedidos/**").authenticated()
+                    
+                    // --- Todo lo demás requiere estar autenticado  ---
+                    .anyRequest().authenticated())
+                    .addFilterBefore(new JwtAuthenticationFilter(jwtUtils, userDetailsService),
+                    UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
