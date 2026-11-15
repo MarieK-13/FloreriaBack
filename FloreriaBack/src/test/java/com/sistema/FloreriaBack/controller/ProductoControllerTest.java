@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -58,8 +59,11 @@ class ProductoControllerTest extends BaseControllerTest{
                 true,
                 "Rojo",
                 "Grande",
-                "Flores"
-        );
+                null,
+                Collections.emptySet(),
+                List.of(),
+                null,
+                "Flores");
     }
 
     private String crearRequestJson(UUID catId) {
@@ -132,7 +136,9 @@ class ProductoControllerTest extends BaseControllerTest{
     @Test
     @DisplayName("GET /api/productos - Debe listar todos los productos y retornar 200 OK")
     void listar_Exitoso() throws Exception {
-        when(productoService.listar()).thenReturn(List.of(responseDTO));
+        when(productoService.filtrarCatalogo(
+                null, null, null, null, null, null, null, null, null))
+                .thenReturn(List.of(responseDTO));
 
         mockMvc.perform(get("/api/productos"))
                 .andExpect(status().isOk())
@@ -140,19 +146,23 @@ class ProductoControllerTest extends BaseControllerTest{
                 .andExpect(jsonPath("$[0].id").value(productoId.toString()))
                 .andExpect(jsonPath("$[0].nombre").value("Rosas Rojas"));
 
-        verify(productoService, times(1)).listar();
+        verify(productoService, times(1)).filtrarCatalogo(
+                null, null, null, null, null, null, null, null, null);
     }
 
     @Test
     @DisplayName("GET /api/productos - Debe retornar lista vacía cuando no existen productos")
     void listar_ListaVacia() throws Exception {
-        when(productoService.listar()).thenReturn(Collections.emptyList());
+        when(productoService.filtrarCatalogo(
+                null, null, null, null, null, null, null, null, null))
+                .thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/api/productos"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
 
-        verify(productoService, times(1)).listar();
+        verify(productoService, times(1)).filtrarCatalogo(
+                null, null, null, null, null, null, null, null, null);
     }
 
     @Test

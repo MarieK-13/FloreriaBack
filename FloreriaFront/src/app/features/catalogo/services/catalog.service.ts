@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { forkJoin, map, Observable } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of } from 'rxjs';
 import {
   Product,
   ProductCategory,
@@ -18,6 +18,10 @@ interface ProductResponse {
   disponible: boolean;
   color: string | null;
   tamano: string | null;
+  imagenUrl?: string | null;
+  ocasiones?: string[];
+  componentes?: { cantidad: number; descripcion: string }[];
+  fechaValidez?: string | null;
   categoriaNombre: string;
 }
 
@@ -44,9 +48,9 @@ export class CatalogService {
     return forkJoin({
       products: this.http.get<ProductResponse[]>(`${API_BASE_URL}/productos`),
       categories: this.http.get<CategoryResponse[]>(`${API_BASE_URL}/categorias`),
-      technicalDetails: this.http.get<TechnicalDetailsResponse[]>(
-        `${API_BASE_URL}/detalle-productos`,
-      ),
+      technicalDetails: this.http
+        .get<TechnicalDetailsResponse[]>(`${API_BASE_URL}/detalle-productos`)
+        .pipe(catchError(() => of([]))),
     }).pipe(
       map(({ products, categories, technicalDetails }) => {
         const detailByProductId = new Map(
@@ -74,9 +78,18 @@ export class CatalogService {
   ): Product {
     const color = response.color ?? '';
     const size = response.tamano ?? '';
-    const occasion = details?.occasion ?? '';
+    const occasion = response.ocasiones?.length
+      ? response.ocasiones.join(', ')
+      : (details?.occasion ?? '');
     const category = response.categoriaNombre;
-    const kind = category.toLocaleLowerCase('es').includes('pack') ? 'pack' : 'product';
+    const components = (response.componentes ?? []).map((c) => ({
+      quantity: c.cantidad,
+      description: c.descripcion,
+    }));
+    const kind =
+      components.length > 0 || category.toLocaleLowerCase('es').includes('pack')
+        ? 'pack'
+        : 'product';
     const tags = [color, size, occasion].filter(Boolean);
 
     return {
@@ -92,6 +105,9 @@ export class CatalogService {
       color,
       size,
       occasion,
+      imageUrl: response.imagenUrl ?? undefined,
+      components,
+      validUntil: response.fechaValidez ?? undefined,
       durationDays: details?.durationDays ?? undefined,
       materials: details?.materials,
       care: details?.care,

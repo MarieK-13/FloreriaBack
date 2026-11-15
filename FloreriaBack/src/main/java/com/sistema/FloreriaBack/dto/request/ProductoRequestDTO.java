@@ -4,7 +4,12 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+
+import com.sistema.FloreriaBack.dto.ComponenteProductoDTO;
 
 @Data
 public class ProductoRequestDTO {
@@ -23,7 +28,12 @@ public class ProductoRequestDTO {
 
     private String color;
     private String tamano;
+    private String imagenUrl;
+    private Set<String> ocasiones;
 
     @NotNull(message = "Debe indicar la categoría")
     private UUID categoriaId;
+
+    private List<ComponenteProductoDTO> componentes;
+    private LocalDate fechaValidez;
 }

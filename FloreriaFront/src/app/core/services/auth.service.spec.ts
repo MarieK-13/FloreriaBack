@@ -2,6 +2,7 @@ import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { API_BASE_URL } from '../api/api.config';
 import { safeRedirect } from '../guards/auth.guards';
 import { AuthResponse } from '../models/auth.model';
 import { AuthService } from './auth.service';
@@ -44,7 +45,7 @@ describe('AuthService', () => {
   it('login guarda el usuario y el token', () => {
     service.login({ email: '  maria@test.com ', contrasena: 'Clave123' }, true).subscribe();
 
-    const req = http.expectOne('/api/auth/login');
+    const req = http.expectOne(`${API_BASE_URL}/auth/login`);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({ email: 'maria@test.com', contrasena: 'Clave123' });
     req.flush(respuesta);
@@ -60,7 +61,7 @@ describe('AuthService', () => {
 
   it('sin "Recordarme" la sesión se guarda solo hasta cerrar el navegador', () => {
     service.login({ email: 'maria@test.com', contrasena: 'Clave123' }, false).subscribe();
-    http.expectOne('/api/auth/login').flush(respuesta);
+    http.expectOne(`${API_BASE_URL}/auth/login`).flush(respuesta);
 
     expect(sessionStorage.getItem('floriasmart.session')).toContain('token-de-prueba');
     expect(localStorage.getItem('floriasmart.session')).toBeNull();
@@ -78,7 +79,7 @@ describe('AuthService', () => {
       })
       .subscribe();
 
-    const req = http.expectOne('/api/auth/register');
+    const req = http.expectOne(`${API_BASE_URL}/auth/register`);
     expect(req.request.body).toEqual({
       nombre: 'María',
       apellidos: 'Pérez',
@@ -94,7 +95,7 @@ describe('AuthService', () => {
 
   it('logout borra la sesión', () => {
     service.login({ email: 'maria@test.com', contrasena: 'Clave123' }).subscribe();
-    http.expectOne('/api/auth/login').flush(respuesta);
+    http.expectOne(`${API_BASE_URL}/auth/login`).flush(respuesta);
 
     service.logout(null);
 
@@ -105,7 +106,7 @@ describe('AuthService', () => {
 
   it('un token vencido ya no se usa', () => {
     service.login({ email: 'maria@test.com', contrasena: 'Clave123' }).subscribe();
-    http.expectOne('/api/auth/login').flush({ ...respuesta, expiraEnMs: -1 });
+    http.expectOne(`${API_BASE_URL}/auth/login`).flush({ ...respuesta, expiraEnMs: -1 });
 
     expect(service.getToken()).toBeNull();
     expect(service.isLoggedIn()).toBe(false);

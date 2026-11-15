@@ -27,7 +27,20 @@ public class ProductoController {
     }
 
     @GetMapping
-    public List<ProductoResponseDTO> listar() { return service.listar(); }
+    public List<ProductoResponseDTO> listar(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) UUID categoriaId,
+            @RequestParam(required = false) String ocasion,
+            @RequestParam(required = false) String color,
+            @RequestParam(required = false) String tamano,
+            @RequestParam(required = false) BigDecimal precioMax,
+            @RequestParam(required = false) Boolean soloDisponibles,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir) {
+        return service.filtrarCatalogo(
+                nombre, categoriaId, ocasion, color, tamano, precioMax, soloDisponibles, sortBy, sortDir
+        );
+    }
 
     /** Público. Ej: GET /api/productos/buscar?nombre=rosa&precioMax=80 (ambos parámetros opcionales) */
     @GetMapping("/buscar")

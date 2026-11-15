@@ -5,20 +5,35 @@
 .button {
   align-items: center;
   border: 1px solid transparent;
-  border-radius: 2rem;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   display: inline-flex;
   font: inherit;
-  font-size: 0.9rem;
-  font-weight: 650;
+  font-size: 0.88rem;
+  font-weight: 600;
+  gap: var(--space-2);
   justify-content: center;
-  min-height: 2.75rem;
-  padding: 0.65rem 1.2rem;
-  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+  line-height: 1;
+  min-height: 1.5rem;
+  padding: 0.7rem var(--space-5);
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 120ms ease;
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .button:focus-visible {
-  outline: 3px solid rgb(23 107 88 / 35%);
+  outline: 3px solid color-mix(in srgb, var(--color-brand) 35%, transparent);
   outline-offset: 3px;
 }
 
@@ -29,7 +44,7 @@
 
 .button--primary {
   background: var(--color-brand);
-  color: #fff;
+  color: var(--color-cream, #fff);
 }
 
 .button--primary:hover:not(:disabled) {
@@ -52,5 +67,5 @@
 }
 
 .button--quiet:hover:not(:disabled) {
-  background: var(--color-mint);
+  background: var(--color-brand-soft);
 }

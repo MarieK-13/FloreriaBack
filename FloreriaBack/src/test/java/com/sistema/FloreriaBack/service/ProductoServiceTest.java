@@ -135,7 +135,7 @@ class ProductoServiceTest {
     @Test
     @DisplayName("Debe listar todos los productos")
     void listar_Exitoso() {
-        when(productoRepository.findAll()).thenReturn(List.of(producto));
+        when(productoRepository.findAllByOrderByFechaCreacionDesc()).thenReturn(List.of(producto));
 
         List<ProductoResponseDTO> resultado = productoService.listar();
 
@@ -143,7 +143,7 @@ class ProductoServiceTest {
         assertEquals(1, resultado.size());
         assertEquals("Rosas Rojas", resultado.get(0).getNombre());
 
-        verify(productoRepository, times(1)).findAll();
+        verify(productoRepository, times(1)).findAllByOrderByFechaCreacionDesc();
     }
 
     @Test

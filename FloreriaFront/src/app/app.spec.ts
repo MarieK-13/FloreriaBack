@@ -25,7 +25,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.brand')?.textContent).toContain('FloriaSmart');
+    expect(compiled.querySelector('.brand')?.getAttribute('aria-label')).toContain('FloreriaSmart');
     expect(compiled.querySelector('router-outlet')).toBeTruthy();
   });
 });

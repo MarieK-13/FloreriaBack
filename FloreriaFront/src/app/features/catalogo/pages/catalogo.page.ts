@@ -8,12 +8,13 @@ import { CatalogService } from '../services/catalog.service';
 
 type SortOption = 'recommended' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
 type FilterGroup = 'flowerTypes' | 'colors' | 'sizes' | 'occasions';
+type FilterSection = 'categories' | 'occasions' | 'colors' | 'flowers' | 'sizes' | 'availability' | 'price';
 
 @Component({
   selector: 'app-catalogo-page',
   imports: [ProductCard, RouterLink, UiButton],
   template: `
-    <div class="catalog-page page-width">
+    <div class="catalog-page">
       <nav class="breadcrumbs" aria-label="Ruta de navegación">
         <a routerLink="/">Inicio</a>
         <span aria-hidden="true">/</span>
@@ -30,19 +31,74 @@ type FilterGroup = 'flowerTypes' | 'colors' | 'sizes' | 'occasions';
           <h1>{{ selectedCategoryName() || 'Catálogo' }}</h1>
           <p>Encuentra el arreglo ideal para compartir un momento especial.</p>
         </div>
-        <label class="sort-control">
-          <span>Ordenar por</span>
-          <select [value]="sortBy()" (change)="setSort($event)">
-            <option value="recommended">Recomendado</option>
-            <option value="price-asc">Precio: menor a mayor</option>
-            <option value="price-desc">Precio: mayor a menor</option>
-            <option value="name-asc">Nombre: A – Z</option>
-            <option value="name-desc">Nombre: Z – A</option>
-            <option value="recent" disabled title="El catálogo aún no incluye la fecha de registro">
-              Más recientes
-            </option>
-          </select>
-        </label>
+
+        <div class="toolbar-controls">
+          <div class="view-switcher">
+            <span>Vista:</span>
+            <button
+              type="button"
+              class="view-btn"
+              [class.active]="gridColumns() === 3"
+              (click)="gridColumns.set(3)"
+              aria-label="Vista de 3 columnas"
+              title="Vista de 3 columnas"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="3" width="3" height="10" rx="0.8" stroke="currentColor" stroke-width="1.4"/>
+                <rect x="6.5" y="3" width="3" height="10" rx="0.8" stroke="currentColor" stroke-width="1.4"/>
+                <rect x="11" y="3" width="3" height="10" rx="0.8" stroke="currentColor" stroke-width="1.4"/>
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="view-btn"
+              [class.active]="gridColumns() === 2"
+              (click)="gridColumns.set(2)"
+              aria-label="Vista amplia de 2 columnas"
+              title="Vista amplia de 2 columnas"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="2.5" y="3" width="4.5" height="10" rx="0.8" stroke="currentColor" stroke-width="1.4"/>
+                <rect x="9" y="3" width="4.5" height="10" rx="0.8" stroke="currentColor" stroke-width="1.4"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="sort-dropdown">
+            <button
+              type="button"
+              class="sort-trigger"
+              (click)="toggleSortMenu()"
+              [attr.aria-expanded]="sortMenuOpen()"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/>
+              </svg>
+              <span>Ordenar</span>
+            </button>
+
+            @if (sortMenuOpen()) {
+              <div class="sort-menu" role="menu">
+                @for (option of sortOptions; track option.value) {
+                  <button
+                    type="button"
+                    class="sort-option"
+                    [class.active]="sortBy() === option.value"
+                    (click)="selectSort(option.value)"
+                    role="menuitem"
+                  >
+                    <span>{{ option.label }}</span>
+                    @if (sortBy() === option.value) {
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    }
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </div>
       </header>
 
       @if (isLoading()) {
@@ -57,146 +113,160 @@ type FilterGroup = 'flowerTypes' | 'colors' | 'sizes' | 'occasions';
           <aside class="filters" aria-label="Filtros del catálogo">
             <div class="filter-title">
               <h2>Filtros</h2>
-              <button type="button" class="text-button" (click)="clearFilters()">Limpiar</button>
+              @if (activeFilterCount() > 0) {
+                <button type="button" class="text-button" (click)="clearFilters()">Limpiar</button>
+              }
             </div>
 
-            <section class="filter-group">
-              <h3>Categorías</h3>
-              <button
-                type="button"
-                class="category-option"
-                [class.category-option--selected]="!categoryId()"
-                (click)="selectCategory('')"
-              >
-                <span>Todas</span>
-                <span>{{ products().length }}</span>
+            <section class="filter-accordion">
+              <button type="button" class="accordion-header" (click)="toggleSection('categories')" [attr.aria-expanded]="openSections().categories">
+                <span>Categoría</span>
+                <svg class="chevron" [class.rotated]="openSections().categories" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
               </button>
-              @for (category of categories(); track category.id) {
-                <button
-                  type="button"
-                  class="category-option"
-                  [class.category-option--selected]="categoryId() === category.id"
-                  (click)="selectCategory(category.id)"
-                >
-                  <span>{{ category.name }}</span>
-                  <span>{{ countByCategory(category.id) }}</span>
-                </button>
+              @if (openSections().categories) {
+                <div class="accordion-body">
+                  <button type="button" class="category-option" [class.category-option--selected]="!categoryId()" (click)="selectCategory('')">
+                    <span>Todas</span>
+                    <span>{{ products().length }}</span>
+                  </button>
+                  @for (category of categories(); track category.id) {
+                    <button type="button" class="category-option" [class.category-option--selected]="categoryId() === category.id" (click)="selectCategory(category.id)">
+                      <span>{{ category.name }}</span>
+                      <span>{{ countByCategory(category.id) }}</span>
+                    </button>
+                  }
+                </div>
               }
             </section>
 
-            <section class="filter-group">
-              <h3>Tipo de flor</h3>
-              <input
-                class="flower-search"
-                type="search"
-                placeholder="Buscar flor..."
-                aria-label="Buscar por tipo de flor"
-                [value]="flowerSearch()"
-                (input)="setFlowerSearch($event)"
-              />
-              @for (flower of flowerTypes; track flower) {
-                <label class="check-option">
-                  <input
-                    type="checkbox"
-                    [checked]="flowerTypesSelected().includes(flower)"
-                    (change)="toggleFilter('flowerTypes', flower)"
-                  />
-                  <span>{{ flower }}</span>
-                </label>
+            <section class="filter-accordion">
+              <button type="button" class="accordion-header" (click)="toggleSection('occasions')" [attr.aria-expanded]="openSections().occasions">
+                <span>Ocasiones</span>
+                <svg class="chevron" [class.rotated]="openSections().occasions" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              @if (openSections().occasions) {
+                <div class="accordion-body">
+                  @for (occasion of availableOccasions(); track occasion) {
+                    <label class="check-option">
+                      <input type="checkbox" [checked]="occasionsSelected().includes(occasion)" (change)="toggleFilter('occasions', occasion)" />
+                      <span>{{ occasion }}</span>
+                    </label>
+                  } @empty {
+                    <p class="filter-note">No hay ocasiones registradas.</p>
+                  }
+                </div>
               }
             </section>
 
-            <section class="filter-group">
-              <h3>Color</h3>
-              @for (color of availableColors(); track color) {
-                <label class="check-option">
-                  <input
-                    type="checkbox"
-                    [checked]="colorsSelected().includes(color)"
-                    (change)="toggleFilter('colors', color)"
-                  />
-                  <span>{{ color }}</span>
-                </label>
-              } @empty {
-                <p class="filter-note">No hay colores registrados.</p>
+            <section class="filter-accordion">
+              <button type="button" class="accordion-header" (click)="toggleSection('colors')" [attr.aria-expanded]="openSections().colors">
+                <span>Color</span>
+                <svg class="chevron" [class.rotated]="openSections().colors" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              @if (openSections().colors) {
+                <div class="accordion-body">
+                  @for (color of availableColors(); track color) {
+                    <label class="check-option">
+                      <input type="checkbox" [checked]="colorsSelected().includes(color)" (change)="toggleFilter('colors', color)" />
+                      <span>{{ color }}</span>
+                    </label>
+                  } @empty {
+                    <p class="filter-note">No hay colores registrados.</p>
+                  }
+                </div>
               }
             </section>
 
-            <section class="filter-group">
-              <h3>Tamaño</h3>
-              @for (size of availableSizes(); track size) {
-                <label class="check-option">
-                  <input
-                    type="checkbox"
-                    [checked]="sizesSelected().includes(size)"
-                    (change)="toggleFilter('sizes', size)"
-                  />
-                  <span>{{ size }}</span>
-                </label>
-              } @empty {
-                <p class="filter-note">No hay tamaños registrados.</p>
+            <section class="filter-accordion">
+              <button type="button" class="accordion-header" (click)="toggleSection('flowers')" [attr.aria-expanded]="openSections().flowers">
+                <span>Tipo de flor</span>
+                <svg class="chevron" [class.rotated]="openSections().flowers" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              @if (openSections().flowers) {
+                <div class="accordion-body">
+                  <input class="flower-search" type="search" placeholder="Buscar flor..." aria-label="Buscar por tipo de flor" [value]="flowerSearch()" (input)="setFlowerSearch($event)" />
+                  @for (flower of flowerTypes; track flower) {
+                    <label class="check-option">
+                      <input type="checkbox" [checked]="flowerTypesSelected().includes(flower)" (change)="toggleFilter('flowerTypes', flower)" />
+                      <span>{{ flower }}</span>
+                    </label>
+                  }
+                </div>
               }
             </section>
 
-            <section class="filter-group">
-              <h3>Ocasión</h3>
-              @for (occasion of availableOccasions(); track occasion) {
-                <label class="check-option">
-                  <input
-                    type="checkbox"
-                    [checked]="occasionsSelected().includes(occasion)"
-                    (change)="toggleFilter('occasions', occasion)"
-                  />
-                  <span>{{ occasion }}</span>
-                </label>
-              } @empty {
-                <p class="filter-note">No hay ocasiones registradas en las fichas de producto.</p>
+            <section class="filter-accordion">
+              <button type="button" class="accordion-header" (click)="toggleSection('sizes')" [attr.aria-expanded]="openSections().sizes">
+                <span>Tamaño</span>
+                <svg class="chevron" [class.rotated]="openSections().sizes" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              @if (openSections().sizes) {
+                <div class="accordion-body">
+                  @for (size of availableSizes(); track size) {
+                    <label class="check-option">
+                      <input type="checkbox" [checked]="sizesSelected().includes(size)" (change)="toggleFilter('sizes', size)" />
+                      <span>{{ size }}</span>
+                    </label>
+                  } @empty {
+                    <p class="filter-note">No hay tamaños registrados.</p>
+                  }
+                </div>
               }
             </section>
 
-            <section class="filter-group">
-              <h3>Disponibilidad</h3>
-              <label class="check-option">
-                <input
-                  type="checkbox"
-                  [checked]="availableOnly()"
-                  (change)="setAvailabilityFilter($event)"
-                />
-                <span>Solo productos disponibles</span>
-              </label>
-              <label class="check-option">
-                <input
-                  type="checkbox"
-                  [checked]="campaignOnly()"
-                  (change)="setCampaignFilter($event)"
-                />
-                <span>En campaña o con descuento</span>
-              </label>
+            <section class="filter-accordion">
+              <button type="button" class="accordion-header" (click)="toggleSection('availability')" [attr.aria-expanded]="openSections().availability">
+                <span>Disponibilidad</span>
+                <svg class="chevron" [class.rotated]="openSections().availability" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              @if (openSections().availability) {
+                <div class="accordion-body">
+                  <label class="check-option">
+                    <input type="checkbox" [checked]="availableOnly()" (change)="setAvailabilityFilter($event)" />
+                    <span>Solo productos disponibles</span>
+                  </label>
+                  <label class="check-option">
+                    <input type="checkbox" [checked]="campaignOnly()" (change)="setCampaignFilter($event)" />
+                    <span>En campaña o con descuento</span>
+                  </label>
+                </div>
+              }
             </section>
 
-            <section class="filter-group price-filter">
-              <h3>Precio</h3>
-              <div class="price-inputs">
-                <label>
-                  <span>Mínimo</span>
-                  <input
-                    type="number"
-                    min="0"
-                    [value]="minPrice()"
-                    (input)="setMinPrice($event)"
-                  />
-                </label>
-                <label>
-                  <span>Máximo</span>
-                  <input
-                    type="number"
-                    min="0"
-                    [value]="maxPrice()"
-                    (input)="setMaxPrice($event)"
-                  />
-                </label>
-              </div>
-              <app-ui-button variant="outline" (click)="applyPriceRange()">Aplicar</app-ui-button>
+            <section class="filter-accordion">
+              <button type="button" class="accordion-header" (click)="toggleSection('price')" [attr.aria-expanded]="openSections().price">
+                <span>Rangos de precio</span>
+                <svg class="chevron" [class.rotated]="openSections().price" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              @if (openSections().price) {
+                <div class="accordion-body price-filter">
+                  <div class="price-inputs">
+                    <label>
+                      <span>Mínimo</span>
+                      <input type="number" min="0" [value]="minPrice()" (input)="setMinPrice($event)" />
+                    </label>
+                    <label>
+                      <span>Máximo</span>
+                      <input type="number" min="0" [value]="maxPrice()" (input)="setMaxPrice($event)" />
+                    </label>
+                  </div>
+                  <app-ui-button variant="outline" (click)="applyPriceRange()">Aplicar</app-ui-button>
+                </div>
+              }
             </section>
           </aside>
 
@@ -213,9 +283,9 @@ type FilterGroup = 'flowerTypes' | 'colors' | 'sizes' | 'occasions';
             </div>
 
             @if (pagedProducts().length > 0) {
-              <div class="product-grid">
+              <div class="product-grid" [class.product-grid--two-cols]="gridColumns() === 2">
                 @for (product of pagedProducts(); track product.id) {
-                  <app-product-card [product]="product" (add)="addToCart($event)" />
+                  <app-product-card [product]="product" [horizontal]="gridColumns() === 2" (add)="addToCart($event)"/>
                 }
               </div>
 
@@ -265,6 +335,7 @@ type FilterGroup = 'flowerTypes' | 'colors' | 'sizes' | 'occasions';
   `,
   styleUrl: './catalogo.page.scss',
 })
+
 export class CatalogoPage implements OnInit {
   private readonly catalogService = inject(CatalogService);
   private readonly cartService = inject(CartService);
@@ -283,12 +354,31 @@ export class CatalogoPage implements OnInit {
   protected readonly availableOnly = signal(false);
   protected readonly campaignOnly = signal(false);
   protected readonly minPrice = signal(0);
-  protected readonly maxPrice = signal(150);
+  protected readonly maxPrice = signal(1000);
   protected readonly sortBy = signal<SortOption>('recommended');
   protected readonly currentPage = signal(1);
   protected readonly cartMessage = signal('');
   protected readonly flowerTypes = ['Rosas', 'Girasoles', 'Tulipanes', 'Orquídeas'];
   private readonly pageSize = 9;
+
+  protected readonly gridColumns = signal<2 | 3>(3);
+  protected readonly sortMenuOpen = signal(false);
+  protected readonly sortOptions: { value: SortOption; label: string }[] = [
+    { value: 'recommended', label: 'Recomendado' },
+    { value: 'price-asc', label: 'Menor a mayor precio' },
+    { value: 'price-desc', label: 'Mayor a menor precio' },
+    { value: 'name-asc', label: 'A - Z' },
+    { value: 'name-desc', label: 'Z - A' },
+  ];
+  protected readonly openSections = signal<Record<FilterSection, boolean>>({
+    categories: true,
+    occasions: false,
+    colors: false,
+    flowers: false,
+    sizes: false,
+    availability: false,
+    price: false,
+  });
 
   protected readonly selectedCategoryName = computed(
     () => this.categories().find((category) => category.id === this.categoryId())?.name ?? '',
@@ -296,6 +386,7 @@ export class CatalogoPage implements OnInit {
   protected readonly availableColors = computed(() =>
     this.uniqueValues(this.products().map((product) => product.color)),
   );
+
   protected readonly availableSizes = computed(() =>
     this.uniqueValues(this.products().map((product) => product.size)),
   );
@@ -373,7 +464,7 @@ export class CatalogoPage implements OnInit {
       this.occasionsSelected().length +
       Number(this.availableOnly()) +
       Number(this.campaignOnly()) +
-      Number(this.minPrice() > 0 || this.maxPrice() < 150),
+      Number(this.minPrice() > 0 || this.maxPrice() < 1000),
   );
 
   ngOnInit(): void {
@@ -471,21 +562,21 @@ export class CatalogoPage implements OnInit {
     }
   }
 
-  protected setSort(event: Event): void {
-    const target = event.target;
-    if (target instanceof HTMLSelectElement) {
-      const value = target.value;
-      if (
-        value === 'recommended' ||
-        value === 'price-asc' ||
-        value === 'price-desc' ||
-        value === 'name-asc' ||
-        value === 'name-desc'
-      ) {
-        this.sortBy.set(value);
-      }
-      this.currentPage.set(1);
-    }
+  protected toggleSortMenu(): void {
+    this.sortMenuOpen.update((open) => !open);
+  }
+
+  protected selectSort(option: SortOption): void {
+    this.sortBy.set(option);
+    this.sortMenuOpen.set(false);
+    this.currentPage.set(1);
+  }
+
+  protected toggleSection(section: FilterSection): void {
+    this.openSections.update((state) => ({
+      ...state,
+      [section]: !state[section],
+    }));
   }
 
   protected applyPriceRange(): void {
@@ -505,7 +596,7 @@ export class CatalogoPage implements OnInit {
     this.availableOnly.set(false);
     this.campaignOnly.set(false);
     this.minPrice.set(0);
-    this.maxPrice.set(150);
+    this.maxPrice.set(1000);
     this.currentPage.set(1);
   }
 

@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { API_BASE_URL } from '../api/api.config';
 import { AuthResponse } from '../models/auth.model';
 import { AccountService } from './account.service';
 import { AuthService } from './auth.service';
@@ -33,7 +34,7 @@ describe('AccountService', () => {
 
     // Inicia sesión antes de cada prueba
     auth.login({ email: 'ana@test.com', contrasena: 'Clave123' }, true).subscribe();
-    http.expectOne('/api/auth/login').flush(sesion);
+    http.expectOne(`${API_BASE_URL}/auth/login`).flush(sesion);
   });
 
   afterEach(() => {
@@ -44,7 +45,7 @@ describe('AccountService', () => {
 
   it('getProfile consulta GET /api/auth/me', () => {
     account.getProfile().subscribe();
-    expect(http.expectOne('/api/auth/me').request.method).toBe('GET');
+    expect(http.expectOne(`${API_BASE_URL}/auth/me`).request.method).toBe('GET');
   });
 
   it('updateProfile envía PUT y actualiza el nombre del encabezado', () => {
@@ -58,7 +59,7 @@ describe('AccountService', () => {
       })
       .subscribe();
 
-    const req = http.expectOne('/api/auth/me');
+    const req = http.expectOne(`${API_BASE_URL}/auth/me`);
     expect(req.request.method).toBe('PUT');
     expect(req.request.body.nombre).toBe('Ana María');
     expect(req.request.body.direccion).toBe('Av. Grau 123');
@@ -75,7 +76,7 @@ describe('AccountService', () => {
         confirmacion: 'Nueva456',
       })
       .subscribe();
-    const req = http.expectOne('/api/auth/me/contrasena');
+    const req = http.expectOne(`${API_BASE_URL}/auth/me/contrasena`);
     expect(req.request.method).toBe('PUT');
     req.flush(null, { status: 204, statusText: 'No Content' });
   });
@@ -86,7 +87,7 @@ describe('AccountService', () => {
       .changeEmail({ nuevoEmail: ' nueva@test.com ', contrasenaActual: 'Clave123' })
       .subscribe((email) => (nuevoCorreo = email));
 
-    const req = http.expectOne('/api/auth/me/email');
+    const req = http.expectOne(`${API_BASE_URL}/auth/me/email`);
     expect(req.request.body.nuevoEmail).toBe('nueva@test.com');
     req.flush({ ...sesion, token: 'token-2', email: 'nueva@test.com' });
 
@@ -99,7 +100,7 @@ describe('AccountService', () => {
   it('deleteAccount envía DELETE con la contraseña y cierra la sesión', () => {
     account.deleteAccount('Clave123').subscribe();
 
-    const req = http.expectOne('/api/auth/me');
+    const req = http.expectOne(`${API_BASE_URL}/auth/me`);
     expect(req.request.method).toBe('DELETE');
     expect(req.request.body).toEqual({ contrasena: 'Clave123' });
     req.flush(null, { status: 204, statusText: 'No Content' });
@@ -110,7 +111,7 @@ describe('AccountService', () => {
   it('si la contraseña es incorrecta (400) no cierra la sesión', () => {
     account.deleteAccount('mala').subscribe({ error: () => undefined });
     http
-      .expectOne('/api/auth/me')
+      .expectOne(`${API_BASE_URL}/auth/me`)
       .flush(
         { mensaje: 'La contraseña actual no es correcta' },
         { status: 400, statusText: 'Bad Request' },
