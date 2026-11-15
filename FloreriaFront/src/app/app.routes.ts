@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/guards/auth.guards';
+import { authGuard, guestGuard, roleGuard } from './core/guards/auth.guards';
 
 export const routes: Routes = [
   {
@@ -85,6 +85,12 @@ export const routes: Routes = [
     path: 'carrito',
     title: 'Carrito de Compras | FloriaSmart',
     loadComponent: () => import('./features/carrito/pages/carrito.page').then((m) => m.CarritoPage),
+  },
+  {
+    path: 'admin',
+    canActivate: [roleGuard('ADMINISTRADOR', 'OPERARIO')],
+    loadComponent: () =>
+      import('./features/admin/pages/admin-dashboard.page').then((m) => m.AdminDashboardPage),
   },
   {
     path: '**',

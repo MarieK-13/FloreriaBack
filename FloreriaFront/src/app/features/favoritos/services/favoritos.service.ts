@@ -54,7 +54,6 @@ export class FavoritosService {
     }
   }
 
-  /** Llamar al cerrar sesión para limpiar en memoria los favoritos de la cuenta anterior */
   limpiarSesionLocal(): void {
     this.idsSignal.set(this.leerIdsLocal());
     this.productosLocalSignal.set(this.leerProductosLocal());

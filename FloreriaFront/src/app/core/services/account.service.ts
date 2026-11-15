@@ -24,11 +24,11 @@ export class AccountService {
   updateProfile(data: UpdateProfileRequest): Observable<UserProfile> {
     return this.http
       .put<UserProfile>(this.url, {
-        nombre: data.nombre.trim(),
-        apellidos: data.apellidos.trim(),
-        telefono: data.telefono.trim(),
-        distrito: data.distrito.trim(),
-        direccion: data.direccion.trim(),
+        nombre: (data.nombre ?? '').trim(),
+        apellidos: (data.apellidos ?? '').trim(),
+        telefono: (data.telefono ?? '').trim(),
+        distrito: (data.distrito ?? '').trim(),
+        direccion: (data.direccion ?? '').trim(),
       })
       .pipe(tap((profile) => this.auth.updateSessionName(profile.nombre)));
   }
@@ -50,8 +50,10 @@ export class AccountService {
   }
 
   deleteAccount(contrasena: string): Observable<void> {
-    return this.http
-      .delete<void>(this.url, { body: { contrasena } })
-      .pipe(tap(() => this.auth.logout(null)));
+    return this.http.delete<void>(this.url, { body: { contrasena } }).pipe(
+      tap(() => {
+        this.auth.logout(null);
+      }),
+    );
   }
 }

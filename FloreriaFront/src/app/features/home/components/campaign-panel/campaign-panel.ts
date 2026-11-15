@@ -2,6 +2,7 @@ import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { UiButton } from '../../../../shared/components/ui-button/ui-button';
 import { MisFechasService } from '../../../../core/services/mis-fechas.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 interface CampaignItem {
   id: string;
@@ -102,6 +103,7 @@ export class CampaignPanel implements OnInit {
   private readonly router = inject(Router);
   private readonly misFechasService = inject(MisFechasService);
 
+  private readonly auth = inject(AuthService);
   private readonly campanasAnuales: CampaignItem[] = [
     {
       id: 'san-valentin',
@@ -310,10 +312,13 @@ export class CampaignPanel implements OnInit {
 
     this.destroyRef.onDestroy(() => clearInterval(interval));
 
-    // Si ya inició sesión, verificamos si esta campaña ya estaba guardada en su cuenta
-    if (localStorage.getItem('token')) {
+    if (this.auth.getToken()) {
       this.verificarSiYaEstaSuscrito();
     }
+  }
+
+  private irALogin(): void {
+    void this.router.navigate(['/ingresar'], { queryParams: { redirect: '/' } });
   }
 
   private verificarSiYaEstaSuscrito(): void {
@@ -329,11 +334,8 @@ export class CampaignPanel implements OnInit {
   }
 
   protected activarAviso(): void {
-    const token = localStorage.getItem('token'); // <-- Ajusta si tu clave de token en localStorage es distinta
-
-    // Si no está logueado, lo llevamos a iniciar sesión
-    if (!token) {
-      this.router.navigate(['/login'], { queryParams: { returnUrl: '/' } });
+    if (!this.auth.getToken()) {
+      this.irALogin();
       return;
     }
 
@@ -355,9 +357,11 @@ export class CampaignPanel implements OnInit {
           this.guardandoAviso.set(false);
           this.avisoActivado.set(true);
         },
-        error: () => {
+        error: (err) => {
           this.guardandoAviso.set(false);
-          this.router.navigate(['/login'], { queryParams: { returnUrl: '/' } });
+          if (err?.status === 401 || err?.status === 403) {
+            this.irALogin();
+          }
         },
       });
   }

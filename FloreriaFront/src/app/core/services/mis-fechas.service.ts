@@ -1,11 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface FechaImportanteRequest {
   ocasion: string;
   persona: string;
-  fecha: string; 
+  fecha: string;
   diasAnticipacion?: number;
 }
 
@@ -23,7 +24,7 @@ export interface FechaImportanteResponse {
 })
 export class MisFechasService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/mis-fechas';
+  private readonly apiUrl = `${environment.apiUrl}/mis-fechas`;
 
   listarMisFechas(): Observable<FechaImportanteResponse[]> {
     return this.http.get<FechaImportanteResponse[]>(this.apiUrl);

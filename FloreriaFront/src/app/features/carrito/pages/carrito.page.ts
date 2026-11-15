@@ -213,7 +213,7 @@ export class CarritoPage {
 
   protected procesarCompra(): void {
     if (!this.carritoService.estaLogueado()) {
-      this.router.navigate(['/login'], { queryParams: { returnUrl: '/carrito' } });
+      void this.router.navigate(['/ingresar'], { queryParams: { redirect: '/carrito' } });
       return;
     }
 

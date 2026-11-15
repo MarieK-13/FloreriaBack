@@ -32,7 +32,6 @@ describe('AccountService', () => {
     auth = TestBed.inject(AuthService);
     http = TestBed.inject(HttpTestingController);
 
-    // Inicia sesión antes de cada prueba
     auth.login({ email: 'ana@test.com', contrasena: 'Clave123' }, true).subscribe();
     http.expectOne(`${API_BASE_URL}/auth/login`).flush(sesion);
   });

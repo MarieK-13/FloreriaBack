@@ -36,6 +36,33 @@ import { CarritoService } from '../../../features/carrito/services/carrito.servi
         </nav>
 
         <div class="navigation user-actions">
+          @if (auth.hasRole('ADMINISTRADOR', 'OPERARIO')) {
+            <a
+              class="date-link admin-link"
+              routerLink="/admin"
+              routerLinkActive="is-active"
+              title="Panel de administración y operaciones"
+            >
+              <svg
+                aria-hidden="true"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+              </svg>
+              Panel Admin
+            </a>
+          }
+
           <a class="date-link" routerLink="/mis-fechas" routerLinkActive="is-active">
             <svg
               aria-hidden="true"
@@ -171,7 +198,7 @@ export class SiteHeader {
     return fullName.trim().split(/\s+/)[0] || fullName;
   }
 
-  isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+  protected esStaff(): boolean {
+    return this.auth.hasRole('ADMINISTRADOR', 'OPERARIO');
   }
 }
