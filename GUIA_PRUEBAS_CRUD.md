@@ -1,4 +1,4 @@
-# Persona 1 (Abel) — CRUD completo y eliminación segura
+#  CRUD completo y eliminación segura
 
 ## Qué se implementó
 
