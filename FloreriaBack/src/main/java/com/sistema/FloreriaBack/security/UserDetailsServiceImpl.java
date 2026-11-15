@@ -19,7 +19,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return usuarioRepository.findByEmail(email)
+        // Sin distinguir mayúsculas: "Maria@Gmail.com" y "maria@gmail.com" son la misma cuenta
+        String emailBuscado = email == null ? "" : email.trim();
+        return usuarioRepository.findByEmailIgnoreCase(emailBuscado)
                 .map(UsuarioPrincipal::desde)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
     }

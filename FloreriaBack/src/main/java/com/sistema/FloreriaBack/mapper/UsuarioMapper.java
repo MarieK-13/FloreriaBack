@@ -12,6 +12,8 @@ public class UsuarioMapper {
     public Usuario toEntity(UsuarioRequestDTO dto) {
         return Usuario.builder()
                 .nombre(dto.getNombre())
+                .apellidos(dto.getApellidos())
+                .telefono(dto.getTelefono())
                 .email(dto.getEmail())
                 .contrasena(dto.getContrasena())
                 .rol(dto.getRol())
@@ -28,10 +30,14 @@ public class UsuarioMapper {
 
     public UsuarioResponseDTO toResponseDTO(Usuario usuario) {
         return new UsuarioResponseDTO(
-                usuario.getId(), 
-                usuario.getNombre(), 
+                usuario.getId(),
+                usuario.getNombre(),
+                usuario.getApellidos(),
                 usuario.getEmail(),
-                usuario.getRol(), 
+                usuario.getTelefono(),
+                usuario.getDistrito(),
+                usuario.getDireccion(),
+                usuario.getRol(),
                 usuario.isActivo()
         );
     }

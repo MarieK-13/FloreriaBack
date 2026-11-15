@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 440" role="img" aria-labelledby="t">
+  <title id="t">Ilustración de un ramo de girasoles y tulipanes envuelto en papel kraft</title>
+  <defs>
+    <!-- Girasol -->
+    <symbol id="girasol" viewBox="-50 -50 100 100" overflow="visible">
+      <g fill="#f7c233" stroke="#e3a51a" stroke-width="1.5">
+        <ellipse cx="0" cy="-30" rx="9" ry="17"/>
+        <ellipse cx="0" cy="-30" rx="9" ry="17" transform="rotate(30)"/>
+        <ellipse cx="0" cy="-30" rx="9" ry="17" transform="rotate(60)"/>
+        <ellipse cx="0" cy="-30" rx="9" ry="17" transform="rotate(90)"/>
+        <ellipse cx="0" cy="-30" rx="9" ry="17" transform="rotate(120)"/>
+        <ellipse cx="0" cy="-30" rx="9" ry="17" transform="rotate(150)"/>
+        <ellipse cx="0" cy="-30" rx="9" ry="17" transform="rotate(180)"/>
+        <ellipse cx="0" cy="-30" rx="9" ry="17" transform="rotate(210)"/>
+        <ellipse cx="0" cy="-30" rx="9" ry="17" transform="rotate(240)"/>
+        <ellipse cx="0" cy="-30" rx="9" ry="17" transform="rotate(270)"/>
+        <ellipse cx="0" cy="-30" rx="9" ry="17" transform="rotate(300)"/>
+        <ellipse cx="0" cy="-30" rx="9" ry="17" transform="rotate(330)"/>
+      </g>
+      <g fill="#fbd45c">
+        <ellipse cx="0" cy="-27" rx="6" ry="12" transform="rotate(15)"/>
+        <ellipse cx="0" cy="-27" rx="6" ry="12" transform="rotate(75)"/>
+        <ellipse cx="0" cy="-27" rx="6" ry="12" transform="rotate(135)"/>
+        <ellipse cx="0" cy="-27" rx="6" ry="12" transform="rotate(195)"/>
+        <ellipse cx="0" cy="-27" rx="6" ry="12" transform="rotate(255)"/>
+        <ellipse cx="0" cy="-27" rx="6" ry="12" transform="rotate(315)"/>
+      </g>
+      <circle r="19" fill="#6b4226"/>
+      <circle r="13" fill="#7d5030"/>
+      <g fill="#4e2f1a">
+        <circle cx="-6" cy="-5" r="1.8"/><circle cx="4" cy="-8" r="1.8"/><circle cx="8" cy="2" r="1.8"/>
+        <circle cx="-2" cy="6" r="1.8"/><circle cx="-9" cy="4" r="1.6"/><circle cx="1" cy="-1" r="1.6"/>
+        <circle cx="12" cy="-6" r="1.4"/><circle cx="-12" cy="-4" r="1.4"/><circle cx="6" cy="11" r="1.4"/>
+      </g>
+      <path d="M-11 -11 C-6 -15 2 -16 7 -13" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2.5" stroke-linecap="round"/>
+    </symbol>
+    <!-- Tulipán: el color sale de currentColor -->
+    <symbol id="tulipan" viewBox="-30 -40 60 70" overflow="visible">
+      <path d="M-20 -24 L-10 -8 L0 -30 L10 -8 L20 -24 C26 0 16 22 0 22 C-16 22 -26 0 -20 -24Z" fill="currentColor"/>
+      <path d="M0 -30 L10 -8 L20 -24 C26 0 16 22 0 22Z" fill="#7a1f3d" fill-opacity=".12"/>
+      <path d="M-14 -12 C-16 2 -10 14 -2 18" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+    <!-- Lavanda -->
+    <symbol id="lavanda" viewBox="-12 -90 24 100" overflow="visible">
+      <path d="M0 8 L0 -84" stroke="#6f9c87" stroke-width="2" stroke-linecap="round"/>
+      <g fill="#a98fd6">
+        <ellipse cx="-4" cy="-30" rx="4" ry="6"/><ellipse cx="4" cy="-36" rx="4" ry="6"/>
+        <ellipse cx="-4" cy="-44" rx="4" ry="6"/><ellipse cx="4" cy="-50" rx="4" ry="6"/>
+        <ellipse cx="-3.5" cy="-58" rx="3.5" ry="5.5"/><ellipse cx="3.5" cy="-64" rx="3.5" ry="5.5"/>
+        <ellipse cx="-3" cy="-71" rx="3" ry="5"/><ellipse cx="2.5" cy="-77" rx="3" ry="4.5"/>
+        <ellipse cx="0" cy="-84" rx="2.5" ry="4"/>
+      </g>
+    </symbol>
+    <symbol id="hoja" viewBox="0 -14 64 28" overflow="visible">
+      <path d="M0 0 C14 -13 42 -13 64 0 C42 13 14 13 0 0Z" fill="currentColor"/>
+      <path d="M4 0 C24 -2 44 -2 60 0" fill="none" stroke="#0e3d31" stroke-opacity=".35" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="paniculata" viewBox="-30 -40 60 50" overflow="visible">
+      <path d="M0 8 C-2 -6 -10 -16 -18 -24 M0 8 C2 -8 4 -20 10 -30 M0 8 C6 -4 14 -10 22 -14" fill="none" stroke="#7da893" stroke-width="1.6" stroke-linecap="round"/>
+      <g fill="#fff" stroke="#e9dcd8" stroke-width="1">
+        <circle cx="-18" cy="-25" r="4.5"/><circle cx="-24" cy="-18" r="3.5"/><circle cx="-12" cy="-32" r="3.5"/>
+        <circle cx="10" cy="-31" r="4.5"/><circle cx="4" cy="-37" r="3.5"/><circle cx="16" cy="-36" r="3.2"/>
+        <circle cx="22" cy="-15" r="4.2"/><circle cx="27" cy="-21" r="3.2"/><circle cx="17" cy="-9" r="3"/>
+      </g>
+    </symbol>
+  </defs>
+
+  <!-- Papel kraft trasero -->
+  <path d="M74 198 C120 176 280 176 326 198 L236 398 L164 398 Z" fill="#dcb68a"/>
+  <path d="M74 198 L164 398 L148 398 L62 208 Z" fill="#cfa577"/>
+
+  <!-- Lavanda y hojas de fondo -->
+  <use href="#lavanda" x="102" y="72" width="24" height="100" transform="rotate(-28 114 162)"/>
+  <use href="#lavanda" x="120" y="54" width="24" height="100" transform="rotate(-14 132 144)"/>
+  <use href="#lavanda" x="262" y="62" width="24" height="100" transform="rotate(20 274 152)"/>
+  <use href="#lavanda" x="280" y="84" width="24" height="100" transform="rotate(34 292 174)"/>
+  <use href="#hoja" x="244" y="96" width="64" height="28" color="#2f7d64" transform="rotate(-40 244 110)"/>
+  <use href="#hoja" x="92" y="92" width="64" height="28" color="#3f8a6d" transform="rotate(218 124 106)"/>
+  <use href="#hoja" x="278" y="176" width="60" height="26" color="#3f8a6d" transform="rotate(6 278 189)"/>
+  <use href="#hoja" x="58" y="176" width="60" height="26" color="#2f7d64" transform="rotate(176 88 189)"/>
+  <use href="#paniculata" x="170" y="20" width="60" height="50"/>
+  <use href="#paniculata" x="66" y="138" width="56" height="46"/>
+  <use href="#paniculata" x="280" y="130" width="56" height="46"/>
+
+  <!-- Tulipanes (con tallo) -->
+  <g stroke="#3f8a6d" stroke-width="4" stroke-linecap="round" fill="none">
+    <path d="M160 150 L170 210"/><path d="M244 146 L232 210"/><path d="M200 112 L200 190"/>
+  </g>
+  <use href="#tulipan" x="128" y="88" width="56" height="66" color="#f08aa6" transform="rotate(-12 156 121)"/>
+  <use href="#tulipan" x="216" y="86" width="56" height="66" color="#f6a57a" transform="rotate(12 244 119)"/>
+  <use href="#tulipan" x="174" y="48" width="52" height="62" color="#e8678a"/>
+
+  <!-- Girasoles -->
+  <use href="#girasol" x="92" y="128" width="96" height="96"/>
+  <use href="#girasol" x="214" y="124" width="100" height="100"/>
+  <use href="#girasol" x="150" y="150" width="104" height="104"/>
+
+  <!-- Papel kraft delantero -->
+  <path d="M90 224 C130 248 160 254 200 254 C240 254 270 248 310 224 L222 404 L178 404 Z" fill="#ead0ad"/>
+  <path d="M90 224 C130 248 160 254 200 254 C240 254 270 248 310 224" fill="none" stroke="#d2ad80" stroke-width="3"/>
+  <path d="M90 224 L178 404 L200 404 L200 254 C160 254 130 248 90 224Z" fill="#e2c39b"/>
+  <path d="M200 254 L200 404" stroke="#d8b78c" stroke-width="2.5"/>
+  <path d="M148 250 L190 404" stroke="#d6b385" stroke-width="2"/>
+  <path d="M254 250 L212 404" stroke="#dcbc92" stroke-width="2"/>
+  <!-- Etiqueta -->
+  <rect x="226" y="272" width="44" height="26" rx="5" fill="#fffaf7" transform="rotate(-10 248 285)"/>
+  <text x="248" y="290" font-family="Georgia, serif" font-size="11" fill="#176b58" text-anchor="middle" transform="rotate(-10 248 285)">✿</text>
+
+  <!-- Lazo -->
+  <g fill="#b65f76">
+    <path d="M200 346 C176 324 148 326 152 344 C156 362 184 360 200 350Z"/>
+    <path d="M200 346 C224 324 252 326 248 344 C244 362 216 360 200 350Z"/>
+    <path d="M196 352 L176 396 L188 392 L198 404 L202 356Z"/>
+    <path d="M204 352 L224 396 L212 392 L202 404 L198 356Z"/>
+  </g>
+  <path d="M163 340 C172 334 186 338 194 346" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="190" y="338" width="20" height="18" rx="6" fill="#944a5e"/>
+
+  <!-- Tallos -->
+  <g stroke="#3f8a6d" stroke-width="5" stroke-linecap="round">
+    <path d="M188 404 L184 428"/><path d="M200 404 L200 432"/><path d="M212 404 L216 428"/>
+  </g>
+</svg>

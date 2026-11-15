@@ -1,0 +1,508 @@
+// Estilos compartidos por "Iniciar sesión" y "Crea tu cuenta" (mockups págs. 11 y 12).
+
+.auth-page {
+  margin-inline: auto;
+  max-width: var(--content-width);
+  padding: clamp(2.5rem, 7vw, 5.5rem) 1.5rem 3.5rem;
+}
+
+.auth-layout {
+  align-items: center;
+  display: grid;
+  gap: clamp(2rem, 8vw, 8rem);
+  grid-template-columns: minmax(0, 28rem) minmax(0, 1fr);
+  padding-inline: clamp(0rem, 2vw, 1.5rem);
+}
+
+// ----- Título -----
+
+h1 {
+  color: var(--color-brand-dark);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2.1rem, 4vw, 2.75rem);
+  font-weight: 400;
+  line-height: 1.1;
+  margin: 0 0 0.6rem;
+}
+
+.auth-subtitle {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 1.4rem;
+}
+
+// ----- Tarjeta del formulario -----
+
+.auth-card {
+  background: var(--color-surface);
+  border: 1px solid #f1e3e6;
+  border-radius: var(--radius-card);
+  box-shadow: 0 0.6rem 1.6rem rgb(35 61 49 / 6%);
+  padding: 1.6rem 1.5rem 1.5rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field-row {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+label {
+  color: var(--color-brand-dark);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+input[type='email'],
+input[type='password'],
+input[type='text'],
+input[type='tel'] {
+  background: var(--color-surface);
+  border: 1px solid #8f9692;
+  border-radius: 0.65rem;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  min-height: 2.75rem;
+  padding: 0.6rem 0.85rem;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+  width: 100%;
+
+  &::placeholder {
+    color: #9aa19d;
+  }
+
+  &:focus {
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 3px rgb(23 107 88 / 15%);
+    outline: none;
+  }
+
+  &[aria-invalid='true'] {
+    border-color: #c0485f;
+  }
+}
+
+.field-hint {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  margin: -0.35rem 0 0;
+}
+
+.field-error {
+  color: #b23a52;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+// ----- Recordarme / términos -----
+
+.form-options {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.checkbox {
+  align-items: center;
+  color: var(--color-text);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.875rem;
+  font-weight: 400;
+  gap: 0.55rem;
+
+  input {
+    accent-color: var(--color-brand);
+    cursor: pointer;
+    height: 1.05rem;
+    margin: 0;
+    width: 1.05rem;
+  }
+
+  input[aria-invalid='true'] {
+    outline: 2px solid #c0485f;
+    outline-offset: 1px;
+  }
+}
+
+.link-button {
+  background: none;
+  border: 0;
+  color: var(--color-brand);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+}
+
+// ----- Botón principal -----
+
+.auth-submit {
+  background: var(--color-brand);
+  border: 0;
+  border-radius: 2rem;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-top: 0.3rem;
+  min-height: 2.9rem;
+  padding: 0.75rem 1.2rem;
+  transition: background 160ms ease;
+
+  &:hover:not(:disabled) {
+    background: var(--color-brand-dark);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgb(23 107 88 / 35%);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: progress;
+    opacity: 0.7;
+  }
+}
+
+// ----- Mensajes -----
+
+.auth-alert {
+  background: #fdecee;
+  border: 1px solid #f3c4cc;
+  border-radius: 0.75rem;
+  color: #8a2c3f;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.9rem;
+}
+
+form .auth-alert {
+  margin: 0;
+}
+
+.auth-alert--info {
+  background: var(--color-brand-soft);
+  border-color: #b5e3d2;
+  color: var(--color-brand-dark);
+}
+
+// ----- Columna derecha: ilustración, etiquetas flotantes y beneficios -----
+
+.auth-showcase {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  justify-self: center;
+  width: 100%;
+}
+
+.art-wrap {
+  isolation: isolate;
+  position: relative;
+  width: min(100%, 22rem);
+
+  // Mancha de color suave detrás del círculo, para que la columna no se vea vacía
+  &::before {
+    background:
+      radial-gradient(closest-side at 38% 42%, rgb(249 227 232 / 90%), transparent),
+      radial-gradient(closest-side at 64% 62%, rgb(214 243 232 / 90%), transparent);
+    content: '';
+    inset: -22%;
+    position: absolute;
+    z-index: -1;
+  }
+}
+
+.art-wrap--small {
+  width: min(100%, 17rem);
+}
+
+.auth-art {
+  aspect-ratio: 1;
+  border: 1.5px dotted rgb(23 107 88 / 40%);
+  border-radius: 50%;
+  padding: clamp(0.6rem, 1.2vw, 0.85rem);
+  position: relative;
+
+  // Círculo de color detrás del ramo
+  &::before {
+    background: linear-gradient(160deg, #fdbfd0 0%, #fbdde5 45%, #dcefe7 100%);
+    border-radius: 50%;
+    content: '';
+    inset: clamp(0.6rem, 1.2vw, 0.85rem);
+    position: absolute;
+  }
+
+  // El ramo se recorta en círculo, como una foto
+  img {
+    clip-path: circle(50% at 50% 50%);
+    display: block;
+    height: 100%;
+    object-fit: contain;
+    object-position: center bottom;
+    padding: 5% 8% 0;
+    position: relative;
+    width: 100%;
+  }
+}
+
+.floating-chip {
+  align-items: center;
+  background: var(--color-surface);
+  border-radius: 2rem;
+  box-shadow: 0 0.4rem 1rem rgb(35 61 49 / 12%);
+  color: var(--color-brand-dark);
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 600;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  position: absolute;
+  right: -0.5rem;
+  top: 9%;
+
+  .dot {
+    background: #3fbf8f;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgb(63 191 143 / 20%);
+    height: 0.5rem;
+    width: 0.5rem;
+  }
+}
+
+.floating-card {
+  align-items: center;
+  background: var(--color-surface);
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 1.4rem rgb(35 61 49 / 13%);
+  color: var(--color-rose-dark);
+  display: flex;
+  gap: 0.6rem;
+  bottom: -3%;
+  left: -2.5rem;
+  max-width: 15.5rem;
+  padding: 0.7rem 0.95rem;
+  position: absolute;
+
+  strong {
+    color: var(--color-brand-dark);
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 0.92rem;
+    font-weight: 400;
+  }
+
+  span {
+    color: var(--color-muted);
+    display: block;
+    font-size: 0.75rem;
+    margin-top: 0.1rem;
+  }
+}
+
+.benefit-icon {
+  align-items: center;
+  background: var(--color-mint);
+  border-radius: 50%;
+  color: var(--color-brand);
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 2.4rem;
+  justify-content: center;
+  width: 2.4rem;
+}
+
+// Tarjeta "Con tu cuenta podrás" (registro)
+.benefits-card {
+  background: rgb(255 255 255 / 85%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  max-width: 24rem;
+  padding: 1.3rem 1.4rem;
+  width: 100%;
+
+  h2 {
+    color: var(--color-brand-dark);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    margin: 0 0 1rem;
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    align-items: flex-start;
+    display: flex;
+    gap: 0.8rem;
+  }
+
+  strong {
+    display: block;
+    font-size: 0.88rem;
+  }
+
+  li span:not(.benefit-icon) {
+    color: var(--color-muted);
+    display: block;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-top: 0.15rem;
+  }
+}
+
+// Franja de beneficios (login), igual que en el inicio
+.auth-benefits {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  list-style: none;
+  margin: 2.5rem 0 0;
+  padding: 1.1rem 1.4rem;
+
+  li {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  strong {
+    display: block;
+    font-size: 0.85rem;
+  }
+
+  li span:not(.benefit-icon) {
+    color: var(--color-muted);
+    display: block;
+    font-size: 0.75rem;
+    margin-top: 0.1rem;
+  }
+}
+
+// ----- Enlace inferior -----
+
+.auth-switch {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
+  text-align: center;
+
+  a {
+    color: var(--color-brand);
+    font-weight: 700;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// ----- Pantallas pequeñas -----
+
+@media (max-width: 1024px) {
+  .auth-benefits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .auth-layout {
+    grid-template-columns: minmax(0, 30rem);
+    justify-content: center;
+  }
+
+  // En celular la ilustración va arriba y más pequeña; se quitan las etiquetas flotantes
+  .auth-showcase {
+    grid-row: 1;
+  }
+
+  .art-wrap,
+  .art-wrap--small {
+    width: min(60%, 11rem);
+  }
+
+  .floating-chip,
+  .floating-card {
+    display: none;
+  }
+
+  // En el registro, los beneficios bajan después del formulario
+  .auth-showcase--register {
+    display: contents;
+
+    .art-wrap {
+      grid-row: 1;
+      justify-self: center;
+    }
+
+    .benefits-card {
+      justify-self: center;
+      max-width: none;
+    }
+  }
+
+  .auth-switch {
+    margin-top: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-page {
+    padding: 2rem 1rem 2.5rem;
+  }
+
+  .auth-card {
+    padding: 1.3rem 1.1rem;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-benefits {
+    grid-template-columns: 1fr;
+  }
+}

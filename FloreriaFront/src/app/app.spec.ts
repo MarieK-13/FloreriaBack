@@ -1,6 +1,8 @@
 import { registerLocaleData } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import localeEsPe from '@angular/common/locales/es-PE';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { App } from './app';
 
@@ -9,7 +11,7 @@ describe('App', () => {
     registerLocaleData(localeEsPe);
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
   });
 

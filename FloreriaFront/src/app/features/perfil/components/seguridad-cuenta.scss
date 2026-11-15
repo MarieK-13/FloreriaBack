@@ -1,0 +1,78 @@
+// Filas de "Acceso y seguridad" (correo, contraseña, eliminar cuenta).
+
+.alert--success {
+  margin-bottom: 1rem;
+}
+
+.security-row {
+  align-items: center;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 1rem 0;
+
+  > div {
+    min-width: 0;
+  }
+}
+
+.row-label {
+  color: var(--color-muted);
+  display: block;
+  font-size: 0.75rem;
+  margin-bottom: 0.2rem;
+}
+
+.row-value {
+  color: var(--color-text);
+  display: block;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+.row-help {
+  color: var(--color-muted);
+  display: block;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.inline-form {
+  background: var(--color-cream);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  padding: 1.1rem 1.2rem 1.2rem;
+}
+
+.danger-zone {
+  .security-row--danger .row-label {
+    color: #b23a52;
+    font-weight: 600;
+  }
+
+  .inline-form {
+    background: #fffafb;
+    border-color: #f3d3da;
+  }
+
+  > .row-help {
+    padding-bottom: 0.5rem;
+  }
+}
+
+.btn--danger {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
+@media (max-width: 560px) {
+  .security-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+}

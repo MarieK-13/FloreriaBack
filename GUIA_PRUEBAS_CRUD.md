@@ -78,7 +78,7 @@ $f2 = Probar "Crear ficha del producto 2" POST "/api/detalle-productos" 201 $A @
 $null = Probar "Eliminar producto con ficha (borra la ficha primero)" DELETE "/api/productos/$($p2.id)" 204 $A
 $null = Probar "La ficha del producto eliminado ya no existe" GET "/api/detalle-productos/producto/$($p2.id)" 404
 $p3 = Probar "Crear producto 3" POST "/api/productos" 201 $A @{nombre="Lirios $t"; precio=50; stock=5; categoriaId=$c1.id}
-$cli = Probar "Registrar cliente" POST "/api/auth/register" 201 -cuerpo @{nombre="Cliente $t"; email="cli$t@correo.com"; contrasena="cliente123"}
+$cli = Probar "Registrar cliente" POST "/api/auth/register" 201 -cuerpo @{nombre="Cliente $t"; apellidos="Prueba"; email="cli$t@correo.com"; telefono="987654321"; contrasena="cliente123"; aceptaTerminos=$true}
 $null = Probar "Cliente compra el producto 3" POST "/api/pedidos" 201 $cli.token @{usuarioId=$cli.usuarioId; direccionEntrega="Av. Lima 456"; detalles=@(@{productoId=$p3.id; cantidad=1})}
 $null = Probar "Eliminar producto con pedido (bloqueado, no 500)" DELETE "/api/productos/$($p3.id)" 400 $A
 Write-Host "`n--- USUARIOS: UPDATE Y DESACTIVAR ---"

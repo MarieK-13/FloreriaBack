@@ -13,6 +13,12 @@ public class UsuarioRequestDTO {
     @Size(max = 100, message = "El nombre no debe superar 100 caracteres")
     private String nombre;
 
+    @Size(max = 100, message = "Los apellidos no deben superar 100 caracteres")
+    private String apellidos;
+
+    @Size(max = 20, message = "El teléfono no debe superar 20 caracteres")
+    private String telefono;
+
     @NotBlank(message = "El email es obligatorio")
     @Email(message = "El formato de email no es válido")
     @Size(max = 150, message = "El email no debe superar 150 caracteres")

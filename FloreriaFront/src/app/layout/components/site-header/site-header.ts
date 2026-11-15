@@ -1,6 +1,7 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
 
 @Component({
@@ -26,7 +27,19 @@ import { CartService } from '../../../core/services/cart.service';
           <a routerLink="/nosotros">Nosotros</a>
           <a class="date-link" href="/#fechas"><span aria-hidden="true">▦</span> Mis fechas</a>
           <a class="icon-link" href="/#favoritos" aria-label="Mis favoritos">♡</a>
-          <a class="account-link" href="/#ingresar"><span aria-hidden="true">♙</span> Iniciar sesión</a>
+          @if (auth.user(); as user) {
+            <a
+              class="account-link account-name"
+              routerLink="/mi-cuenta"
+              [attr.title]="'Mi cuenta · ' + user.email"
+            >
+              <span aria-hidden="true">♙</span> {{ firstName(user.name) }}
+            </a>
+          } @else {
+            <a class="account-link" routerLink="/ingresar">
+              <span aria-hidden="true">♙</span> Iniciar sesión
+            </a>
+          }
           <a
             class="cart-link"
             href="/#carrito"
@@ -43,4 +56,9 @@ import { CartService } from '../../../core/services/cart.service';
 })
 export class SiteHeader {
   protected readonly cart = inject(CartService);
+  protected readonly auth = inject(AuthService);
+
+  protected firstName(fullName: string): string {
+    return fullName.trim().split(/\s+/)[0] || fullName;
+  }
 }
