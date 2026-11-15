@@ -174,10 +174,11 @@ export class LoginPage {
 
     const { email, contrasena, recordarme } = this.form.getRawValue();
     this.auth.login({ email: email.trim().toLowerCase(), contrasena }, recordarme).subscribe({
-      next: () => {
+      next: (response) => {
         this.loading.set(false);
         this.favoritos.sincronizarYCargarDesdeBackend();
-        void this.router.navigateByUrl(this.redirect);
+        const destination = response.rol === 'ADMINISTRADOR' ? '/dashboard' : this.redirect;
+        void this.router.navigateByUrl(destination);
       },
       error: (error: unknown) => {
         this.loading.set(false);
