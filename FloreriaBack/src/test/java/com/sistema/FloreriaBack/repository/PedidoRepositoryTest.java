@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -86,37 +87,45 @@ class PedidoRepositoryTest {
     }
 
     @Test
-    @DisplayName("sumarVentasEnRango y contarPedidosEnRango - Excluyen pedidos CANCELADOS")
-    void sumarVentasYContarPedidos_ExcluyenCancelados() {
+    @DisplayName("El reporte solo cuenta pedidos pagados o retirados")
+    void sumarVentasYContarPedidos_SoloPagadosYRetirados() {
         LocalDateTime inicio = LocalDateTime.of(2026, 10, 1, 0, 0);
         LocalDateTime fin = LocalDateTime.of(2026, 10, 6, 0, 0);
+        Set<EstadoPedido> estadosPagados = Set.of(EstadoPedido.PAGADO, EstadoPedido.ENTREGADO);
 
         Pedido p1 = crearPedido(LocalDateTime.of(2026, 10, 2, 10, 0), new BigDecimal("100.00"), EstadoPedido.PAGADO);
         Pedido p2 = crearPedido(LocalDateTime.of(2026, 10, 3, 15, 0), new BigDecimal("150.00"), EstadoPedido.ENTREGADO);
+        Pedido pPendiente = crearPedido(LocalDateTime.of(2026, 10, 2, 11, 0), new BigDecimal("50.00"), EstadoPedido.PENDIENTE);
+        Pedido pEnPreparacion = crearPedido(LocalDateTime.of(2026, 10, 2, 12, 0), new BigDecimal("60.00"), EstadoPedido.EN_PREPARACION);
+        Pedido pListoParaRecojo = crearPedido(LocalDateTime.of(2026, 10, 2, 13, 0), new BigDecimal("70.00"), EstadoPedido.EN_CAMINO);
         Pedido pCancelado = crearPedido(LocalDateTime.of(2026, 10, 4, 11, 0), new BigDecimal("200.00"), EstadoPedido.CANCELADO);
 
         entityManager.persist(p1);
         entityManager.persist(p2);
+        entityManager.persist(pPendiente);
+        entityManager.persist(pEnPreparacion);
+        entityManager.persist(pListoParaRecojo);
         entityManager.persist(pCancelado);
         entityManager.flush();
 
-        BigDecimal sumaVentas = pedidoRepository.sumarVentasEnRango(inicio, fin, EstadoPedido.CANCELADO);
-        long cantidad = pedidoRepository.contarPedidosEnRango(inicio, fin, EstadoPedido.CANCELADO);
+        BigDecimal sumaVentas = pedidoRepository.sumarVentasPagadasEnRango(inicio, fin, estadosPagados);
+        long cantidad = pedidoRepository.contarPedidosPagadosEnRango(inicio, fin, estadosPagados);
 
-        // 100.00 + 150.00 = 250.00 (el de 200 cancelado no se suma)
+        // Solo los pedidos PAGADO y ENTREGADO cuentan como ventas.
         assertNotNull(sumaVentas);
         assertEquals(new BigDecimal("250.00"), sumaVentas);
         assertEquals(2, cantidad);
     }
 
     @Test
-    @DisplayName("sumarVentasEnRango y contarPedidosEnRango - Manejo de nulos y ceros cuando no hay ventas")
+    @DisplayName("El reporte pagado devuelve null y cero cuando no hay ventas")
     void sumarVentasYContarPedidos_SinVentas_RetornaNullYCero() {
         LocalDateTime inicio = LocalDateTime.of(2026, 1, 1, 0, 0);
         LocalDateTime fin = LocalDateTime.of(2026, 1, 31, 23, 59);
 
-        BigDecimal suma = pedidoRepository.sumarVentasEnRango(inicio, fin, EstadoPedido.CANCELADO);
-        long conteo = pedidoRepository.contarPedidosEnRango(inicio, fin, EstadoPedido.CANCELADO);
+        Set<EstadoPedido> estadosPagados = Set.of(EstadoPedido.PAGADO, EstadoPedido.ENTREGADO);
+        BigDecimal suma = pedidoRepository.sumarVentasPagadasEnRango(inicio, fin, estadosPagados);
+        long conteo = pedidoRepository.contarPedidosPagadosEnRango(inicio, fin, estadosPagados);
 
         assertNull(suma, "La suma en JPQL devuelve null cuando no hay registros coincidentes");
         assertEquals(0, conteo, "El conteo debe ser 0 cuando no hay pedidos");

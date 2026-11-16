@@ -8,20 +8,20 @@ import {
 } from '../services/admin-data.service';
 
 const ORDER_TRANSITIONS: Record<EstadoPedidoAdmin, EstadoPedidoAdmin[]> = {
-  PENDIENTE: ['PAGADO', 'CANCELADO'],
-  PAGADO: ['EN_PREPARACION', 'CANCELADO'],
+  PENDIENTE: ['EN_PREPARACION', 'CANCELADO'],
+  PAGADO: ['ENTREGADO'],
   EN_PREPARACION: ['EN_CAMINO', 'CANCELADO'],
-  EN_CAMINO: ['ENTREGADO'],
+  EN_CAMINO: ['PAGADO', 'CANCELADO'],
   ENTREGADO: [],
   CANCELADO: [],
 };
 
 const ORDER_STATUS_LABELS: Record<EstadoPedidoAdmin, string> = {
-  PENDIENTE: 'Pendiente',
-  PAGADO: 'Pagado',
+  PENDIENTE: 'Pedido recibido',
+  PAGADO: 'Pago en tienda',
   EN_PREPARACION: 'En preparación',
-  EN_CAMINO: 'En camino',
-  ENTREGADO: 'Entregado',
+  EN_CAMINO: 'Listo para recoger',
+  ENTREGADO: 'Retirado',
   CANCELADO: 'Cancelado',
 };
 
@@ -35,7 +35,7 @@ const ORDER_STATUS_LABELS: Record<EstadoPedidoAdmin, string> = {
         <div>
           <p class="eyebrow">Operaciones</p>
           <h1>Pedidos</h1>
-          <p>Revisa las compras y actualiza su estado de preparación y entrega.</p>
+          <p>Revisa las compras y actualiza su estado de preparación y recojo en tienda.</p>
         </div>
         <button
           type="button"
@@ -82,7 +82,7 @@ const ORDER_STATUS_LABELS: Record<EstadoPedidoAdmin, string> = {
                 @for (order of filteredOrders(); track order.id) {
                   <tr>
                     <td>
-                      <strong>#{{ order.id.slice(0, 8) }}</strong>
+                      <strong>Ticket: FS-{{ order.id.slice(0, 6).toUpperCase() }}</strong>
                     </td>
                     <td>{{ order.usuarioNombre || 'Cliente' }}</td>
                     <td class="order-products">

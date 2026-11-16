@@ -30,7 +30,7 @@ describe('AdminDashboardPage', () => {
     http.verify();
   });
 
-  it('carga métricas y excluye pedidos cancelados del ranking de productos', async () => {
+  it('carga métricas y solo incluye pedidos pagados en el ranking de productos', async () => {
     const fixture = TestBed.createComponent(AdminDashboardPage);
     fixture.detectChanges();
 
@@ -108,8 +108,9 @@ describe('AdminDashboardPage', () => {
     expect(text).toContain('Pedidos del período');
     expect(text).toContain('Ramo de rosas');
     expect(text).toContain('2 unidades vendidas');
-    expect(text).toContain('Por atender');
+    expect(text).toContain('Pedidos abiertos');
     expect(text).not.toContain('Producto cancelado');
+    expect(text).not.toContain('Ramo de tulipanes');
     expect(text).toContain('Ana Flores');
   });
 
@@ -124,8 +125,16 @@ describe('AdminDashboardPage', () => {
         id: 'pedido-operario-1',
         fechaPedido: '2026-11-15T12:00:00',
         total: 80,
-        estado: 'PENDIENTE',
+        estado: 'PAGADO',
         usuarioNombre: 'Cliente',
+        detalles: [],
+      },
+      {
+        id: 'pedido-operario-3',
+        fechaPedido: '2026-11-14T12:00:00',
+        total: 40,
+        estado: 'PENDIENTE',
+        usuarioNombre: 'Pedido sin pagar',
         detalles: [],
       },
       {
@@ -141,9 +150,13 @@ describe('AdminDashboardPage', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    const salesMetric = (fixture.nativeElement as HTMLElement).querySelector(
+      '.metric-card--sales',
+    ) as HTMLElement;
 
     expect(text).toContain('80.00');
-    expect(text).toContain('Pedidos no cancelados');
+    expect(text).toContain('Pedidos pagados o retirados');
+    expect(salesMetric.textContent).not.toContain('40.00');
     expect(text).not.toContain('Fuera del período');
     http.expectNone((request) => request.url.includes('/reportes/'));
   });

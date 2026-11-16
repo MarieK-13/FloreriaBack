@@ -13,10 +13,10 @@ public enum EstadoPedido {
     CANCELADO;
 
     private static final Map<EstadoPedido, Set<EstadoPedido>> TRANSICIONES_VALIDAS = Map.of(
-        PENDIENTE, EnumSet.of(PAGADO, CANCELADO),
-        PAGADO, EnumSet.of(EN_PREPARACION, CANCELADO),
+        PENDIENTE, EnumSet.of(EN_PREPARACION, CANCELADO),
+        PAGADO, EnumSet.of(ENTREGADO),
         EN_PREPARACION, EnumSet.of(EN_CAMINO, CANCELADO),
-        EN_CAMINO, EnumSet.of(ENTREGADO),
+        EN_CAMINO, EnumSet.of(PAGADO, CANCELADO),
         ENTREGADO, EnumSet.noneOf(EstadoPedido.class),
         CANCELADO, EnumSet.noneOf(EstadoPedido.class)
     );

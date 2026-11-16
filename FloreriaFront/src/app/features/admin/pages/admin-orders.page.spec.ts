@@ -45,11 +45,11 @@ describe('AdminOrdersPage', () => {
     const stateSelect = fixture.nativeElement.querySelector(
       'select[id="order-state-order-1"]',
     ) as HTMLSelectElement;
-    stateSelect.value = 'PAGADO';
+    stateSelect.value = 'EN_PREPARACION';
     stateSelect.dispatchEvent(new Event('change', { bubbles: true }));
 
     const updateRequest = http.expectOne(
-      `${API_BASE_URL}/pedidos/order-1/estado?nuevoEstado=PAGADO`,
+      `${API_BASE_URL}/pedidos/order-1/estado?nuevoEstado=EN_PREPARACION`,
     );
     expect(updateRequest.request.method).toBe('PATCH');
     expect(updateRequest.request.body).toBeNull();
@@ -59,7 +59,7 @@ describe('AdminOrdersPage', () => {
       total: 40,
       direccionEntrega: 'Ica',
       instruccionesEntrega: null,
-      estado: 'PAGADO',
+      estado: 'EN_PREPARACION',
       usuarioId: 'user-1',
       usuarioNombre: 'Ana Flores',
       detalles: [],
@@ -68,7 +68,7 @@ describe('AdminOrdersPage', () => {
     fixture.detectChanges();
 
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(
-      'Pedido actualizado a "Pagado".',
+      'Pedido actualizado a "En preparación".',
     );
   });
 });

@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -59,27 +60,31 @@ class ConsultasJpqlServiceTest {
     }
 
     @Test
-    @DisplayName("Reporte de ventas: suma y cuenta excluyendo pedidos cancelados")
+    @DisplayName("Reporte de ventas: suma y cuenta pedidos pagados o retirados")
     void reporteDeVentas_Exitoso() {
         LocalDate inicio = LocalDate.of(2026, 10, 1);
         LocalDate fin = LocalDate.of(2026, 10, 31);
-        when(pedidoRepository.sumarVentasEnRango(any(LocalDateTime.class), any(LocalDateTime.class), eq(EstadoPedido.CANCELADO)))
+        Set<EstadoPedido> estadosPagados = Set.of(EstadoPedido.PAGADO, EstadoPedido.ENTREGADO);
+        when(pedidoRepository.sumarVentasPagadasEnRango(any(LocalDateTime.class), any(LocalDateTime.class), eq(estadosPagados)))
                 .thenReturn(new BigDecimal("350.50"));
-        when(pedidoRepository.contarPedidosEnRango(any(LocalDateTime.class), any(LocalDateTime.class), eq(EstadoPedido.CANCELADO)))
+        when(pedidoRepository.contarPedidosPagadosEnRango(any(LocalDateTime.class), any(LocalDateTime.class), eq(estadosPagados)))
                 .thenReturn(4L);
 
         ReporteVentasDTO reporte = pedidoService.reporteDeVentas(inicio, fin);
 
         assertEquals(4L, reporte.getCantidadPedidos());
         assertEquals(new BigDecimal("350.50"), reporte.getTotalVendido());
-    verify(pedidoRepository).sumarVentasEnRango( inicio.atStartOfDay(),  fin.plusDays(1).atStartOfDay(),  EstadoPedido.CANCELADO);
+        verify(pedidoRepository).sumarVentasPagadasEnRango(
+                inicio.atStartOfDay(),
+                fin.plusDays(1).atStartOfDay(),
+                estadosPagados);
     }
 
     @Test
     @DisplayName("Reporte de ventas: sin pedidos devuelve total 0 en lugar de null")
     void reporteDeVentas_SinPedidos_DevuelveCero() {
-        when(pedidoRepository.sumarVentasEnRango(any(), any(), any())).thenReturn(null);
-        when(pedidoRepository.contarPedidosEnRango(any(), any(), any())).thenReturn(0L);
+        when(pedidoRepository.sumarVentasPagadasEnRango(any(), any(), any())).thenReturn(null);
+        when(pedidoRepository.contarPedidosPagadosEnRango(any(), any(), any())).thenReturn(0L);
 
         ReporteVentasDTO reporte = pedidoService.reporteDeVentas(LocalDate.now(), LocalDate.now());
 

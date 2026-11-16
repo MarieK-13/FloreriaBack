@@ -137,6 +137,29 @@ class PedidoServiceTest {
     }
 
     @Test
+    @DisplayName("El flujo de recojo exige pagar en tienda después de que el pedido esté listo")
+    void cambiarEstado_FlujoDeRecojoYPagoEnTienda() {
+        when(pedidoRepository.findById(pedidoId)).thenReturn(Optional.of(pedido));
+        when(pedidoRepository.save(any(Pedido.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        assertThrows(
+                BusinessRuleException.class,
+                () -> pedidoService.cambiarEstado(pedidoId, EstadoPedido.PAGADO));
+        assertEquals(EstadoPedido.PENDIENTE, pedido.getEstado());
+
+        for (EstadoPedido estado : List.of(
+                EstadoPedido.EN_PREPARACION,
+                EstadoPedido.EN_CAMINO,
+                EstadoPedido.PAGADO,
+                EstadoPedido.ENTREGADO)) {
+            pedidoService.cambiarEstado(pedidoId, estado);
+        }
+
+        assertEquals(EstadoPedido.ENTREGADO, pedido.getEstado());
+        verify(pedidoRepository, times(4)).save(pedido);
+    }
+
+    @Test
     @DisplayName("Debe lanzar ResourceNotFoundException si el usuario no existe")
     void crear_UsuarioNoEncontrado_LanzaExcepcion() {
         when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.empty());

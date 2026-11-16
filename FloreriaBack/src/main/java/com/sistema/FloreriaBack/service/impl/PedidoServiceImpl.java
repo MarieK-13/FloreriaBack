@@ -25,11 +25,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class PedidoServiceImpl implements PedidoService {
+
+    private static final Set<EstadoPedido> ESTADOS_PAGADOS = Set.of(
+            EstadoPedido.PAGADO,
+            EstadoPedido.ENTREGADO);
 
     private final PedidoRepository pedidoRepository;
     private final UsuarioRepository usuarioRepository;
@@ -204,8 +209,8 @@ public class PedidoServiceImpl implements PedidoService {
         LocalDateTime desde = inicioDelDia(inicio);
         LocalDateTime hasta = finDelDia(fin);
 
-        BigDecimal total = pedidoRepository.sumarVentasEnRango(desde, hasta, EstadoPedido.CANCELADO);
-        long cantidad = pedidoRepository.contarPedidosEnRango(desde, hasta, EstadoPedido.CANCELADO);
+        BigDecimal total = pedidoRepository.sumarVentasPagadasEnRango(desde, hasta, ESTADOS_PAGADOS);
+        long cantidad = pedidoRepository.contarPedidosPagadosEnRango(desde, hasta, ESTADOS_PAGADOS);
 
         return new ReporteVentasDTO(inicio, fin, cantidad, total != null ? total : BigDecimal.ZERO);
     }

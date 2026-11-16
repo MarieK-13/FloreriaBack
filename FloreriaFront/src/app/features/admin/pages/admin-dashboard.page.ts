@@ -8,6 +8,8 @@ import { AuthService } from '../../../core/services/auth.service';
 type EstadoPedido =
   'PENDIENTE' | 'PAGADO' | 'EN_PREPARACION' | 'EN_CAMINO' | 'ENTREGADO' | 'CANCELADO';
 
+const ESTADOS_PAGADOS = new Set<EstadoPedido>(['PAGADO', 'ENTREGADO']);
+
 interface DetallePedido {
   productoId: string;
   productoNombre: string;
@@ -99,25 +101,25 @@ interface ProductoMasVendido {
             <strong>{{
               summary.totalVendido | currency: 'PEN' : 'symbol' : '1.2-2' : 'es-PE'
             }}</strong>
-            <small>No incluye pedidos cancelados</small>
+            <small>Solo pedidos con pago registrado</small>
           </article>
           <article class="metric-card">
             <span class="metric-icon metric-icon--rose" aria-hidden="true">#</span>
             <p>Pedidos del período</p>
             <strong>{{ summary.cantidadPedidos }}</strong>
-            <small>Pedidos no cancelados</small>
+            <small>Pedidos pagados o retirados</small>
           </article>
           <article class="metric-card">
             <span class="metric-icon metric-icon--gold" aria-hidden="true">↗</span>
             <p>Ticket promedio</p>
             <strong>{{ averageTicket() | currency: 'PEN' : 'symbol' : '1.2-2' : 'es-PE' }}</strong>
-            <small>Por pedido no cancelado</small>
+            <small>Por pedido pagado o retirado</small>
           </article>
           <article class="metric-card">
             <span class="metric-icon metric-icon--rose" aria-hidden="true">◷</span>
-            <p>Por atender</p>
+            <p>Pedidos abiertos</p>
             <strong>{{ pendingOrdersCount() }}</strong>
-            <small>Pedidos pendientes</small>
+            <small>Pendientes de preparar, cobrar o retirar</small>
           </article>
         </section>
 
@@ -230,7 +232,10 @@ export class AdminDashboardPage implements OnInit {
       : 0;
   });
   protected readonly pendingOrdersCount = computed(
-    () => this.orders().filter((order) => order.estado === 'PENDIENTE').length,
+    () =>
+      this.orders().filter(
+        (order) => !ESTADOS_PAGADOS.has(order.estado) && order.estado !== 'CANCELADO',
+      ).length,
   );
   protected readonly recentOrders = computed(() =>
     [...this.orders()].sort((a, b) => b.fechaPedido.localeCompare(a.fechaPedido)).slice(0, 5),
@@ -239,7 +244,7 @@ export class AdminDashboardPage implements OnInit {
     const products = new Map<string, ProductoMasVendido>();
 
     for (const order of this.orders()) {
-      if (order.estado === 'CANCELADO') {
+      if (!ESTADOS_PAGADOS.has(order.estado)) {
         continue;
       }
       for (const detail of order.detalles ?? []) {
@@ -330,7 +335,7 @@ export class AdminDashboardPage implements OnInit {
           const orderDate = order.fechaPedido.slice(0, 10);
           return orderDate >= inicio && orderDate <= fin;
         });
-        const billableOrders = orders.filter((order) => order.estado !== 'CANCELADO');
+        const billableOrders = orders.filter((order) => ESTADOS_PAGADOS.has(order.estado));
         this.orders.set(orders);
         this.report.set({
           fechaInicio: inicio,
@@ -351,11 +356,11 @@ export class AdminDashboardPage implements OnInit {
 
   protected statusLabel(status: EstadoPedido): string {
     const labels: Record<EstadoPedido, string> = {
-      PENDIENTE: 'Pendiente',
-      PAGADO: 'Pagado',
+      PENDIENTE: 'Pedido recibido',
+      PAGADO: 'Pago en tienda',
       EN_PREPARACION: 'En preparación',
-      EN_CAMINO: 'En camino',
-      ENTREGADO: 'Entregado',
+      EN_CAMINO: 'Listo para recoger',
+      ENTREGADO: 'Retirado',
       CANCELADO: 'Cancelado',
     };
     return labels[status];

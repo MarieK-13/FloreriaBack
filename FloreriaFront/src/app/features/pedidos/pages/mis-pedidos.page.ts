@@ -8,7 +8,7 @@ import {
 } from '../../../core/services/pedidos.service';
 import { UiIcon } from '../../../shared/components/ui-icon/ui-icon';
 
-type FiltroPedidos = 'TODOS' | 'ACTIVOS' | 'ENTREGADOS' | 'CANCELADOS';
+type FiltroPedidos = 'TODOS' | 'ACTIVOS' | 'RETIRADOS' | 'CANCELADOS';
 
 @Component({
   selector: 'app-mis-pedidos-page',
@@ -21,7 +21,7 @@ type FiltroPedidos = 'TODOS' | 'ACTIVOS' | 'ENTREGADOS' | 'CANCELADOS';
           <a routerLink="/mi-cuenta" class="back-link">← Volver a Mi cuenta</a>
           <span class="hero-kicker">Historial de compras · FloriaSmart</span>
           <h1>Mis pedidos</h1>
-          <p>Consulta el estado de preparación, reparto y detalle de tus arreglos florales.</p>
+          <p>Consulta el estado de preparación y recojo en tienda de tus arreglos florales.</p>
         </div>
 
         <div class="hero-stats" aria-label="Resumen de pedidos">
@@ -59,11 +59,7 @@ type FiltroPedidos = 'TODOS' | 'ACTIVOS' | 'ENTREGADOS' | 'CANCELADOS';
 
       <div class="orders-toolbar">
         <div class="filter-pills" role="tablist" aria-label="Filtrar pedidos por estado">
-          <button
-            type="button"
-            [class.active]="filtro() === 'TODOS'"
-            (click)="filtro.set('TODOS')"
-          >
+          <button type="button" [class.active]="filtro() === 'TODOS'" (click)="filtro.set('TODOS')">
             Todos ({{ pedidos().length }})
           </button>
           <button
@@ -75,10 +71,10 @@ type FiltroPedidos = 'TODOS' | 'ACTIVOS' | 'ENTREGADOS' | 'CANCELADOS';
           </button>
           <button
             type="button"
-            [class.active]="filtro() === 'ENTREGADOS'"
-            (click)="filtro.set('ENTREGADOS')"
+            [class.active]="filtro() === 'RETIRADOS'"
+            (click)="filtro.set('RETIRADOS')"
           >
-            Entregados ({{ pedidosEntregados() }})
+            Retirados ({{ pedidosRetirados() }})
           </button>
           <button
             type="button"
@@ -131,7 +127,9 @@ type FiltroPedidos = 'TODOS' | 'ACTIVOS' | 'ENTREGADOS' | 'CANCELADOS';
             <article class="order-card">
               <div class="order-header">
                 <div class="order-meta">
-                  <span class="order-code">Ticket de recojo: FS-{{ pedido.id.slice(0, 6).toUpperCase() }}</span>
+                  <span class="order-code"
+                    >Ticket de recojo: FS-{{ pedido.id.slice(0, 6).toUpperCase() }}</span
+                  >
                   <span class="order-date">
                     Realizado el {{ pedido.fechaPedido | date: 'dd/MM/yyyy · HH:mm' }}
                   </span>
@@ -188,11 +186,11 @@ type FiltroPedidos = 'TODOS' | 'ACTIVOS' | 'ENTREGADOS' | 'CANCELADOS';
                 </div>
 
                 <aside class="order-delivery">
-                  <h3>Datos de entrega</h3>
+                  <h3>Recojo en tienda</h3>
                   <div class="delivery-row">
                     <app-ui-icon name="pin" [size]="17" />
                     <div>
-                      <span class="delivery-label">Dirección</span>
+                      <span class="delivery-label">Sede de recojo</span>
                       <p>{{ pedido.direccionEntrega || 'No especificada' }}</p>
                     </div>
                   </div>
@@ -225,11 +223,11 @@ export class MisPedidosPage implements OnInit {
   protected readonly filtro = signal<FiltroPedidos>('TODOS');
 
   protected readonly pasosFlujo: { estado: EstadoPedido; etiqueta: string }[] = [
-    { estado: 'PENDIENTE', etiqueta: 'Recibido' },
-    { estado: 'PAGADO', etiqueta: 'Pagado' },
+    { estado: 'PENDIENTE', etiqueta: 'Pedido recibido' },
     { estado: 'EN_PREPARACION', etiqueta: 'En taller floral' },
-    { estado: 'EN_CAMINO', etiqueta: 'En reparto' },
-    { estado: 'ENTREGADO', etiqueta: 'Entregado' },
+    { estado: 'EN_CAMINO', etiqueta: 'Listo para recoger' },
+    { estado: 'PAGADO', etiqueta: 'Pago en tienda' },
+    { estado: 'ENTREGADO', etiqueta: 'Retirado en tienda' },
   ];
 
   protected readonly pedidosActivos = computed(
@@ -239,7 +237,7 @@ export class MisPedidosPage implements OnInit {
       ).length,
   );
 
-  protected readonly pedidosEntregados = computed(
+  protected readonly pedidosRetirados = computed(
     () => this.pedidos().filter((p) => p.estado === 'ENTREGADO').length,
   );
 
@@ -255,7 +253,7 @@ export class MisPedidosPage implements OnInit {
         ['PENDIENTE', 'PAGADO', 'EN_PREPARACION', 'EN_CAMINO'].includes(p.estado),
       );
     }
-    if (actual === 'ENTREGADOS') {
+    if (actual === 'RETIRADOS') {
       return lista.filter((p) => p.estado === 'ENTREGADO');
     }
     if (actual === 'CANCELADOS') {
@@ -293,11 +291,11 @@ export class MisPedidosPage implements OnInit {
 
   protected etiquetaEstado(estado: EstadoPedido): string {
     const mapa: Record<EstadoPedido, string> = {
-      PENDIENTE: 'Pendiente de pago',
-      PAGADO: 'Pagado',
+      PENDIENTE: 'Pedido recibido',
+      PAGADO: 'Pago en tienda',
       EN_PREPARACION: 'En preparación',
-      EN_CAMINO: 'En camino',
-      ENTREGADO: 'Entregado',
+      EN_CAMINO: 'Listo para recoger',
+      ENTREGADO: 'Retirado',
       CANCELADO: 'Cancelado',
     };
     return mapa[estado] ?? estado;

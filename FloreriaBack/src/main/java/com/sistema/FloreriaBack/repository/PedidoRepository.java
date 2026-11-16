@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public interface PedidoRepository extends JpaRepository<Pedido, UUID> {
@@ -40,17 +41,17 @@ public interface PedidoRepository extends JpaRepository<Pedido, UUID> {
   
     @Query("SELECT SUM(p.total) FROM Pedido p " +
            "WHERE p.fechaPedido >= :inicio AND p.fechaPedido < :fin " + // 🛠️ CORREGIDO
-           "AND p.estado <> :estadoExcluido")
-    BigDecimal sumarVentasEnRango(@Param("inicio") LocalDateTime inicio,
-                                  @Param("fin") LocalDateTime fin,
-                                  @Param("estadoExcluido") EstadoPedido estadoExcluido);
+           "AND p.estado IN :estadosPagados")
+    BigDecimal sumarVentasPagadasEnRango(@Param("inicio") LocalDateTime inicio,
+                                         @Param("fin") LocalDateTime fin,
+                                         @Param("estadosPagados") Set<EstadoPedido> estadosPagados);
 
     @Query("SELECT COUNT(p) FROM Pedido p " +
            "WHERE p.fechaPedido >= :inicio AND p.fechaPedido < :fin " + // 🛠️ CORREGIDO
-           "AND p.estado <> :estadoExcluido")
-    long contarPedidosEnRango(@Param("inicio") LocalDateTime inicio,
-                              @Param("fin") LocalDateTime fin,
-                              @Param("estadoExcluido") EstadoPedido estadoExcluido);
+           "AND p.estado IN :estadosPagados")
+    long contarPedidosPagadosEnRango(@Param("inicio") LocalDateTime inicio,
+                                     @Param("fin") LocalDateTime fin,
+                                     @Param("estadosPagados") Set<EstadoPedido> estadosPagados);
 
    
     @Query("SELECT p.usuario.id FROM Pedido p WHERE p.id = :pedidoId")
