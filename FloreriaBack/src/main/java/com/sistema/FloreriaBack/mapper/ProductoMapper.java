@@ -32,6 +32,7 @@ public class ProductoMapper {
                 .color(dto.getColor())
                 .tamano(dto.getTamano())
                 .imagenUrl(dto.getImagenUrl())
+                .imagenesGaleria(dto.getImagenesGaleria() != null ? new ArrayList<>(dto.getImagenesGaleria()) : new ArrayList<>())
                 .ocasiones(dto.getOcasiones() != null ? new HashSet<>(dto.getOcasiones()) : new HashSet<>())
                 .componentes(componentes)
                 .fechaValidez(dto.getFechaValidez())
@@ -56,8 +57,9 @@ public class ProductoMapper {
                 p.getColor(),
                 p.getTamano(),
                 p.getImagenUrl(),
-                p.getImagenesGaleria(),
-                p.getOcasiones() != null ? new HashSet<>(p.getOcasiones()) : new HashSet<>(), componentesDTO,
+                p.getImagenesGaleria() != null ? new ArrayList<>(p.getImagenesGaleria()) : new ArrayList<>(),
+                p.getOcasiones() != null ? new HashSet<>(p.getOcasiones()) : new HashSet<>(),
+                componentesDTO,
                 p.getFechaValidez(),
                 p.getCategoria() != null ? p.getCategoria().getNombre() : null
         );
