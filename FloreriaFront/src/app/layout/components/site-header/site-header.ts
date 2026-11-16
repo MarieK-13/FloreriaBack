@@ -12,7 +12,10 @@ import { CarritoService } from '../../../features/carrito/services/carrito.servi
   template: `
     <div class="announcement">
       <div class="announcement-inner">
-        <span> 📍&nbsp; <strong>Envío gratis en Ica</strong> por compras desde S/ 60</span>
+        <span>
+          🏪&nbsp; <strong>Recojo en tienda disponible</strong> — Pide online y retira tu arreglo
+          listo</span
+        >
         <span>💌 &nbsp; Incluye <strong>tarjeta dedicatoria gratis</strong> en cada pedido</span>
       </div>
     </div>

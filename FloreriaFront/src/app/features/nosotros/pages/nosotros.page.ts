@@ -101,7 +101,8 @@ import { UiButton } from '../../../shared/components/ui-button/ui-button';
           <span class="eyebrow">Ven a conocernos</span>
           <h2 id="visit-title">Visítanos en nuestro taller</h2>
           <p class="visit-intro">
-            Te asesoramos en persona o por Flowers nuestro asistente de cotización para elegir el arreglo ideal según tu ocasión.
+            Te asesoramos en persona o por Flowers nuestro asistente de cotización para elegir el
+            arreglo ideal según tu ocasión.
           </p>
 
           <!-- Bloque destacado de Horario de Atención -->
@@ -192,10 +193,11 @@ export class NosotrosPage {
     },
     {
       number: '04',
-      icon: '🚚',
+      icon: '🏪',
       time: 'Paso 4',
-      title: 'Entregamos puntual',
-      description: 'Llevamos tu detalle protegido hasta la puerta en la fecha y hora acordadas.',
+      title: 'Recoge en tienda',
+      description:
+        'Tu arreglo estará listo y protegido en nuestro local en la fecha y hora acordadas.',
     },
   ];
 
@@ -221,10 +223,10 @@ export class NosotrosPage {
       description: 'Personalizamos tarjetas impresas, chocolates, globos o combinaciones florales.',
     },
     {
-      icon: '↗',
-      title: 'Cuidado en el envío',
+      icon: '୨୧',
+      title: 'Presentación impecable',
       description:
-        'Transporte seguro y seguimiento cercano hasta que el arreglo llega a sus manos.',
+        'Empaque protector y atención puntual en nuestro local para que lo retires en perfecto estado.',
     },
   ];
 }

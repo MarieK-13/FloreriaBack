@@ -52,53 +52,54 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)          // API REST con JWT: no usa cookies de sesión
-            .cors(Customizer.withDefaults())
-            .sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .exceptionHandling(ex -> ex
-                    .authenticationEntryPoint((req, res, e) ->
-                            escribirError(res, HttpServletResponse.SC_UNAUTHORIZED,
-                                    "Debe iniciar sesión (token ausente, inválido o expirado)"))
-                    .accessDeniedHandler((req, res, e) ->
-                            escribirError(res, HttpServletResponse.SC_FORBIDDEN,
-                                    "No tiene permisos para realizar esta acción")))
-            .authorizeHttpRequests(auth -> auth
-                    // --- Públicos ---
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
-                    .requestMatchers("/error").permitAll()
+                .csrf(AbstractHttpConfigurer::disable) // API REST con JWT: no usa cookies de sesión
+                .cors(Customizer.withDefaults())
+                .sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(
+                                (req, res, e) -> escribirError(res, HttpServletResponse.SC_UNAUTHORIZED,
+                                        "Debe iniciar sesión (token ausente, inválido o expirado)"))
+                        .accessDeniedHandler((req, res, e) -> escribirError(res, HttpServletResponse.SC_FORBIDDEN,
+                                "No tiene permisos para realizar esta acción")))
+                .authorizeHttpRequests(auth -> auth
+                        // --- Públicos ---
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
+                        .requestMatchers("/error").permitAll()
 
-                    // --- Catálogo ---
-                    .requestMatchers(HttpMethod.GET, "/api/productos/stock-bajo").hasAnyRole(ADMINISTRADOR, OPERARIO)
-                    .requestMatchers(HttpMethod.GET,
-                            "/api/productos/**", "/api/categorias/**", "/api/detalle-productos/**").permitAll()
-                    .requestMatchers("/api/productos/**", "/api/categorias/**", "/api/detalle-productos/**")
-                            .hasRole(ADMINISTRADOR)
+                        // --- Catálogo ---
+                        .requestMatchers(HttpMethod.GET, "/api/productos/stock-bajo")
+                        .hasAnyRole(ADMINISTRADOR, OPERARIO)
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/productos/**", "/api/categorias/**", "/api/detalle-productos/**")
+                        .permitAll()
+                        .requestMatchers("/api/productos/**", "/api/categorias/**", "/api/detalle-productos/**")
+                        .hasRole(ADMINISTRADOR)
 
-                    // --- Usuarios: solo el administrador gestiona cuentas ---
-                    .requestMatchers("/api/usuarios/**").hasRole(ADMINISTRADOR)
+                        // --- Usuarios: solo el administrador gestiona cuentas ---
+                        .requestMatchers("/api/usuarios/**").hasRole(ADMINISTRADOR)
 
-                    // --- Pedidos ---
-                    .requestMatchers(HttpMethod.GET, "/api/pedidos/reportes/**").hasRole(ADMINISTRADOR)
-                    .requestMatchers(HttpMethod.GET, "/api/pedidos").hasAnyRole(ADMINISTRADOR, OPERARIO)
-                    .requestMatchers(HttpMethod.PATCH, "/api/pedidos/*/estado").hasAnyRole(ADMINISTRADOR, OPERARIO)
+                        // --- Pedidos ---
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos/reportes/**").hasAnyRole(ADMINISTRADOR, OPERARIO)
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos").hasAnyRole(ADMINISTRADOR, OPERARIO)
+                        .requestMatchers(HttpMethod.PATCH, "/api/pedidos/*/estado").hasAnyRole(ADMINISTRADOR, OPERARIO)
+                       
+                        // --- Cotizaciones ---
+                        .requestMatchers(HttpMethod.GET, "/api/cotizaciones").hasAnyRole(ADMINISTRADOR, OPERARIO)
 
-                    // --- Cotizaciones ---
-                    .requestMatchers(HttpMethod.GET, "/api/cotizaciones").hasAnyRole(ADMINISTRADOR, OPERARIO)
+                        // --- Mis fechas importantes ---
+                        .requestMatchers("/api/mis-fechas/**").authenticated()
 
-                  // --- Mis fechas importantes  ---
-                    .requestMatchers("/api/mis-fechas/**").authenticated()
+                        // --- Favoritos ---
+                        .requestMatchers("/api/favoritos/**").authenticated()
 
-                    // --- Favoritos ---
-                    .requestMatchers("/api/favoritos/**").authenticated()
+                        // --- Pedidos del cliente ---
+                        .requestMatchers("/api/pedidos/mis-pedidos/**").authenticated()
 
-                    // --- Pedidos del cliente  ---
-                    .requestMatchers("/api/pedidos/mis-pedidos/**").authenticated()
-                    
-                    // --- Todo lo demás requiere estar autenticado  ---
-                    .anyRequest().authenticated())
-                    .addFilterBefore(new JwtAuthenticationFilter(jwtUtils, userDetailsService),
-                    UsernamePasswordAuthenticationFilter.class);
+                        // --- Todo lo demás requiere estar autenticado ---
+                        .anyRequest().authenticated())
+                .addFilterBefore(new JwtAuthenticationFilter(jwtUtils, userDetailsService),
+                        UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

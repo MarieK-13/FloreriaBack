@@ -35,6 +35,7 @@ public class PedidoController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'OPERARIO')")
     public ResponseEntity<List<PedidoResponseDTO>> listar() {
         return ResponseEntity.ok(pedidoService.listar());
     }
@@ -67,6 +68,7 @@ public class PedidoController {
     }
 
     @PatchMapping("/{id}/estado")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'OPERARIO')")
     public ResponseEntity<PedidoResponseDTO> cambiarEstado(@PathVariable UUID id,
                                                            @RequestParam EstadoPedido nuevoEstado) {
         return ResponseEntity.ok(pedidoService.cambiarEstado(id, nuevoEstado));

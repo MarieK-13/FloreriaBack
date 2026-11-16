@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { catchError, forkJoin, map, Observable, of } from 'rxjs';
 import {
   Product,
@@ -60,7 +60,6 @@ const FALLBACK_CATALOG: StoreCatalog = {
     { id: 'cat-plantas', name: 'Plantas', description: 'Plantas ornamentales vivas' },
   ],
   products: [
-    // ✅ CASO 1: 4 FOTOS
     {
       id: '101',
       categoryId: 'cat-box',
@@ -97,7 +96,6 @@ const FALLBACK_CATALOG: StoreCatalog = {
       ],
     },
 
-    // ✅ CASO 2: 3 FOTOS
     {
       id: '103',
       categoryId: 'cat-box',
@@ -175,7 +173,8 @@ const FALLBACK_CATALOG: StoreCatalog = {
       category: 'Ramos',
       kind: 'product',
       name: 'Ramo Amanecer de Girasoles',
-      description: '10 girasoles radiantes envueltos en papel coreano impermeable con follaje fresco.',
+      description:
+        '10 girasoles radiantes envueltos en papel coreano impermeable con follaje fresco.',
       price: 85,
       stock: 12,
       available: true,
@@ -195,7 +194,8 @@ const FALLBACK_CATALOG: StoreCatalog = {
       category: 'Ramos',
       kind: 'product',
       name: 'Ramo Jardín de Peonías y Rosas',
-      description: 'Ramo artesanal en tonos rosados suaves ideal para regalar en cualquier ocasión.',
+      description:
+        'Ramo artesanal en tonos rosados suaves ideal para regalar en cualquier ocasión.',
       price: 110,
       stock: 9,
       available: true,
@@ -255,6 +255,7 @@ const FALLBACK_CATALOG: StoreCatalog = {
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
   private readonly http = inject(HttpClient);
+  readonly usandoRespaldo = signal(false);
 
   getCatalog(): Observable<StoreCatalog> {
     return forkJoin({
@@ -265,6 +266,8 @@ export class CatalogService {
         .pipe(catchError(() => of([]))),
     }).pipe(
       map(({ products, categories, technicalDetails }) => {
+        this.usandoRespaldo.set(false);
+
         const detailByProductId = new Map(
           technicalDetails.map((details) => [details.productoId, this.mapDetails(details)]),
         );
@@ -280,7 +283,10 @@ export class CatalogService {
           ),
         };
       }),
-      catchError(() => of(FALLBACK_CATALOG)),
+      catchError(() => {
+        this.usandoRespaldo.set(true);
+        return of(FALLBACK_CATALOG);
+      }),
     );
   }
 
@@ -292,10 +298,7 @@ export class CatalogService {
         .pipe(catchError(() => of(null))),
     }).pipe(
       map(({ product, technicalDetails }) =>
-        this.mapProduct(
-          product,
-          technicalDetails ? this.mapDetails(technicalDetails) : undefined,
-        ),
+        this.mapProduct(product, technicalDetails ? this.mapDetails(technicalDetails) : undefined),
       ),
     );
   }
@@ -322,7 +325,9 @@ export class CatalogService {
     const tags = [color, size, occasion].filter(Boolean);
 
     const galleryImages = Array.from(
-      new Set([response.imagenUrl, ...(response.imagenesGaleria ?? [])].filter(Boolean) as string[]),
+      new Set(
+        [response.imagenUrl, ...(response.imagenesGaleria ?? [])].filter(Boolean) as string[],
+      ),
     );
 
     return {

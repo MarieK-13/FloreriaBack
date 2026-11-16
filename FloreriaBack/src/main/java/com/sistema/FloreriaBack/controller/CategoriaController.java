@@ -21,26 +21,30 @@ public class CategoriaController {
         this.service = service;
     }
 
+    @GetMapping // Cualquiera puede ver el catálogo, no lleva @PreAuthorize (público)
+    public List<CategoriaResponseDTO> listar() {
+        return service.listar();
+    }
+
+    @GetMapping("/{id}") // Público
+    public CategoriaResponseDTO buscarPorId(@PathVariable UUID id) {
+        return service.buscarPorId(id);
+    }
+
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'OPERARIO')") // Solo ellos crean
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<CategoriaResponseDTO> registrar(@Valid @RequestBody CategoriaRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(dto));
     }
 
-    @GetMapping // Cualquiera puede ver el catálogo, no lleva @PreAuthorize (público)
-    public List<CategoriaResponseDTO> listar() { return service.listar(); }
-
-    @GetMapping("/{id}") // Público
-    public CategoriaResponseDTO buscarPorId(@PathVariable UUID id) { return service.buscarPorId(id); }
-
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'OPERARIO')") // Solo ellos actualizan (Tarea 1.1)
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public CategoriaResponseDTO actualizar(@PathVariable UUID id, @Valid @RequestBody CategoriaRequestDTO dto) {
         return service.actualizar(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMINISTRADOR')") // Normalmente borrar es exclusivo del Admin
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<Void> eliminar(@PathVariable UUID id) {
         service.eliminar(id);
         return ResponseEntity.noContent().build();

@@ -282,6 +282,12 @@ type FilterSection = 'categories' | 'occasions' | 'colors' | 'flowers' | 'sizes'
               }
             </div>
 
+            @if (catalogService.usandoRespaldo()) {
+              <div class="alert alert-warning" role="alert">
+                No se pudo conectar con el servidor. Mostrando catálogo de referencia en modo sin conexión.
+              </div>
+            }
+
             @if (pagedProducts().length > 0) {
               <div class="product-grid" [class.product-grid--two-cols]="gridColumns() === 2">
                 @for (product of pagedProducts(); track product.id) {
@@ -337,7 +343,7 @@ type FilterSection = 'categories' | 'occasions' | 'colors' | 'flowers' | 'sizes'
 })
 
 export class CatalogoPage implements OnInit {
-  private readonly catalogService = inject(CatalogService);
+  protected readonly catalogService = inject(CatalogService);
   private readonly cartService = inject(CartService);
   private readonly route = inject(ActivatedRoute);
 

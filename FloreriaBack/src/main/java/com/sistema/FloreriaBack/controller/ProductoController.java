@@ -6,6 +6,7 @@ import com.sistema.FloreriaBack.service.ProductoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -22,6 +23,7 @@ public class ProductoController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ProductoResponseDTO> registrar(@Valid @RequestBody ProductoRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(dto));
     }
@@ -50,6 +52,7 @@ public class ProductoController {
     }
 
     @GetMapping("/stock-bajo")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'OPERARIO')")
     public List<ProductoResponseDTO> stockBajo(@RequestParam(defaultValue = "5") Integer limite) {
         return service.listarConStockBajo(limite);
     }
@@ -63,11 +66,13 @@ public class ProductoController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ProductoResponseDTO> actualizar(@PathVariable UUID id, @Valid @RequestBody ProductoRequestDTO dto) {
         return ResponseEntity.ok(service.actualizar(id, dto));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<Void> eliminar(@PathVariable UUID id) {
         service.eliminar(id);
         return ResponseEntity.noContent().build();

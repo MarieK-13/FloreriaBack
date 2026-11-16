@@ -726,8 +726,12 @@ export class MisFechasPage implements OnInit {
         this.fechaForm.reset();
         this.guardando.set(false);
       },
-      error: () => {
-        this.errorMensaje.set('No se pudo guardar la fecha. Intenta nuevamente.');
+      error: (err) => {
+        const msg =
+          err?.error?.mensaje ||
+          err?.error?.message ||
+          'No se pudo guardar la fecha. Intenta nuevamente.';
+        this.errorMensaje.set(msg);
         this.guardando.set(false);
       },
     });

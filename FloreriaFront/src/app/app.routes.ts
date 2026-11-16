@@ -128,6 +128,13 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'mis-pedidos',
+    title: 'Mis pedidos · FloriaSmart',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/pedidos/pages/mis-pedidos.page').then((m) => m.MisPedidosPage),
+  },
+  {
     path: '**',
     redirectTo: '',
   },
