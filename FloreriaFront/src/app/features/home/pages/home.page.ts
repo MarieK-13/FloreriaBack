@@ -286,16 +286,16 @@ export class HomePage implements OnInit {
   );
 
   protected readonly occasions = [
-    { name: 'Navidad', detail: 'Diciembre', image: '/images/ocasiones/navidad.jpg' },
-    { name: 'San Valentín', detail: 'Febrero', image: '/images/ocasiones/san-valentin.jpg' },
-    { name: 'Aniversario', detail: 'Todo el año', image: '/images/ocasiones/aniversario.jpg' },
-    { name: 'Cumpleaños', detail: 'Todo el año', image: '/images/ocasiones/cumpleanos.jpg' },
-    { name: 'Graduación', detail: 'Todo el año', image: '/images/ocasiones/graduacion.jpg' },
-    { name: 'Día de la Madre', detail: 'Mayo', image: '/images/ocasiones/dia-madre.jpg' },
-    { name: 'Día del Padre', detail: 'Junio', image: '/images/ocasiones/dia-padre.jpg' },
-    { name: 'Amor', detail: 'Todo el año', image: '/images/ocasiones/amor.jpg' },
-    { name: 'Condolencias', detail: 'Todo el año', image: '/images/ocasiones/condolencias.jpg' },
-    { name: 'Nacimiento', detail: 'Todo el año', image: '/images/ocasiones/nacimiento.jpg' },
+    { name: 'Navidad', detail: 'Diciembre', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgp4oVBYCqv7uuMrIhblRHtkXgA3-zKfss19JIe6flLeQINL7E6LSFlqbl&s=10' },
+    { name: 'San Valentín', detail: 'Febrero', image: 'https://i.pinimg.com/564x/bd/75/f8/bd75f847fdc76e2b98ff8763768a8c06.jpg' },
+    { name: 'Aniversario', detail: 'Todo el año', image: 'https://undetalle.com.pe/wp-content/uploads/2025/11/box-globo-con-24-rosas-rojas.webp' },
+    { name: 'Cumpleaños', detail: 'Todo el año', image: 'https://undetalle.com.pe/wp-content/uploads/2025/11/Rosas-Globo-cumpleanos-scaled-1.webp' },
+    { name: 'Graduación', detail: 'Todo el año', image: 'https://www.kukyflor.com/7724-large_default/rosas-de-jardin-con-mini-rosas-graduacion-box-top.jpg' },
+    { name: 'Día de la Madre', detail: 'Mayo', image: 'https://www.floreriabloom.com/cdn/shop/articles/arreglos-florales-dia-de-la-madre-lima-2026_0586db9e-6d9a-49a0-b51e-df7cd37bc45a.jpg?v=1778128180&width=2048' },
+    { name: 'Día del Padre', detail: 'Junio', image: 'https://alirosas.pe/wp-content/uploads/2021/06/hortensiasglobo.jpg' },
+    { name: 'Amor', detail: 'Todo el año', image: 'https://www.floreriabloom.com/cdn/shop/files/arreglo-floral-juliette-box-circular-rosas-rosadas-rojas-claveles-san-valentin-lima_1.jpg?v=1775606608&width=1080' },
+    { name: 'Condolencias', detail: 'Todo el año', image: 'https://floresparola.com/wp-content/uploads/2023/08/Fondo-funebre-mix.jpeg' },
+    { name: 'Nacimiento', detail: 'Todo el año', image: 'https://babyflowers.pe/wp-content/uploads/2025/11/Boxes-con-muneco.avif' },
   ];
 
   protected readonly infiniteOccasions = computed(() => [...this.occasions, ...this.occasions]);
