@@ -31,12 +31,12 @@ import { CarritoService } from '../services/carrito.service';
         <section class="ticket-wrapper">
           <article class="pickup-ticket">
             <div class="ticket-top">
-              <span class="ticket-badge">TICKET DE RECOJO EN RECEPCIÓN</span>
-              <h2>FloriaSmart · Taller Floral</h2>
-              <p>Presenta este código en recepción para abonar y retirar tu arreglo.</p>
+              <span class="ticket-badge">TICKET OFICIAL DE RECOJO</span>
+              <h2>FloriaSmart · Taller Floral Ica</h2>
+              <p>Muestra este código digital o impreso en recepción para abonar y retirar tu arreglo.</p>
 
               <div class="ticket-code-box">
-                <span class="code-label">CÓDIGO DE TICKET</span>
+                <span class="code-label">CÓDIGO ÚNICO DE PEDIDO</span>
                 <strong class="code-value">FS-{{ pedido.id?.slice(0, 6)?.toUpperCase() }}</strong>
               </div>
             </div>
@@ -49,34 +49,38 @@ import { CarritoService } from '../services/carrito.service';
 
             <div class="ticket-details">
               <div class="detail-row">
-                <span>Modalidad</span>
-                <strong>Recojo en tienda · Sede Ica</strong>
+                <span>Establecimiento</span>
+                <strong>Sede Principal Ica (Av. San Martín 420)</strong>
               </div>
               <div class="detail-row">
-                <span>Pago</span>
-                <strong>En recepción al recoger (Efectivo / Yape / Tarjeta)</strong>
+                <span>Modalidad</span>
+                <strong>Recojo en tienda</strong>
+              </div>
+              <div class="detail-row">
+                <span>Datos y Horario</span>
+                <strong>{{ pedido.instruccionesEntrega }}</strong>
+              </div>
+              <div class="detail-row">
+                <span>Modalidad de pago</span>
+                <strong>Pago presencial en recepción (Efectivo, Yape, Plin o Tarjeta)</strong>
               </div>
               <div class="detail-row">
                 <span>Fecha de emisión</span>
                 <strong>{{ pedido.fechaPedido | date: 'dd/MM/yyyy · HH:mm' }}</strong>
               </div>
               <div class="detail-row">
-                <span>Estado</span>
+                <span>Estado actual</span>
                 <strong class="status-pill">{{ pedido.estado || 'PENDIENTE' }}</strong>
               </div>
-              <div class="detail-row">
-                <span>Datos de recojo</span>
-                <strong>{{ pedido.instruccionesEntrega }}</strong>
-              </div>
               <div class="detail-row total-line">
-                <span>Total a pagar en tienda</span>
+                <span>Total a abonar en tienda</span>
                 <strong>{{ pedido.total | currency: 'PEN' : 'S/ ' }}</strong>
               </div>
             </div>
 
             <div class="ticket-actions">
               <button type="button" class="btn-outline-pill" (click)="imprimirTicket()">
-                Imprimir / PDF
+                🖨️ Imprimir / Guardar PDF
               </button>
               <a routerLink="/mis-pedidos" class="btn-brand-pill">Ver en Mis pedidos</a>
             </div>
