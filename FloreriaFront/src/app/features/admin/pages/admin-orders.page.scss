@@ -1,0 +1,210 @@
+.admin-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.page-heading,
+.orders-heading {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.page-heading h1,
+.orders-heading h2 {
+  color: var(--color-brand-dark);
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.page-heading h1 {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+}
+
+.page-heading p:not(.eyebrow) {
+  color: var(--color-muted);
+  margin: 0.35rem 0 0;
+}
+
+.eyebrow {
+  color: var(--color-rose-dark);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+}
+
+.management-panel {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  min-width: 0;
+  padding: clamp(1rem, 2vw, 1.4rem);
+}
+
+.orders-heading {
+  margin-bottom: 0.8rem;
+
+  h2 {
+    font-size: 1.35rem;
+  }
+}
+
+.item-count {
+  background: var(--color-brand-soft);
+  border-radius: 999px;
+  color: var(--color-brand-dark);
+  font-size: 0.72rem;
+  font-weight: 650;
+  padding: 0.35rem 0.65rem;
+  white-space: nowrap;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  min-width: 62rem;
+  text-align: left;
+  width: 100%;
+
+  th {
+    color: var(--color-muted);
+    font-size: 0.7rem;
+    font-weight: 650;
+    padding: 0.65rem;
+  }
+
+  td {
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text);
+    font-size: 0.76rem;
+    padding: 0.7rem 0.65rem;
+    vertical-align: middle;
+  }
+
+  select {
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 0.55rem;
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.72rem;
+    min-height: 2.25rem;
+    max-width: 10rem;
+    padding: 0.35rem;
+  }
+}
+
+.order-products {
+  min-width: 10rem;
+
+  span {
+    display: block;
+    margin-block: 0.1rem;
+  }
+}
+
+.order-total {
+  color: var(--color-brand-dark);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-badge {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 650;
+  padding: 0.3rem 0.55rem;
+  white-space: nowrap;
+}
+
+.status--pendiente {
+  background: #fff3d8;
+  color: #805400;
+}
+
+.status--pagado,
+.status--entregado {
+  background: var(--color-mint);
+  color: var(--color-brand-dark);
+}
+
+.status--en_preparacion,
+.status--en_camino {
+  background: var(--color-rose);
+  color: var(--color-rose-dark);
+}
+
+.status--cancelado {
+  background: #f5e8e8;
+  color: #8c4040;
+}
+
+.muted,
+.list-status {
+  color: var(--color-muted);
+  font-size: 0.76rem;
+}
+
+.list-status {
+  margin: 0;
+  padding: 0.75rem 0;
+}
+
+.secondary-button {
+  background: var(--color-cream);
+  border: 0;
+  border-radius: 999px;
+  color: var(--color-brand-dark);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 650;
+  min-height: 2.45rem;
+  padding: 0.55rem 0.9rem;
+}
+
+.secondary-button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.notice {
+  border-radius: 0.65rem;
+  font-size: 0.82rem;
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+}
+
+.notice--error {
+  background: #fff1f1;
+  color: #8c4040;
+}
+
+.notice--success {
+  background: #e8f3eb;
+  color: #245c3e;
+}
+
+.visually-hidden {
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  position: absolute;
+  width: 1px;
+  clip: rect(0, 0, 0, 0);
+}
+
+@media (max-width: 620px) {
+  .page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

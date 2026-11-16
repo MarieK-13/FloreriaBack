@@ -88,9 +88,44 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
+    title: 'Panel de administración | FloriaSmart',
     canActivate: [roleGuard('ADMINISTRADOR', 'OPERARIO')],
     loadComponent: () =>
-      import('./features/admin/pages/admin-dashboard.page').then((m) => m.AdminDashboardPage),
+      import('./features/admin/layout/admin-layout.page').then((m) => m.AdminLayoutPage),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        title: 'Resumen del negocio | FloriaSmart',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-dashboard.page').then((m) => m.AdminDashboardPage),
+      },
+      {
+        path: 'productos',
+        title: 'Productos | Panel de administración',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-products.page').then((m) => m.AdminProductsPage),
+      },
+      {
+        path: 'pedidos',
+        title: 'Pedidos | Panel de administración',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-orders.page').then((m) => m.AdminOrdersPage),
+      },
+      {
+        path: 'categorias',
+        title: 'Categorías | Panel de administración',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-categories.page').then((m) => m.AdminCategoriesPage),
+      },
+      {
+        path: 'usuarios',
+        title: 'Usuarios | Panel de administración',
+        canActivate: [roleGuard('ADMINISTRADOR')],
+        loadComponent: () =>
+          import('./features/admin/pages/admin-users.page').then((m) => m.AdminUsersPage),
+      },
+    ],
   },
   {
     path: '**',

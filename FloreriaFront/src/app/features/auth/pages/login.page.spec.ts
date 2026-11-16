@@ -2,12 +2,13 @@ import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angul
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
+import { UserRole } from '../../../core/models/auth.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { FavoritosService } from '../../favoritos/services/favoritos.service';
 import { LoginPage } from './login.page';
 
 describe('LoginPage', () => {
-  const createFixture = async (role: 'ADMINISTRADOR' | 'CLIENTE') => {
+  const createFixture = async (role: UserRole) => {
     const login = vi.fn().mockReturnValue(
       of({
         token: 'token-test',
@@ -61,10 +62,16 @@ describe('LoginPage', () => {
     return { navigateByUrl };
   };
 
-  it('envía al administrador al dashboard aunque haya un redirect de cliente', async () => {
+  it('envía al administrador al panel aunque haya un redirect de cliente', async () => {
     const { navigateByUrl } = await createFixture('ADMINISTRADOR');
 
-    expect(navigateByUrl).toHaveBeenCalledWith('/dashboard');
+    expect(navigateByUrl).toHaveBeenCalledWith('/admin');
+  });
+
+  it('envía al operario al panel de administración', async () => {
+    const { navigateByUrl } = await createFixture('OPERARIO');
+
+    expect(navigateByUrl).toHaveBeenCalledWith('/admin');
   });
 
   it('conserva el redirect solicitado por el cliente', async () => {

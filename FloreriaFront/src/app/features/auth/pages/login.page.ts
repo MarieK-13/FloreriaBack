@@ -177,7 +177,8 @@ export class LoginPage {
       next: (response) => {
         this.loading.set(false);
         this.favoritos.sincronizarYCargarDesdeBackend();
-        const destination = response.rol === 'ADMINISTRADOR' ? '/dashboard' : this.redirect;
+        const isStaff = response.rol === 'ADMINISTRADOR' || response.rol === 'OPERARIO';
+        const destination = isStaff ? '/admin' : this.redirect;
         void this.router.navigateByUrl(destination);
       },
       error: (error: unknown) => {
